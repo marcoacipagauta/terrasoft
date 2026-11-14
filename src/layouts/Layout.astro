@@ -198,6 +198,13 @@ const { title = 'TerraSync - Datos Espaciales para Decisiones en tu Campo' } = A
 				border-radius: 0.95rem;
 				box-shadow: 0 6px 20px rgba(7, 20, 40, 0.06);
 				transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+				overflow: hidden;
+				min-width: 0;
+			}
+			.ts-card .badge {
+				white-space: normal;
+				max-width: 100%;
+				line-height: 1.35;
 			}
 			.ts-card-header-space {
 				background: linear-gradient(90deg, #08172e 0%, #102a4c 100%) !important;
@@ -274,10 +281,26 @@ const { title = 'TerraSync - Datos Espaciales para Decisiones en tu Campo' } = A
 			}
 
 			/* Calendario de 12 Meses en Tarjetas */
+			.ts-cal-badge {
+				white-space: normal !important;
+				text-align: left;
+				line-height: 1.35;
+				max-width: 100%;
+				overflow-wrap: anywhere;
+				word-break: break-word;
+				display: inline-block;
+			}
 			.ts-cal-grid {
 				display: grid;
-				grid-template-columns: repeat(12, 1fr);
+				grid-template-columns: repeat(12, minmax(0, 1fr));
 				gap: 3px;
+				width: 100%;
+			}
+			@media (max-width: 575.98px) {
+				.ts-cal-grid {
+					grid-template-columns: repeat(6, minmax(0, 1fr));
+					gap: 4px;
+				}
 			}
 			.ts-cal-month {
 				text-align: center;
@@ -289,6 +312,10 @@ const { title = 'TerraSync - Datos Espaciales para Decisiones en tu Campo' } = A
 				color: #64748b;
 				border: 1px solid #cbd5e1;
 				position: relative;
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 			.ts-cal-month.optimal {
 				background: #0d2647;

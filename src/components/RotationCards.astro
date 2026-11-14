@@ -40,12 +40,12 @@ const iniciales = cultivos.slice(0, 3);
 		class="d-flex flex-wrap justify-content-between align-items-center p-2 px-3 mb-3 rounded small gap-2"
 		style="background: linear-gradient(90deg, #0b213f 0%, #163a66 100%); color: #fff; border: 1px solid rgba(56, 189, 248, 0.35);"
 	>
-		<div class="d-flex align-items-center gap-2 flex-wrap">
+		<div class="d-flex align-items-center gap-2 flex-wrap" style="min-width: 0;">
 			<span class="text-info fw-semibold">Rotación:</span>
-			<span class="badge bg-white text-dark" id="chip-cultivo-origen">Papa</span>
+			<span class="badge bg-white text-dark text-wrap" id="chip-cultivo-origen">Papa</span>
 			<span class="fw-bold text-warning">➔</span>
-			<span class="badge text-dark fw-bold" style="background: #f5b041;" id="chip-cultivo-destino">Calculando...</span>
-			<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50" id="chip-fecha-actual">
+			<span class="badge text-dark fw-bold text-wrap" style="background: #f5b041;" id="chip-cultivo-destino">Calculando...</span>
+			<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 text-wrap text-start" id="chip-fecha-actual">
 				📅 Evaluando mes actual...
 			</span>
 		</div>

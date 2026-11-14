@@ -904,7 +904,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				ultimasRecomendaciones = topRecomendados;
 
 				if (chipCultivoDestino && topRecomendados[0]) {
-					chipCultivoDestino.className = 'badge fw-bold';
+					chipCultivoDestino.className = 'badge fw-bold text-wrap';
 					chipCultivoDestino.style.background = '#f5b041';
 					chipCultivoDestino.style.color = '#071428';
 					chipCultivoDestino.textContent = `${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
@@ -1008,16 +1008,16 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 
 									<!-- Fila 2: Calendario Óptimo de Siembra y Consejo para la Fecha Actual -->
 									<div class="mt-2 pt-2 border-top">
-										<div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-1">
-											<span class="badge ${item.evalCal.badgeClase}" style="font-size: 0.74rem;">
+										<div class="d-flex flex-wrap justify-content-between align-items-start gap-1 mb-2">
+											<span class="badge ts-cal-badge py-1 px-2 ${item.evalCal.badgeClase}" style="font-size: 0.74rem;">
 												${item.evalCal.icono} ${item.evalCal.titulo}
 											</span>
-											<span class="text-muted" style="font-size: 0.7rem;">
+											<span class="text-muted" style="font-size: 0.7rem; overflow-wrap: anywhere;">
 												🟦 = Meses óptimos &nbsp;|&nbsp; 📍 = Mes actual (${nombreMesActual})
 											</span>
 										</div>
-										<div class="ts-cal-grid mb-1">${htmlMeses}</div>
-										<div class="text-secondary" style="font-size: 0.76rem;">
+										<div class="ts-cal-grid mb-2">${htmlMeses}</div>
+										<div class="text-secondary" style="font-size: 0.76rem; line-height: 1.4; overflow-wrap: anywhere; word-break: break-word;">
 											${item.evalCal.consejo}
 										</div>
 									</div>
