@@ -10,7 +10,7 @@ import cultivos from '../data/cultivos.json';
 const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'General')));
 ---
 
-<Layout title="TerraSync - Datos Espaciales para Decisiones en tu Campo">
+<Layout title="TerraSoft - Datos Espaciales para Decisiones en tu Campo">
 	<!-- 0. HERO AERO-AGRÍCOLA + TARJETAS PUENTE -->
 	<HeroSpace />
 
@@ -1441,7 +1441,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					<html lang="es">
 					<head>
 						<meta charset="UTF-8" />
-						<title>Informe Técnico de Rotación Agrícola - TerraSync</title>
+						<title>Informe Técnico de Rotación Agrícola - TerraSoft</title>
 						<style>
 							body {
 								font-family: "Segoe UI", Roboto, Arial, sans-serif;
@@ -1578,13 +1578,13 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					</head>
 					<body>
 						<div class="no-print-bar">
-							<span>📄 <strong>Vista Previa del Informe Técnico TerraSync</strong> — Usa "Guardar como PDF" en el diálogo de impresión.</span>
+							<span>📄 <strong>Vista Previa del Informe Técnico TerraSoft</strong> — Usa "Guardar como PDF" en el diálogo de impresión.</span>
 							<button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
 						</div>
 
 						<div class="header">
 							<div>
-								<h1 class="title">🌱 TerraSync — Informe Técnico de Rotación y Presupuesto Agrícola</h1>
+								<h1 class="title">🌱 TerraSoft — Informe Técnico de Rotación y Presupuesto Agrícola</h1>
 								<div class="subtitle">Datos Agroclimáticos Satelitales NASA POWER + Catálogo Regional Colombiano</div>
 							</div>
 							<div style="text-align: right; font-size: 12px; color: #444;">
@@ -1639,7 +1639,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						}
 
 						<div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 11px; color: #666; text-align: center;">
-							Informe generado por TerraSync MVP — Fuentes: NASA POWER Agroclimatology API, OpenStreetMap &amp; Referencias de Costos Agropecuarios Colombia (COP).
+							Informe generado por TerraSoft MVP — Fuentes: NASA POWER Agroclimatology API, OpenStreetMap &amp; Referencias de Costos Agropecuarios Colombia (COP).
 						</div>
 					</body>
 					</html>
@@ -1665,7 +1665,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				const escapar = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
 
 				const lineas = [
-					['INFORME TECNICO DE ROTACION Y COSTOS AGRICOLAS - TERRASYNC'],
+					['INFORME TECNICO DE ROTACION Y COSTOS AGRICOLAS - TERRASOFT'],
 					['Fecha de generacion', new Date().toLocaleString('es-CO')],
 					['Coordenadas', `Lat ${ultimoClima.coordenadas.lat}, Lon ${ultimoClima.coordenadas.lon}`],
 					['Ubicacion', ultimoClima.terreno?.ubicacionNombre || ''],
@@ -1738,7 +1738,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				const url = URL.createObjectURL(blob);
 				const a = document.createElement('a');
 				a.href = url;
-				a.download = `Informe_TerraSync_${ultimoClima.coordenadas.lat}_${ultimoClima.coordenadas.lon}.csv`;
+				a.download = `Informe_TerraSoft_${ultimoClima.coordenadas.lat}_${ultimoClima.coordenadas.lon}.csv`;
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);
