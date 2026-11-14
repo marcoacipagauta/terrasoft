@@ -3,7 +3,7 @@
 
 <!-- Estilos del Asistente Interactivo y Efecto Spotlight -->
 <style is:global>
-	/* Botón flotante de Don Terra */
+	/* Botón flotante de Don Terra con Paleta Aero-Agrícola */
 	.ts-assistant-fab {
 		position: fixed;
 		bottom: 20px;
@@ -12,12 +12,12 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		background: linear-gradient(135deg, #146c43 0%, #198754 100%);
+		background: linear-gradient(135deg, #071428 0%, #123562 100%);
 		color: #ffffff;
-		border: 2px solid #ffffff;
+		border: 2px solid #f5b041;
 		border-radius: 999px;
 		padding: 10px 18px;
-		box-shadow: 0 8px 24px rgba(20, 108, 67, 0.38);
+		box-shadow: 0 8px 24px rgba(7, 20, 40, 0.48);
 		cursor: pointer;
 		font-weight: 700;
 		font-size: 0.9rem;
@@ -25,30 +25,30 @@
 	}
 	.ts-assistant-fab:hover {
 		transform: translateY(-3px) scale(1.02);
-		box-shadow: 0 12px 28px rgba(20, 108, 67, 0.48);
+		box-shadow: 0 12px 28px rgba(245, 176, 65, 0.45);
 	}
 	.ts-assistant-avatar {
 		width: 34px;
 		height: 34px;
 		border-radius: 50%;
-		background: #ffffff;
+		background: #f5b041;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		font-size: 1.25rem;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 	}
 
 	/* Resaltado Spotlight sobre el elemento activo del DOM */
 	@keyframes tsSpotlightPulse {
 		0% {
-			box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.85), 0 0 0 10px rgba(25, 135, 84, 0.25), 0 12px 32px rgba(0, 0, 0, 0.25);
+			box-shadow: 0 0 0 4px #f5b041, 0 0 0 10px rgba(56, 189, 248, 0.35), 0 12px 32px rgba(0, 0, 0, 0.35);
 		}
 		50% {
-			box-shadow: 0 0 0 5px #20c997, 0 0 0 16px rgba(32, 201, 151, 0.15), 0 12px 32px rgba(0, 0, 0, 0.25);
+			box-shadow: 0 0 0 5px #38bdf8, 0 0 0 16px rgba(245, 176, 65, 0.25), 0 12px 32px rgba(0, 0, 0, 0.35);
 		}
 		100% {
-			box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.85), 0 0 0 10px rgba(25, 135, 84, 0.25), 0 12px 32px rgba(0, 0, 0, 0.25);
+			box-shadow: 0 0 0 4px #f5b041, 0 0 0 10px rgba(56, 189, 248, 0.35), 0 12px 32px rgba(0, 0, 0, 0.35);
 		}
 	}
 	.ts-spotlight-target {
@@ -68,14 +68,15 @@
 		max-width: calc(100vw - 28px);
 		z-index: 1065;
 		border-radius: 1rem;
-		border: 2px solid #198754;
+		border: 2px solid #0d2647;
 		background: #ffffff;
-		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+		box-shadow: 0 16px 40px rgba(7, 20, 40, 0.35);
 		overflow: hidden;
 		transition: all 0.22s ease;
 	}
 	.ts-assistant-header {
-		background: linear-gradient(135deg, #146c43 0%, #198754 100%);
+		background: linear-gradient(135deg, #071428 0%, #123562 100%);
+		border-bottom: 2px solid #f5b041;
 		color: #ffffff;
 		padding: 12px 16px;
 	}
@@ -155,21 +156,21 @@
 	<!-- Pestañas internas del Asistente: [1] Tour Paso a Paso | [2] Cápsulas Didácticas -->
 	<div class="bg-light border-bottom px-3 py-1 d-flex justify-content-between align-items-center">
 		<div class="btn-group btn-group-sm" role="group">
-			<button type="button" id="btn-modo-tour" class="btn btn-success btn-sm fw-semibold py-1">
+			<button type="button" id="btn-modo-tour" class="btn ts-btn-space btn-sm fw-semibold py-1">
 				🎯 Tour Paso a Paso (6)
 			</button>
-			<button type="button" id="btn-modo-capsulas" class="btn btn-outline-success btn-sm fw-semibold py-1">
+			<button type="button" id="btn-modo-capsulas" class="btn btn-outline-secondary btn-sm fw-semibold py-1">
 				💡 Cápsulas Agronómicas
 			</button>
 		</div>
-		<span class="badge bg-success-subtle text-success border border-success-subtle" id="badge-progreso-tour">
+		<span class="badge border" style="background: #eef4fb; color: #0d2647; border-color: #93c5fd !important;" id="badge-progreso-tour">
 			Paso 1 / 6
 		</span>
 	</div>
 
 	<!-- CONTENIDO MODO 1: TOUR GUIADO INTERACTIVO -->
 	<div id="vista-tour" class="p-3">
-		<h3 class="h6 fw-bold text-success mb-2" id="tour-step-title">
+		<h3 class="h6 fw-bold mb-2" style="color: #0d2647;" id="tour-step-title">
 			📍 Paso 1: Elige tu Lote en el Mapa Satelital
 		</h3>
 
@@ -193,7 +194,7 @@
 
 			<div class="d-flex gap-1 align-items-center" id="tour-dots-container"></div>
 
-			<button type="button" id="btn-tour-next" class="btn btn-success btn-sm fw-semibold">
+			<button type="button" id="btn-tour-next" class="btn ts-btn-amber btn-sm fw-bold">
 				Siguiente ➡
 			</button>
 		</div>
@@ -206,21 +207,21 @@
 		</p>
 
 		<div class="d-grid gap-2 mb-3">
-			<button type="button" class="btn btn-outline-success ts-faq-btn p-2" data-capsule="nitrogeno">
+			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="nitrogeno">
 				🌱 ¿Cómo me ahorra dinero sembrar Frijol, Arveja o Soya?
 			</button>
-			<button type="button" class="btn btn-outline-success ts-faq-btn p-2" data-capsule="monocultivo">
+			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="monocultivo">
 				🧬 ¿Por qué es peligroso repetir el mismo cultivo (Monocultivo)?
 			</button>
-			<button type="button" class="btn btn-outline-success ts-faq-btn p-2" data-capsule="satelite">
+			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="satelite">
 				🛰️ ¿Cómo detecta TerraSync carreteras, glaciares y clima NASA?
 			</button>
-			<button type="button" class="btn btn-outline-success ts-faq-btn p-2" data-capsule="calendario">
+			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="calendario">
 				📅 ¿Cómo leer el semáforo de fecha actual y el calendario?
 			</button>
 		</div>
 
-		<div id="caja-respuesta-capsula" class="p-2 px-3 rounded bg-success-subtle border border-success-subtle small text-dark">
+		<div id="caja-respuesta-capsula" class="p-2 px-3 rounded border small text-dark" style="background: #eef4fb; border-color: #93c5fd !important;">
 			<strong>💡 Consejo de Don Terra:</strong> Haz clic en cualquiera de las preguntas de arriba para ver una explicación clara y aplicada a tu parcela.
 		</div>
 	</div>
@@ -410,7 +411,7 @@
 							? 'ts-step-dot done'
 							: 'ts-step-dot';
 					return `<span class="${cls}" style="background: ${
-						idx === pasoActual ? '#198754' : pasosCompletados.has(e.id) ? '#75b798' : '#dee2e6'
+						idx === pasoActual ? '#f5b041' : pasosCompletados.has(e.id) ? '#0284c7' : '#cbd5e1'
 					};"></span>`;
 				}).join('');
 			}
@@ -443,8 +444,8 @@
 		}
 
 		function mostrarModoTour() {
-			btnModoTour?.classList.replace('btn-outline-success', 'btn-success');
-			btnModoCapsulas?.classList.replace('btn-success', 'btn-outline-success');
+			btnModoTour?.classList.replace('btn-outline-secondary', 'ts-btn-space');
+			btnModoCapsulas?.classList.replace('ts-btn-space', 'btn-outline-secondary');
 			vistaTour?.classList.remove('d-none');
 			vistaCapsulas?.classList.add('d-none');
 			renderizarPasoTour();
@@ -452,8 +453,8 @@
 
 		function mostrarModoCapsulas() {
 			quitarSpotlight();
-			btnModoCapsulas?.classList.replace('btn-outline-success', 'btn-success');
-			btnModoTour?.classList.replace('btn-success', 'btn-outline-success');
+			btnModoCapsulas?.classList.replace('btn-outline-secondary', 'ts-btn-space');
+			btnModoTour?.classList.replace('ts-btn-space', 'btn-outline-secondary');
 			vistaCapsulas?.classList.remove('d-none');
 			vistaTour?.classList.add('d-none');
 		}
@@ -573,12 +574,11 @@
 			marcarMisionCompletada('exportar', '🎉 ¡Excelente! Has descargado la hoja de cálculo para Excel.');
 		});
 
-		// Abrir automáticamente la bienvenida en la primera visita del usuario
+		// Si es la primera visita, resaltamos suavemente el botón del asistente sin hacer scroll automático
+		// para no tapar el Hero Aero-Agrícola; el usuario inicia el tour cuando desee.
 		if (!sessionStorage.getItem('terrasync_tour_visto')) {
 			sessionStorage.setItem('terrasync_tour_visto', '1');
-			setTimeout(() => {
-				abrirAsistente(true);
-			}, 900);
+			if (badgeFabPaso) badgeFabPaso.textContent = '¡Nuevo Tour!';
 		}
 	});
 </script>

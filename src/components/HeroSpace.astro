@@ -1,0 +1,121 @@
+---
+---
+
+<!-- HERO CÓSMICO-AGRÍCOLA FIEL AL MOCKUP DEL PLAN -->
+<section id="inicio" class="ts-hero">
+	<div class="container-fluid px-lg-5 position-relative" style="z-index: 2;">
+		<div class="row align-items-center g-4">
+			<!-- Columna Izquierda: Titular Limpio sobre el Cielo Estrellado -->
+			<div class="col-lg-6">
+				<h1 class="display-5 fw-bold mb-3 text-white" style="line-height: 1.14; letter-spacing: -0.02em; text-shadow: 0 4px 18px rgba(0,0,0,0.5);">
+					Datos espaciales para<br />decisiones en tu campo
+				</h1>
+
+				<p class="lead mb-4" style="font-size: 1.08rem; max-width: 490px; color: rgba(255,255,255,0.88); text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+					Conectamos observaciones de <strong class="text-warning">NASA POWER</strong> con el suelo real de tu parcela
+				</p>
+
+				<div class="d-flex flex-wrap align-items-center gap-3">
+					<a href="#simulador-rotacion" class="btn ts-btn-amber px-4 py-2">
+						Comenzar Simulación
+					</a>
+					<button
+						type="button"
+						id="btn-hero-tour"
+						class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold"
+						style="backdrop-filter: blur(8px); background: rgba(7, 20, 40, 0.45); border-color: rgba(56, 189, 248, 0.5);"
+					>
+						🧑‍🌾 Guía Interactiva
+					</button>
+				</div>
+			</div>
+
+			<!-- Columna Derecha: Pila de Cápsulas HUD + Recuadro de Rotación Sugerida como en el Mockup -->
+			<div class="col-lg-6">
+				<div class="row g-3 align-items-end justify-content-lg-end">
+					<!-- Columna de Píldoras de Telemetría (Izquierda del Satélite) -->
+					<div class="col-sm-6 col-md-5 d-flex flex-column gap-2">
+						<div class="ts-hud-pill">
+							<span class="small text-white-50">Temp. Máx:</span>
+							<strong class="fs-6 text-white" id="hero-kpi-temp">-- °C</strong>
+						</div>
+
+						<div class="ts-hud-pill">
+							<span class="small text-white-50">Lluvia Anual:</span>
+							<strong class="fs-6 text-white" id="hero-kpi-lluvia">-- mm</strong>
+						</div>
+
+						<div class="ts-hud-pill">
+							<span class="small text-white-50">Suelo:</span>
+							<strong class="fs-6" style="color: #4ade80;" id="hero-kpi-suelo">Apto</strong>
+						</div>
+
+						<div class="ts-hud-pill">
+							<span class="small text-white-50" id="hero-kpi-piso">Piso Térmico</span>
+							<small class="text-info fw-semibold" id="hero-kpi-coords">Lat / Lon</small>
+						</div>
+					</div>
+
+					<!-- Recuadro Glassmorphism de Rotación Sugerida (Derecha Inferior bajo el Satélite) -->
+					<div class="col-sm-6 col-md-6">
+						<div class="ts-hud-rotation-box">
+							<div class="small text-white-50 mb-1">Rotación Sugerida:</div>
+							<div class="fw-bold fs-6 text-white" id="hero-kpi-rotacion">
+								Papa <span class="text-info">➔</span> Arveja <span class="text-info">➔</span> Avena
+							</div>
+							<div class="small text-warning mt-1 fw-semibold" id="hero-kpi-ahorro">
+								Calculando presupuesto del lote...
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- PUENTE DE 3 TARJETAS SUPERPUESTAS (IDÉNTICAS AL MOCKUP DEL PLAN) -->
+<section class="container-fluid px-lg-5 ts-bridge-wrap">
+	<div class="row g-3 g-lg-4 align-items-stretch justify-content-center">
+		<!-- Tarjeta 1 (Blanca): Monitoreo Satelital -->
+		<div class="col-md-4">
+			<a href="#datos-satelitales" class="ts-bridge-card ts-bridge-left p-3 text-center">
+				<div class="fw-bold fs-5 mb-1" style="color: #071428;">Monitoreo Satelital</div>
+				<div class="small text-secondary" id="bridge-status-suelo">
+					🛰️ Escáner óptico RGB y mapa en vivo
+				</div>
+			</a>
+		</div>
+
+		<!-- Tarjeta 2 (Central Destacada con Marco Azul Espacial y Foto de Cultivo): Simular Rotación -->
+		<div class="col-md-4">
+			<a href="#simulador-rotacion" class="ts-bridge-card ts-bridge-center p-3 text-center">
+				<div class="fw-bold fs-5 mb-1 text-white" style="text-shadow: 0 2px 8px rgba(0,0,0,0.7);">
+					Simular Rotación
+				</div>
+				<div class="small fw-semibold text-warning" id="bridge-status-top1" style="text-shadow: 0 1px 6px rgba(0,0,0,0.8);">
+					🌾 Comparando 24 cultivos regionales
+				</div>
+			</a>
+		</div>
+
+		<!-- Tarjeta 3 (Translúcida sobre Campo Dorado): Calendario y Presupuesto -->
+		<div class="col-md-4">
+			<a href="#calendario-costos" class="ts-bridge-card ts-bridge-right p-3 text-center">
+				<div class="fw-bold fs-5 mb-1" style="color: #071428;">Calendario y Presupuesto</div>
+				<div class="small fw-semibold" style="color: #0d2647;" id="bridge-status-costo">
+					📅 Fechas ideales y costos en $ COP
+				</div>
+			</a>
+		</div>
+	</div>
+</section>
+
+<script is:inline>
+	document.addEventListener('DOMContentLoaded', () => {
+		const btnHeroTour = document.getElementById('btn-hero-tour');
+		btnHeroTour?.addEventListener('click', () => {
+			document.getElementById('btn-abrir-tutorial-nav')?.click();
+		});
+	});
+</script>

@@ -3,7 +3,7 @@ interface Props {
 	title?: string;
 }
 
-const { title = 'TerraSync - Dashboard Agronómico con NASA POWER' } = Astro.props;
+const { title = 'TerraSync - Datos Espaciales para Decisiones en tu Campo' } = Astro.props;
 ---
 
 <!doctype html>
@@ -25,30 +25,189 @@ const { title = 'TerraSync - Dashboard Agronómico con NASA POWER' } = Astro.pro
 
 		<style is:global>
 			:root {
-				--ts-green: #146c43;
-				--ts-green-soft: #d1e7dd;
-				--ts-bg: #f4f7f5;
+				--ts-space-dark: #071428;
+				--ts-space-mid: #0d2647;
+				--ts-space-light: #163a66;
+				--ts-amber: #f5b041;
+				--ts-amber-hover: #e59822;
+				--ts-cyan: #38bdf8;
+				--ts-cyan-soft: #e0f2fe;
+				--ts-emerald: #10b981;
+				--ts-bg: #eef2f6;
+			}
+			html {
+				scroll-behavior: smooth;
 			}
 			body {
 				background-color: var(--ts-bg);
-				color: #1e2923;
+				color: #0f172a;
 				font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 			}
+
+			/* 1. NAVBAR ESPACIAL (#071428) */
+			.ts-navbar-space {
+				background: linear-gradient(90deg, #061121 0%, #0b213f 100%);
+				border-bottom: 1px solid rgba(56, 189, 248, 0.22);
+			}
+			.ts-navbar-space .nav-link {
+				color: rgba(255, 255, 255, 0.82);
+				font-size: 0.88rem;
+				font-weight: 500;
+				padding: 0.45rem 0.9rem;
+				border-radius: 999px;
+				transition: color 0.15s ease, background 0.15s ease;
+			}
+			.ts-navbar-space .nav-link:hover,
+			.ts-navbar-space .nav-link.active {
+				color: #f5b041;
+				background: rgba(255, 255, 255, 0.08);
+			}
+			.ts-btn-amber {
+				background: linear-gradient(135deg, #f5b041 0%, #ea9c1b 100%);
+				color: #071428 !important;
+				font-weight: 700;
+				border: none;
+				border-radius: 999px;
+				padding: 0.48rem 1.25rem;
+				box-shadow: 0 4px 14px rgba(245, 176, 65, 0.35);
+				transition: transform 0.16s ease, box-shadow 0.16s ease;
+			}
+			.ts-btn-amber:hover {
+				transform: translateY(-1px);
+				box-shadow: 0 6px 20px rgba(245, 176, 65, 0.55);
+			}
+			.ts-btn-space {
+				background: linear-gradient(135deg, #0b213f 0%, #163a66 100%);
+				color: #ffffff !important;
+				border: 1px solid rgba(56, 189, 248, 0.35);
+				font-weight: 600;
+			}
+			.ts-btn-space:hover {
+				background: linear-gradient(135deg, #102c52 0%, #1d497d 100%);
+				border-color: #f5b041;
+			}
+
+			/* 2. HERO CÓSMICO-AGRÍCOLA FIEL AL MOCKUP DEL PLAN */
+			.ts-hero {
+				position: relative;
+				background-color: #061121;
+				background-image:
+					radial-gradient(circle at 22% 36%, rgba(6, 17, 33, 0.78) 0%, rgba(6, 17, 33, 0.32) 48%, rgba(6, 17, 33, 0.05) 78%),
+					linear-gradient(180deg, rgba(6, 17, 33, 0.35) 0%, rgba(6, 17, 33, 0) 45%, rgba(6, 17, 33, 0.18) 100%),
+					url('/images/hero-space-agro.jpg');
+				background-size: cover;
+				background-position: center 38%;
+				color: #ffffff;
+				padding: 3.2rem 0 6.8rem 0;
+				overflow: hidden;
+			}
+			.ts-hud-pill {
+				background: rgba(30, 52, 84, 0.68);
+				backdrop-filter: blur(12px);
+				-webkit-backdrop-filter: blur(12px);
+				border: 1px solid rgba(255, 255, 255, 0.24);
+				border-radius: 0.75rem;
+				padding: 0.55rem 1rem;
+				color: #ffffff;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+				transition: transform 0.18s ease, border-color 0.18s ease;
+			}
+			.ts-hud-pill:hover {
+				transform: translateX(-3px);
+				border-color: #38bdf8;
+			}
+			.ts-hud-rotation-box {
+				background: rgba(24, 43, 73, 0.74);
+				backdrop-filter: blur(14px);
+				-webkit-backdrop-filter: blur(14px);
+				border: 1px solid rgba(255, 255, 255, 0.28);
+				border-radius: 0.85rem;
+				padding: 0.85rem 1.15rem;
+				color: #ffffff;
+				box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+			}
+
+			/* 3. TRÍO DE TARJETAS PUENTE (ESTILO MOCKUP) */
+			.ts-bridge-wrap {
+				position: relative;
+				z-index: 15;
+				margin-top: -4.4rem;
+				margin-bottom: 1.75rem;
+			}
+			.ts-bridge-card {
+				border-radius: 1.1rem;
+				transition: transform 0.22s ease, box-shadow 0.22s ease;
+				cursor: pointer;
+				overflow: hidden;
+				text-decoration: none;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				min-height: 118px;
+			}
+			.ts-bridge-card:hover {
+				transform: translateY(-5px);
+			}
+			/* Card Izquierda: Blanca Limpia */
+			.ts-bridge-left {
+				background: #ffffff;
+				color: #0b213f;
+				border: 1px solid rgba(11, 33, 63, 0.1);
+				box-shadow: 0 14px 32px rgba(7, 20, 40, 0.12);
+			}
+			/* Card Central: Marco Azul Espacial Profundo con Fotografía de Surcos */
+			.ts-bridge-center {
+				position: relative;
+				background:
+					linear-gradient(180deg, rgba(7, 20, 40, 0.45) 0%, rgba(7, 20, 40, 0.72) 100%),
+					url('/images/card-rotacion.jpg') center/cover no-repeat;
+				color: #ffffff;
+				border: 8px solid #0b213f;
+				box-shadow: 0 18px 38px rgba(7, 20, 40, 0.28);
+				min-height: 132px;
+				margin-top: -7px;
+			}
+			/* Card Derecha: Translúcida sobre Campo Dorado */
+			.ts-bridge-right {
+				background:
+					linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(235, 244, 238, 0.78) 100%),
+					url('/images/card-cultivos.jpg') center/cover no-repeat;
+				backdrop-filter: blur(8px);
+				color: #071428;
+				border: 1px solid rgba(255, 255, 255, 0.8);
+				box-shadow: 0 14px 32px rgba(7, 20, 40, 0.14);
+			}
+
+			/* 4. COMPONENTES DEL SIMULADOR CON PALETA AERO-AGRÍCOLA */
 			.ts-topbar {
 				position: sticky;
-				top: 0;
+				top: 8px;
 				z-index: 1020;
-				background: rgba(255, 255, 255, 0.96);
-				backdrop-filter: blur(8px);
+				background: linear-gradient(90deg, #071428 0%, #0e294b 100%);
+				border: 1px solid rgba(56, 189, 248, 0.3) !important;
+				color: #ffffff;
+				border-radius: 0.9rem;
+				box-shadow: 0 10px 26px rgba(7, 20, 40, 0.22) !important;
 			}
 			.ts-card {
-				border: 1px solid rgba(20, 108, 67, 0.12);
-				border-radius: 0.75rem;
+				background: #ffffff;
+				border: 1px solid rgba(14, 41, 75, 0.12);
+				border-radius: 0.95rem;
+				box-shadow: 0 6px 20px rgba(7, 20, 40, 0.06);
 				transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 			}
+			.ts-card-header-space {
+				background: linear-gradient(90deg, #08172e 0%, #102a4c 100%) !important;
+				color: #ffffff !important;
+				border-bottom: 2px solid #f5b041 !important;
+			}
 			.ts-card-top1 {
-				border: 2px solid #198754 !important;
-				background: linear-gradient(180deg, #f8fffb 0%, #ffffff 45%);
+				border: 2px solid #0e294b !important;
+				box-shadow: 0 10px 28px rgba(14, 41, 75, 0.14) !important;
+				background: linear-gradient(180deg, #f4f9ff 0%, #ffffff 48%);
 			}
 			@keyframes tsFlashUpdate {
 				0% {
@@ -63,49 +222,58 @@ const { title = 'TerraSync - Dashboard Agronómico con NASA POWER' } = Astro.pro
 			.ts-animate-in {
 				animation: tsFlashUpdate 0.28s ease-out forwards;
 			}
+
+			/* Botones de Prioridad en Barra Espacial */
 			.ts-priority-btn {
-				border: 1px solid #ced4da;
-				background: #fff;
-				color: #495057;
+				border: 1px solid rgba(56, 189, 248, 0.3);
+				background: rgba(255, 255, 255, 0.08);
+				color: rgba(255, 255, 255, 0.85);
 				font-weight: 600;
-				font-size: 0.85rem;
+				font-size: 0.83rem;
 				padding: 0.42rem 0.75rem;
 				transition: all 0.15s ease;
 			}
 			.ts-priority-btn:hover {
-				background: #f8f9fa;
+				background: rgba(255, 255, 255, 0.18);
+				color: #ffffff;
 			}
 			.ts-priority-btn.active {
-				background: #198754;
-				color: #fff;
-				border-color: #198754;
-				box-shadow: 0 2px 6px rgba(25, 135, 84, 0.25);
+				background: linear-gradient(135deg, #f5b041 0%, #ea9c1b 100%);
+				color: #071428 !important;
+				border-color: #f5b041;
+				font-weight: 700;
+				box-shadow: 0 2px 10px rgba(245, 176, 65, 0.4);
 			}
+
+			/* Cajas KPI NASA POWER */
 			.ts-kpi-box {
-				background: #fff;
-				border: 1px solid #e9ecef;
-				border-radius: 0.6rem;
-				padding: 0.55rem 0.65rem;
+				background: linear-gradient(180deg, #0b213f 0%, #112d54 100%);
+				border: 1px solid rgba(56, 189, 248, 0.25);
+				color: #ffffff;
+				border-radius: 0.7rem;
+				padding: 0.6rem 0.65rem;
 			}
-			.ts-chip {
-				display: inline-flex;
-				align-items: center;
-				gap: 0.25rem;
-				padding: 0.2rem 0.55rem;
-				border-radius: 999px;
-				font-size: 0.75rem;
-				font-weight: 600;
-			}
+
+			/* Pestañas del Panel Derecho */
 			.nav-pills .nav-link {
-				color: #495057;
+				color: rgba(255, 255, 255, 0.78);
 				font-weight: 600;
-				border-radius: 0.5rem;
-				padding: 0.45rem 0.9rem;
+				border-radius: 999px;
+				padding: 0.42rem 0.95rem;
+				font-size: 0.84rem;
+			}
+			.nav-pills .nav-link:hover {
+				color: #ffffff;
+				background: rgba(255, 255, 255, 0.1);
 			}
 			.nav-pills .nav-link.active {
-				background-color: #198754;
-				color: #fff;
+				background: linear-gradient(135deg, #f5b041 0%, #ea9c1b 100%) !important;
+				color: #071428 !important;
+				font-weight: 700;
+				box-shadow: 0 3px 10px rgba(245, 176, 65, 0.35);
 			}
+
+			/* Calendario de 12 Meses en Tarjetas */
 			.ts-cal-grid {
 				display: grid;
 				grid-template-columns: repeat(12, 1fr);
@@ -117,62 +285,102 @@ const { title = 'TerraSync - Dashboard Agronómico con NASA POWER' } = Astro.pro
 				font-weight: 600;
 				padding: 3px 1px;
 				border-radius: 4px;
-				background: #f1f3f5;
-				color: #6c757d;
-				border: 1px solid #dee2e6;
+				background: #f1f5f9;
+				color: #64748b;
+				border: 1px solid #cbd5e1;
 				position: relative;
 			}
 			.ts-cal-month.optimal {
-				background: #d1e7dd;
-				color: #0f5132;
-				border-color: #a3cfbb;
+				background: #0d2647;
+				color: #38bdf8;
+				border-color: #1e40af;
 			}
 			.ts-cal-month.current {
-				outline: 2px solid #0d6efd;
+				outline: 2px solid #f5b041;
 				outline-offset: 0px;
 				font-weight: 800;
+				background: #fef3c7;
+				color: #92400e;
 			}
+			.ts-cal-month.optimal.current {
+				background: #f5b041;
+				color: #071428;
+			}
+
+			/* Panel de Costos en Pesos Colombianos */
 			.ts-cost-panel {
-				background: #f8faf9;
-				border: 1px dashed #badbcc;
-				border-radius: 0.5rem;
-				padding: 0.55rem 0.75rem;
+				background: linear-gradient(90deg, #f0f6ff 0%, #f8fafc 100%);
+				border: 1px solid #bfdbfe;
+				border-left: 4px solid #0d2647;
+				border-radius: 0.6rem;
+				padding: 0.6rem 0.8rem;
 			}
 		</style>
 	</head>
 	<body class="min-vh-100 d-flex flex-column">
-		<nav class="navbar navbar-dark bg-success py-2 shadow-sm">
-			<div class="container-fluid px-lg-4 d-flex justify-content-between align-items-center">
-				<a class="navbar-brand fw-bold mb-0 fs-5 d-flex align-items-center gap-2" href="/">
-					<span>🌱 TerraSync</span>
-					<span class="badge bg-white text-success fw-semibold" style="font-size: 0.7rem;">
-						NASA POWER + Escáner Satelital
+		<nav class="navbar navbar-expand-lg navbar-dark ts-navbar-space py-2 shadow-sm">
+			<div class="container-fluid px-lg-4">
+				<a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#inicio">
+					<span class="fs-4">🌱</span>
+					<span>TerraSync</span>
+					<span class="badge rounded-pill bg-info bg-opacity-25 text-info border border-info border-opacity-50 fw-semibold d-none d-sm-inline" style="font-size: 0.68rem;">
+						NASA POWER
 					</span>
 				</a>
-				<div class="d-flex align-items-center gap-2">
-					<span class="text-white-50 small d-none d-lg-inline">
-						Planificador Inteligente de Rotación de Cultivos en Colombia
-					</span>
-					<button
-						type="button"
-						id="btn-abrir-tutorial-nav"
-						class="btn btn-light btn-sm fw-bold text-success py-1 px-2 shadow-sm"
-						style="font-size: 0.78rem;"
-					>
-						🧑‍🌾 ¿Cómo usar TerraSync? (Tour Guiado)
-					</button>
+
+				<button
+					class="navbar-toggler border-0"
+					type="button"
+					data-bs-toggle="collapse"
+					data-bs-target="#navbarTerraSync"
+					aria-controls="navbarTerraSync"
+					aria-expanded="false"
+					aria-label="Menú"
+				>
+					<span class="navbar-toggler-icon"></span>
+				</button>
+
+				<div class="collapse navbar-collapse" id="navbarTerraSync">
+					<ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
+						<li class="nav-item">
+							<a class="nav-link active" href="#inicio">Inicio</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#datos-satelitales">Datos Satelitales</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#simulador-rotacion">Simulador de Rotación</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#calendario-costos">Calendario &amp; Costos</a>
+						</li>
+					</ul>
+
+					<div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+						<button
+							type="button"
+							id="btn-abrir-tutorial-nav"
+							class="btn btn-outline-info btn-sm rounded-pill fw-semibold px-3"
+							style="font-size: 0.8rem;"
+						>
+							🧑‍🌾 Tour Don Terra
+						</button>
+						<a href="#simulador-rotacion" class="btn ts-btn-amber btn-sm">
+							Comenzar Simulación
+						</a>
+					</div>
 				</div>
 			</div>
 		</nav>
 
-		<main class="container-fluid px-lg-4 my-3 flex-grow-1">
+		<main class="flex-grow-1">
 			<slot />
 		</main>
 
-		<footer class="bg-white border-top py-2 mt-auto">
-			<div class="container-fluid px-lg-4 d-flex justify-content-between text-muted small">
-				<span>TerraSync MVP &mdash; Agroclimatología NASA POWER</span>
-				<span>Catálogo Regional Colombiano (24 Cultivos)</span>
+		<footer class="text-white-50 border-top border-info border-opacity-25 py-3 mt-4" style="background: linear-gradient(90deg, #061121 0%, #0b213f 100%);">
+			<div class="container-fluid px-lg-4 d-flex flex-wrap justify-content-between align-items-center gap-2 small">
+				<span>🌱 <strong class="text-white">TerraSync</strong> &mdash; Observación Satelital NASA POWER &amp; Suelos de Colombia</span>
+				<span class="text-info">Catálogo Regional (24 Cultivos · Calendario y Presupuesto COP)</span>
 			</div>
 		</footer>
 

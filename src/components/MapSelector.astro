@@ -21,16 +21,16 @@ const {
 />
 
 <div class="card ts-card shadow-sm border-0 mb-3 overflow-hidden">
-	<div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+	<div class="card-header ts-card-header-space d-flex justify-content-between align-items-center py-2 px-3">
 		<div class="d-flex align-items-center gap-2">
-			<span class="fw-bold text-success small">🗺️ Mapa de Parcela</span>
-			<span class="text-muted" style="font-size: 0.78rem;">(Haz clic o arrastra el marcador)</span>
+			<span class="fw-bold text-info small">🛰️ Mapa Satelital de Parcela</span>
+			<span class="text-white-50" style="font-size: 0.76rem;">(Haz clic o arrastra el marcador)</span>
 		</div>
 		<button
 			type="button"
 			id="btn-geolocate"
-			class="btn btn-outline-success btn-sm py-0 px-2"
-			style="font-size: 0.78rem;"
+			class="btn ts-btn-amber btn-sm py-0 px-2"
+			style="font-size: 0.76rem;"
 			title="Usar mi ubicación GPS actual"
 		>
 			📍 Mi ubicación
@@ -47,18 +47,18 @@ const {
 		></div>
 	</div>
 
-	<div class="card-footer bg-light py-2 px-3 border-top">
+	<div class="card-footer py-2 px-3 border-top" style="background: #0b213f; color: #fff;">
 		<div class="row g-2 align-items-center">
 			<div class="col-6">
 				<div class="input-group input-group-sm">
-					<span class="input-group-text bg-white text-secondary" style="font-size: 0.75rem;">Lat</span>
+					<span class="input-group-text border-0 fw-semibold" style="background: #163a66; color: #38bdf8; font-size: 0.75rem;">Lat</span>
 					<input
 						type="number"
 						step="any"
 						id="input-lat"
 						name="lat"
-						class="form-control form-control-sm"
-						style="font-size: 0.8rem;"
+						class="form-control form-control-sm border-0 fw-semibold"
+						style="font-size: 0.8rem; background: #f8fafc;"
 						value={initialLat}
 						required
 					/>
@@ -66,14 +66,14 @@ const {
 			</div>
 			<div class="col-6">
 				<div class="input-group input-group-sm">
-					<span class="input-group-text bg-white text-secondary" style="font-size: 0.75rem;">Lon</span>
+					<span class="input-group-text border-0 fw-semibold" style="background: #163a66; color: #38bdf8; font-size: 0.75rem;">Lon</span>
 					<input
 						type="number"
 						step="any"
 						id="input-lon"
 						name="lon"
-						class="form-control form-control-sm"
-						style="font-size: 0.8rem;"
+						class="form-control form-control-sm border-0 fw-semibold"
+						style="font-size: 0.8rem; background: #f8fafc;"
 						value={initialLon}
 						required
 					/>
@@ -185,7 +185,7 @@ const {
 			}
 
 			const icono = terreno.aptoParaSiembra ? '✅' : '🚫';
-			const estadoColor = terreno.aptoParaSiembra ? 'color: #198754;' : 'color: #dc3545;';
+			const estadoColor = terreno.aptoParaSiembra ? 'color: #0d2647;' : 'color: #dc3545;';
 			marker.setPopupContent(
 				`<div style="min-width: 190px; font-size: 12px;">
 					<strong style="${estadoColor}">${icono} ${terreno.etiqueta}</strong><br>

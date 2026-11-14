@@ -34,21 +34,22 @@ const iniciales = cultivos.slice(0, 3);
 	data-etiquetas-agua={JSON.stringify(ETIQUETAS_AGUA)}
 	data-etiquetas-beneficio={JSON.stringify(ETIQUETAS_BENEFICIO)}
 >
-	<!-- Resumen de Transición de Rotación + Fecha Actual y Área -->
+	<!-- Resumen de Transición de Rotación + Fecha Actual en Estilo Aero-Agrícola -->
 	<div
 		id="resumen-cambio-rotacion"
-		class="d-flex flex-wrap justify-content-between align-items-center p-2 px-3 mb-3 rounded bg-success-subtle border border-success-subtle small gap-2"
+		class="d-flex flex-wrap justify-content-between align-items-center p-2 px-3 mb-3 rounded small gap-2"
+		style="background: linear-gradient(90deg, #0b213f 0%, #163a66 100%); color: #fff; border: 1px solid rgba(56, 189, 248, 0.35);"
 	>
 		<div class="d-flex align-items-center gap-2 flex-wrap">
-			<span class="text-secondary fw-semibold">Rotación:</span>
-			<span class="badge bg-white text-dark border" id="chip-cultivo-origen">Papa</span>
-			<span class="fw-bold text-success">➔</span>
-			<span class="badge bg-success text-white" id="chip-cultivo-destino">Calculando...</span>
-			<span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle" id="chip-fecha-actual">
+			<span class="text-info fw-semibold">Rotación:</span>
+			<span class="badge bg-white text-dark" id="chip-cultivo-origen">Papa</span>
+			<span class="fw-bold text-warning">➔</span>
+			<span class="badge text-dark fw-bold" style="background: #f5b041;" id="chip-cultivo-destino">Calculando...</span>
+			<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50" id="chip-fecha-actual">
 				📅 Evaluando mes actual...
 			</span>
 		</div>
-		<span class="text-success-emphasis fw-semibold" id="subtitulo-rotacion" style="font-size: 0.78rem;">
+		<span class="text-white-50 fw-semibold" id="subtitulo-rotacion" style="font-size: 0.78rem;">
 			Evaluando {cultivos.length} cultivos regionales...
 		</span>
 	</div>
@@ -75,14 +76,14 @@ const iniciales = cultivos.slice(0, 3);
 									<div class="d-flex align-items-center gap-2">
 										<span class="fs-4">{infoBeneficio.icono}</span>
 										<div>
-											<h3 class="h6 mb-0 fw-bold text-dark">{item.nombre}</h3>
+											<h3 class="h6 mb-0 fw-bold" style="color: #071428;">{item.nombre}</h3>
 											<span class="text-muted" style="font-size: 0.75rem;">
 												📍 {item.region}
 											</span>
 										</div>
 									</div>
 									<div class="text-end">
-										<span class="badge bg-success fs-6">--%</span>
+										<span class="badge fs-6" style="background: #0d2647; color: #f5b041;">--%</span>
 									</div>
 								</div>
 								<div class="d-flex flex-wrap gap-1 mb-2">
