@@ -1,0 +1,101 @@
+---
+import cultivos from '../data/cultivos.json';
+
+const ETIQUETAS_AGUA: Record<string, { texto: string; badge: string }> = {
+	alta: { texto: 'Agua Alta', badge: 'bg-primary-subtle text-primary-emphasis border border-primary-subtle' },
+	media: { texto: 'Agua Media', badge: 'bg-info-subtle text-info-emphasis border border-info-subtle' },
+	baja: { texto: 'Agua Baja', badge: 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' },
+};
+
+const ETIQUETAS_BENEFICIO: Record<string, { titulo: string; descripcion: string; icono: string }> = {
+	rentabilidad: {
+		titulo: 'Enfoque en Rentabilidad Comercial',
+		descripcion: 'Maximiza el retorno económico en lotes con buena humedad.',
+		icono: '💰',
+	},
+	mejora_suelo_nitrogeno: {
+		titulo: 'Fijación de Nitrógeno y Suelo',
+		descripcion: 'Regenera la fertilidad tras cosechas exigentes.',
+		icono: '🌱',
+	},
+	resiliencia_sequia: {
+		titulo: 'Resiliencia a Sequía y Clima',
+		descripcion: 'Alta tolerancia al estrés hídrico y térmico.',
+		icono: '☀️',
+	},
+};
+
+const iniciales = cultivos.slice(0, 3);
+---
+
+<div
+	id="seccion-rotacion"
+	data-cultivos={JSON.stringify(cultivos)}
+	data-etiquetas-agua={JSON.stringify(ETIQUETAS_AGUA)}
+	data-etiquetas-beneficio={JSON.stringify(ETIQUETAS_BENEFICIO)}
+>
+	<!-- Resumen de Transición de Rotación + Fecha Actual y Área -->
+	<div
+		id="resumen-cambio-rotacion"
+		class="d-flex flex-wrap justify-content-between align-items-center p-2 px-3 mb-3 rounded bg-success-subtle border border-success-subtle small gap-2"
+	>
+		<div class="d-flex align-items-center gap-2 flex-wrap">
+			<span class="text-secondary fw-semibold">Rotación:</span>
+			<span class="badge bg-white text-dark border" id="chip-cultivo-origen">Papa</span>
+			<span class="fw-bold text-success">➔</span>
+			<span class="badge bg-success text-white" id="chip-cultivo-destino">Calculando...</span>
+			<span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle" id="chip-fecha-actual">
+				📅 Evaluando mes actual...
+			</span>
+		</div>
+		<span class="text-success-emphasis fw-semibold" id="subtitulo-rotacion" style="font-size: 0.78rem;">
+			Evaluando {cultivos.length} cultivos regionales...
+		</span>
+	</div>
+
+	<div class="row g-3" id="rotation-cards-container">
+		{
+			iniciales.map((item, index) => {
+				const infoAgua = ETIQUETAS_AGUA[item.agua] ?? {
+					texto: `Agua: ${item.agua}`,
+					badge: 'bg-secondary',
+				};
+				const infoBeneficio = ETIQUETAS_BENEFICIO[item.beneficio] ?? {
+					titulo: item.beneficio,
+					descripcion: '',
+					icono: '🌿',
+				};
+				const esMejorOpcion = index === 0;
+
+				return (
+					<div class="col-12" data-crop-id={item.id}>
+						<div class={`card ts-card shadow-sm ${esMejorOpcion ? 'ts-card-top1' : ''}`}>
+							<div class="card-body p-3">
+								<div class="d-flex justify-content-between align-items-center mb-2">
+									<div class="d-flex align-items-center gap-2">
+										<span class="fs-4">{infoBeneficio.icono}</span>
+										<div>
+											<h3 class="h6 mb-0 fw-bold text-dark">{item.nombre}</h3>
+											<span class="text-muted" style="font-size: 0.75rem;">
+												📍 {item.region}
+											</span>
+										</div>
+									</div>
+									<div class="text-end">
+										<span class="badge bg-success fs-6">--%</span>
+									</div>
+								</div>
+								<div class="d-flex flex-wrap gap-1 mb-2">
+									<span class="badge bg-light text-secondary border">{item.familia}</span>
+									<span class={`badge ${infoAgua.badge}`}>{infoAgua.texto}</span>
+									<span class="badge bg-light text-dark border">⏱️ {item.cicloDias}</span>
+								</div>
+								<p class="text-muted small mb-0">{item.descripcion}</p>
+							</div>
+						</div>
+					</div>
+				);
+			})
+		}
+	</div>
+</div>

@@ -1,0 +1,585 @@
+---
+---
+
+<!-- Estilos del Asistente Interactivo y Efecto Spotlight -->
+<style is:global>
+	/* Botón flotante de Don Terra */
+	.ts-assistant-fab {
+		position: fixed;
+		bottom: 20px;
+		right: 20px;
+		z-index: 1060;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		background: linear-gradient(135deg, #146c43 0%, #198754 100%);
+		color: #ffffff;
+		border: 2px solid #ffffff;
+		border-radius: 999px;
+		padding: 10px 18px;
+		box-shadow: 0 8px 24px rgba(20, 108, 67, 0.38);
+		cursor: pointer;
+		font-weight: 700;
+		font-size: 0.9rem;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+	.ts-assistant-fab:hover {
+		transform: translateY(-3px) scale(1.02);
+		box-shadow: 0 12px 28px rgba(20, 108, 67, 0.48);
+	}
+	.ts-assistant-avatar {
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		background: #ffffff;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.25rem;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+	}
+
+	/* Resaltado Spotlight sobre el elemento activo del DOM */
+	@keyframes tsSpotlightPulse {
+		0% {
+			box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.85), 0 0 0 10px rgba(25, 135, 84, 0.25), 0 12px 32px rgba(0, 0, 0, 0.25);
+		}
+		50% {
+			box-shadow: 0 0 0 5px #20c997, 0 0 0 16px rgba(32, 201, 151, 0.15), 0 12px 32px rgba(0, 0, 0, 0.25);
+		}
+		100% {
+			box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.85), 0 0 0 10px rgba(25, 135, 84, 0.25), 0 12px 32px rgba(0, 0, 0, 0.25);
+		}
+	}
+	.ts-spotlight-target {
+		position: relative !important;
+		z-index: 1055 !important;
+		border-radius: 0.65rem;
+		animation: tsSpotlightPulse 1.8s infinite ease-in-out !important;
+		background-color: #ffffff;
+	}
+
+	/* Panel flotante del Asistente */
+	.ts-assistant-card {
+		position: fixed;
+		bottom: 82px;
+		right: 20px;
+		width: 410px;
+		max-width: calc(100vw - 28px);
+		z-index: 1065;
+		border-radius: 1rem;
+		border: 2px solid #198754;
+		background: #ffffff;
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+		overflow: hidden;
+		transition: all 0.22s ease;
+	}
+	.ts-assistant-header {
+		background: linear-gradient(135deg, #146c43 0%, #198754 100%);
+		color: #ffffff;
+		padding: 12px 16px;
+	}
+	.ts-mission-box {
+		background: #fff8e6;
+		border: 1px solid #ffecb5;
+		border-left: 4px solid #ffc107;
+		border-radius: 0.5rem;
+		padding: 8px 12px;
+		font-size: 0.82rem;
+		color: #664d03;
+	}
+	.ts-mission-box.completed {
+		background: #d1e7dd;
+		border-color: #a3cfbb;
+		border-left: 4px solid #198754;
+		color: #0f5132;
+	}
+	.ts-step-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.35);
+		display: inline-block;
+		transition: all 0.2s ease;
+	}
+	.ts-step-dot.active {
+		width: 24px;
+		border-radius: 99px;
+		background: #ffffff;
+	}
+	.ts-step-dot.done {
+		background: #a3cfbb;
+	}
+	.ts-faq-btn {
+		text-align: left;
+		font-size: 0.8rem;
+		font-weight: 600;
+		border-radius: 0.5rem;
+		transition: background 0.15s ease;
+	}
+</style>
+
+<!-- Botón Flotante (FAB) siempre accesible -->
+<button
+	type="button"
+	id="btn-assistant-fab"
+	class="ts-assistant-fab"
+	title="Abrir asistente interactivo Don Terra"
+>
+	<span class="ts-assistant-avatar">🧑‍🌾</span>
+	<span>Guía Interactiva</span>
+	<span class="badge bg-warning text-dark rounded-pill" id="badge-fab-paso">Aprende fácil</span>
+</button>
+
+<!-- Ventana Flotante del Asistente "Don Terra" -->
+<div id="panel-asistente" class="ts-assistant-card d-none" role="dialog" aria-label="Asistente Don Terra">
+	<!-- Encabezado del Asistente -->
+	<div class="ts-assistant-header d-flex justify-content-between align-items-center">
+		<div class="d-flex align-items-center gap-2">
+			<span class="ts-assistant-avatar">🧑‍🌾</span>
+			<div>
+				<div class="fw-bold" style="font-size: 0.95rem; line-height: 1.1;">Don Terra — Tu Agrónomo Guía</div>
+				<small class="text-white-50" style="font-size: 0.74rem;" id="asistente-subtitulo">
+					Aprende a planificar tu siembra paso a paso
+				</small>
+			</div>
+		</div>
+		<button
+			type="button"
+			id="btn-cerrar-asistente"
+			class="btn-close btn-close-white"
+			aria-label="Cerrar asistente"
+		></button>
+	</div>
+
+	<!-- Pestañas internas del Asistente: [1] Tour Paso a Paso | [2] Cápsulas Didácticas -->
+	<div class="bg-light border-bottom px-3 py-1 d-flex justify-content-between align-items-center">
+		<div class="btn-group btn-group-sm" role="group">
+			<button type="button" id="btn-modo-tour" class="btn btn-success btn-sm fw-semibold py-1">
+				🎯 Tour Paso a Paso (6)
+			</button>
+			<button type="button" id="btn-modo-capsulas" class="btn btn-outline-success btn-sm fw-semibold py-1">
+				💡 Cápsulas Agronómicas
+			</button>
+		</div>
+		<span class="badge bg-success-subtle text-success border border-success-subtle" id="badge-progreso-tour">
+			Paso 1 / 6
+		</span>
+	</div>
+
+	<!-- CONTENIDO MODO 1: TOUR GUIADO INTERACTIVO -->
+	<div id="vista-tour" class="p-3">
+		<h3 class="h6 fw-bold text-success mb-2" id="tour-step-title">
+			📍 Paso 1: Elige tu Lote en el Mapa Satelital
+		</h3>
+
+		<p class="small text-secondary mb-2" id="tour-step-desc" style="line-height: 1.45;">
+			El mapa muestra imágenes satelitales reales. Cuando haces clic en un punto, TerraSync verifica si es tierra cultivable y consulta el clima histórico de la NASA.
+		</p>
+
+		<!-- Caja de Micro-Misión Interactiva ("Aprende Haciendo") -->
+		<div id="tour-mission-box" class="ts-mission-box mb-3">
+			<div class="fw-bold mb-1" id="tour-mission-title">🎯 Tu Misión Interactiva:</div>
+			<div id="tour-mission-text">
+				Haz clic sobre un lote verde o de tierra arada en el mapa (o pincha sobre una carretera para ver cómo te alerta).
+			</div>
+		</div>
+
+		<!-- Indicador de progreso y controles de navegación -->
+		<div class="d-flex justify-content-between align-items-center pt-2 border-top">
+			<button type="button" id="btn-tour-prev" class="btn btn-outline-secondary btn-sm fw-semibold" disabled>
+				⬅ Anterior
+			</button>
+
+			<div class="d-flex gap-1 align-items-center" id="tour-dots-container"></div>
+
+			<button type="button" id="btn-tour-next" class="btn btn-success btn-sm fw-semibold">
+				Siguiente ➡
+			</button>
+		</div>
+	</div>
+
+	<!-- CONTENIDO MODO 2: CÁPSULAS DIDÁCTICAS ("PREGÚNTALE A DON TERRA") -->
+	<div id="vista-capsulas" class="p-3 d-none">
+		<p class="small text-muted mb-2">
+			Selecciona una pregunta para entender cómo la ciencia agronómica y los satélites te ayudan a tomar mejores decisiones:
+		</p>
+
+		<div class="d-grid gap-2 mb-3">
+			<button type="button" class="btn btn-outline-success ts-faq-btn p-2" data-capsule="nitrogeno">
+				🌱 ¿Cómo me ahorra dinero sembrar Frijol, Arveja o Soya?
+			</button>
+			<button type="button" class="btn btn-outline-success ts-faq-btn p-2" data-capsule="monocultivo">
+				🧬 ¿Por qué es peligroso repetir el mismo cultivo (Monocultivo)?
+			</button>
+			<button type="button" class="btn btn-outline-success ts-faq-btn p-2" data-capsule="satelite">
+				🛰️ ¿Cómo detecta TerraSync carreteras, glaciares y clima NASA?
+			</button>
+			<button type="button" class="btn btn-outline-success ts-faq-btn p-2" data-capsule="calendario">
+				📅 ¿Cómo leer el semáforo de fecha actual y el calendario?
+			</button>
+		</div>
+
+		<div id="caja-respuesta-capsula" class="p-2 px-3 rounded bg-success-subtle border border-success-subtle small text-dark">
+			<strong>💡 Consejo de Don Terra:</strong> Haz clic en cualquiera de las preguntas de arriba para ver una explicación clara y aplicada a tu parcela.
+		</div>
+	</div>
+</div>
+
+<script is:inline>
+	document.addEventListener('DOMContentLoaded', () => {
+		const fabBtn = document.getElementById('btn-assistant-fab');
+		const navTourBtn = document.getElementById('btn-abrir-tutorial-nav');
+		const panelAsistente = document.getElementById('panel-asistente');
+		const cerrarBtn = document.getElementById('btn-cerrar-asistente');
+
+		const btnModoTour = document.getElementById('btn-modo-tour');
+		const btnModoCapsulas = document.getElementById('btn-modo-capsulas');
+		const vistaTour = document.getElementById('vista-tour');
+		const vistaCapsulas = document.getElementById('vista-capsulas');
+		const badgeProgreso = document.getElementById('badge-progreso-tour');
+		const badgeFabPaso = document.getElementById('badge-fab-paso');
+
+		const stepTitle = document.getElementById('tour-step-title');
+		const stepDesc = document.getElementById('tour-step-desc');
+		const missionBox = document.getElementById('tour-mission-box');
+		const missionTitle = document.getElementById('tour-mission-title');
+		const missionText = document.getElementById('tour-mission-text');
+		const btnPrev = document.getElementById('btn-tour-prev');
+		const btnNext = document.getElementById('btn-tour-next');
+		const dotsContainer = document.getElementById('tour-dots-container');
+		const cajaCapsula = document.getElementById('caja-respuesta-capsula');
+
+		// Definición de las 6 Estaciones Didácticas del Tour
+		const ESTACIONES_TOUR = [
+			{
+				id: 'mapa',
+				selector: '#terrasync-map',
+				titulo: '📍 Estación 1: Selecciona tu Parcela en el Mapa',
+				descripcion:
+					'Aquí ves tu terreno desde el espacio. Al hacer clic en cualquier punto, TerraSync combina mapas viales + análisis óptico satelital (a 0.6 metros por píxel) para verificar si hay tierra fértil o si es una carretera, edificio o glaciar.',
+				mision:
+					'👉 Haz clic en cualquier lote verde o tierra arada en el mapa (o pincha sobre una carretera para poner a prueba el detector).',
+				completadoTexto:
+					'✅ ¡Lo lograste! El satélite analizó el suelo de esa coordenada y descargó el clima de la NASA.',
+			},
+			{
+				id: 'cultivo',
+				selector: '#select-cultivo',
+				titulo: '🌾 Estación 2: ¿Qué sembraste por última vez?',
+				descripcion:
+					'En agricultura, nunca debemos sembrar la misma familia botánica dos veces seguidas (por ejemplo, Papa después de Papa), porque las plagas quedan en el suelo.',
+				mision:
+					'👉 Abre el selector "🌾 Cultivo Actual" (agrupado por las 6 regiones de Colombia) y elige un cultivo.',
+				completadoTexto:
+					'✅ ¡Muy bien! Ahora TerraSync penalizará cultivos de la misma familia y buscará rotaciones que corten las plagas.',
+			},
+			{
+				id: 'area',
+				selector: '#input-area-lote',
+				titulo: '📐 Estación 3: El Tamaño Exacto de tu Lote',
+				descripcion:
+					'No es lo mismo presupuestar una huerta de 1,200 m² que una fanegada (6,400 m²) o 5 hectáreas. Aquí puedes indicar el tamaño real de tu terreno.',
+				mision:
+					'👉 Escribe un área diferente en "📐 Lote" o cambia la unidad entre m², Fanegadas o Hectáreas.',
+				completadoTexto:
+					'✅ ¡Perfecto! Todos los costos de semilla, mano de obra y abonos se acaban de recalcular a la medida de tu lote.',
+			},
+			{
+				id: 'prioridad',
+				selector: '[aria-label="Prioridad del próximo ciclo"]',
+				titulo: '🎯 Estación 4: Define tu Prioridad para este Ciclo',
+				descripcion:
+					'¿Tu suelo está cansado y necesita nitrógeno (🌱 Suelo)? ¿Vienen meses secos (💧 Agua)? ¿O buscas el mayor ingreso comercial (💰 Rentabilidad)?',
+				mision:
+					'👉 Haz clic en cualquiera de los 3 botones (🌱 Suelo, 💧 Agua o 💰 Rentabilidad) y observa cómo cambian las tarjetas a la derecha.',
+				completadoTexto:
+					'✅ ¡Excelente! Viste cómo el ranking y los porcentajes de afinidad se reordenaron al instante.',
+			},
+			{
+				id: 'recomendaciones',
+				selector: '#seccion-rotacion',
+				titulo: '📅 Estación 5: Calendario Hoy y Presupuesto en Pesos ($ COP)',
+				descripcion:
+					'En cada tarjeta verás: 1) El semáforo que te dice si el mes actual es ideal para sembrar, 2) La cinta de los 12 meses del año, y 3) La inversión estimada en pesos colombianos con ahorro en fertilizantes si rotas tras una leguminosa.',
+				mision:
+					'👉 Haz clic en el botón "📋 Ver desglose de gastos" dentro de cualquiera de las tarjetas recomendadas.',
+				completadoTexto:
+					'✅ ¡Genial! Ahí tienes el presupuesto separado en Semilla, Mano de Obra, Fertilizantes y Fitosanitarios.',
+				onEnter: () => {
+					const tabRec = document.getElementById('tab-recomendaciones-btn');
+					if (tabRec && !tabRec.classList.contains('active')) tabRec.click();
+				},
+			},
+			{
+				id: 'exportar',
+				selector: '#terrasync-tabs',
+				titulo: '📊 Estación 6: Gráficos de la NASA e Informe Descargable',
+				descripcion:
+					'En la pestaña "📊 Gráficos Climáticos" puedes ver mes a mes la lluvia y temperatura de NASA POWER. Y con los botones "📄 Informe PDF" o "📥 Excel (.CSV)" puedes llevarte todo el estudio técnico listo para imprimir o guardar.',
+				mision:
+					'👉 Haz clic en la pestaña "📊 Gráficos Climáticos (NASA POWER)" o prueba descargar tu "📄 Informe PDF".',
+				completadoTexto:
+					'🎉 ¡Felicitaciones! Ya dominas todas las herramientas de TerraSync como un experto.',
+			},
+		];
+
+		const CAPSULAS_INFO = {
+			nitrogeno: {
+				titulo: '🌱 El poder del Nitrógeno Biológico (Ahorro del 18%)',
+				texto:
+					'Las leguminosas como el <strong>Frijol, Arveja, Haba, Soya y Caupí</strong> tienen bacterias benéficas (<em>Rhizobium</em>) en sus raíces que capturan nitrógeno del aire y lo dejan en la tierra. Cuando siembras Maíz, Papa o Cebolla después de una leguminosa, el suelo ya está abonado naturalmente y <strong>ahorras cerca de un 18% en bultos de fertilizante nitrogenado</strong>.',
+			},
+			monocultivo: {
+				titulo: '🧬 ¿Por qué evitar el Monocultivo y alternar Familias?',
+				texto:
+					'Cultivos de la misma familia botánica (como <strong>Papa y Tomate</strong>, que son <em>Solanáceas</em>) comparten las mismas plagas y hongos (como la gota). Si cambias a una <em>Leguminosa</em> (Arveja) o una <em>Gramínea</em> (Avena/Maíz), las plagas del cultivo anterior se quedan sin alimento y su ciclo se rompe de forma natural.',
+			},
+			satelite: {
+				titulo: '🛰️ Doble Verificación: Satélite Óptico + NASA POWER',
+				texto:
+					'TerraSync combina dos tecnologías espaciales: <strong>1)</strong> Lee los píxeles reales de la foto satelital para medir cuánta vegetación (verde), tierra arada (ocre) o pavimento/hielo hay exactamente bajo el marcador, y <strong>2)</strong> Consulta los satélites agroclimáticos de <strong>NASA POWER</strong> para conocer cuánta lluvia cae mes a mes y qué temperatura máxima alcanza tu lote.',
+			},
+			calendario: {
+				titulo: '📅 Cómo interpretar el Semáforo y los 12 Meses',
+				texto:
+					'Cada cultivo tiene una ventana óptima de siembra según las temporadas de lluvias en Colombia (Marzo–Mayo y Septiembre–Noviembre). El sistema compara la <strong>fecha de hoy</strong> con esa ventana: <strong>🟢 Verde</strong> significa que puedes sembrar este mes; <strong>🟡 Amarillo</strong> indica que la ventana abre el próximo mes (momento de arar y alistar semilla); y <strong>⏳ Gris</strong> te avisa cuál es el próximo mes seguro.',
+			},
+		};
+
+		let pasoActual = 0;
+		const pasosCompletados = new Set();
+		let elementoIluminado = null;
+
+		function quitarSpotlight() {
+			if (elementoIluminado) {
+				elementoIluminado.classList.remove('ts-spotlight-target');
+				elementoIluminado = null;
+			}
+		}
+
+		function aplicarSpotlight(selector) {
+			quitarSpotlight();
+			if (!selector || panelAsistente?.classList.contains('d-none')) return;
+			const el = document.querySelector(selector);
+			if (el) {
+				elementoIluminado = el;
+				el.classList.add('ts-spotlight-target');
+				el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}
+
+		function renderizarPasoTour() {
+			const est = ESTACIONES_TOUR[pasoActual];
+			if (!est) return;
+
+			if (typeof est.onEnter === 'function') {
+				est.onEnter();
+			}
+
+			if (badgeProgreso) badgeProgreso.textContent = `Paso ${pasoActual + 1} / ${ESTACIONES_TOUR.length}`;
+			if (badgeFabPaso) badgeFabPaso.textContent = `Paso ${pasoActual + 1}/${ESTACIONES_TOUR.length}`;
+			if (stepTitle) stepTitle.textContent = est.titulo;
+			if (stepDesc) stepDesc.textContent = est.descripcion;
+
+			const yaCompletado = pasosCompletados.has(est.id);
+			if (missionBox && missionTitle && missionText) {
+				if (yaCompletado) {
+					missionBox.classList.add('completed');
+					missionTitle.textContent = '🌟 ¡Misión Completada!';
+					missionText.textContent = est.completadoTexto;
+				} else {
+					missionBox.classList.remove('completed');
+					missionTitle.textContent = '🎯 Tu Misión Interactiva:';
+					missionText.textContent = est.mision;
+				}
+			}
+
+			if (btnPrev) btnPrev.disabled = pasoActual === 0;
+			if (btnNext) {
+				btnNext.textContent =
+					pasoActual === ESTACIONES_TOUR.length - 1 ? '🎉 Finalizar Tour' : 'Siguiente ➡';
+			}
+
+			if (dotsContainer) {
+				dotsContainer.innerHTML = ESTACIONES_TOUR.map((e, idx) => {
+					const cls =
+						idx === pasoActual
+							? 'ts-step-dot active'
+							: pasosCompletados.has(e.id)
+							? 'ts-step-dot done'
+							: 'ts-step-dot';
+					return `<span class="${cls}" style="background: ${
+						idx === pasoActual ? '#198754' : pasosCompletados.has(e.id) ? '#75b798' : '#dee2e6'
+					};"></span>`;
+				}).join('');
+			}
+
+			aplicarSpotlight(est.selector);
+		}
+
+		function marcarMisionCompletada(idEstacion, mensajeExtra) {
+			pasosCompletados.add(idEstacion);
+			const estActual = ESTACIONES_TOUR[pasoActual];
+			if (estActual && estActual.id === idEstacion && missionBox && missionTitle && missionText) {
+				missionBox.classList.add('completed');
+				missionTitle.textContent = '🌟 ¡Misión Completada en Vivo!';
+				missionText.textContent = mensajeExtra || estActual.completadoTexto;
+			}
+		}
+
+		function abrirAsistente(enModoTour = true) {
+			panelAsistente?.classList.remove('d-none');
+			if (enModoTour) {
+				mostrarModoTour();
+			} else {
+				mostrarModoCapsulas();
+			}
+		}
+
+		function cerrarAsistente() {
+			panelAsistente?.classList.add('d-none');
+			quitarSpotlight();
+		}
+
+		function mostrarModoTour() {
+			btnModoTour?.classList.replace('btn-outline-success', 'btn-success');
+			btnModoCapsulas?.classList.replace('btn-success', 'btn-outline-success');
+			vistaTour?.classList.remove('d-none');
+			vistaCapsulas?.classList.add('d-none');
+			renderizarPasoTour();
+		}
+
+		function mostrarModoCapsulas() {
+			quitarSpotlight();
+			btnModoCapsulas?.classList.replace('btn-outline-success', 'btn-success');
+			btnModoTour?.classList.replace('btn-success', 'btn-outline-success');
+			vistaCapsulas?.classList.remove('d-none');
+			vistaTour?.classList.add('d-none');
+		}
+
+		// Eventos de apertura / cierre
+		fabBtn?.addEventListener('click', () => {
+			if (panelAsistente?.classList.contains('d-none')) {
+				abrirAsistente(true);
+			} else {
+				cerrarAsistente();
+			}
+		});
+		navTourBtn?.addEventListener('click', () => {
+			pasoActual = 0;
+			abrirAsistente(true);
+		});
+		cerrarBtn?.addEventListener('click', cerrarAsistente);
+
+		btnModoTour?.addEventListener('click', mostrarModoTour);
+		btnModoCapsulas?.addEventListener('click', mostrarModoCapsulas);
+
+		btnPrev?.addEventListener('click', () => {
+			if (pasoActual > 0) {
+				pasoActual--;
+				renderizarPasoTour();
+			}
+		});
+
+		btnNext?.addEventListener('click', () => {
+			if (pasoActual < ESTACIONES_TOUR.length - 1) {
+				pasoActual++;
+				renderizarPasoTour();
+			} else {
+				cerrarAsistente();
+				if (badgeFabPaso) badgeFabPaso.textContent = '✅ Tour completado';
+			}
+		});
+
+		// Cápsulas didácticas
+		document.querySelectorAll('[data-capsule]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const key = btn.getAttribute('data-capsule');
+				const info = CAPSULAS_INFO[key];
+				if (info && cajaCapsula) {
+					cajaCapsula.innerHTML = `<div class="fw-bold text-success mb-1">${info.titulo}</div><div>${info.texto}</div>`;
+				}
+			});
+		});
+
+		// ESCUCHA ACTIVA DE INTERACCIONES DEL USUARIO ("APRENDE HACIENDO")
+		// 1. Cuando hace clic en el mapa y se evalúa la coordenada
+		let cargaInicialIgnorada = false;
+		window.addEventListener('terrasync:terreno-evaluado', (e) => {
+			if (!cargaInicialIgnorada) {
+				cargaInicialIgnorada = true;
+				return;
+			}
+			const { terreno, promedios } = e.detail || {};
+			const estadoTxt = terreno?.aptoParaSiembra
+				? `✅ ¡Muy bien! Seleccionaste un terreno apto (${promedios?.lluviaTotalAnual} mm/año, ${promedios?.tempMax} °C).`
+				: `🚫 ¡Buen experimento! Detectamos que ese punto no es cultivable (${terreno?.etiqueta}).`;
+			marcarMisionCompletada('mapa', estadoTxt);
+		});
+
+		// 2. Cuando cambia el cultivo actual
+		document.getElementById('select-cultivo')?.addEventListener('change', (e) => {
+			const textoOpcion = e.target.options[e.target.selectedIndex]?.text || '';
+			marcarMisionCompletada(
+				'cultivo',
+				`✅ Elegiste "${textoOpcion}". Las tarjetas ahora buscan otra familia botánica para proteger tu suelo.`
+			);
+		});
+
+		// 3. Cuando cambia el área o unidad del lote
+		const handlerArea = () => {
+			const val = document.getElementById('input-area-lote')?.value || '1200';
+			const uni = document.getElementById('select-unidad-area')?.selectedOptions?.[0]?.text || 'm²';
+			marcarMisionCompletada(
+				'area',
+				`✅ Ajustaste tu lote a ${val} ${uni}. ¡Mira cómo cambiaron los presupuestos en pesos colombianos!`
+			);
+		};
+		document.getElementById('input-area-lote')?.addEventListener('input', handlerArea);
+		document.getElementById('select-unidad-area')?.addEventListener('change', handlerArea);
+
+		// 4. Cuando hace clic en una prioridad
+		document.querySelectorAll('[data-priority-val]').forEach((b) => {
+			b.addEventListener('click', () => {
+				marcarMisionCompletada(
+					'prioridad',
+					`✅ Cambiaste la prioridad a "${b.textContent.trim()}". El ranking se acaba de actualizar frente a ti.`
+				);
+			});
+		});
+
+		// 5. Cuando abre el desglose de costos en alguna tarjeta
+		document.getElementById('rotation-cards-container')?.addEventListener('click', (e) => {
+			if (e.target.closest('[data-bs-toggle="collapse"]')) {
+				marcarMisionCompletada(
+					'recomendaciones',
+					'✅ ¡Excelente! Ahora puedes ver cuánto dinero se destina a Semilla, Mano de Obra, Abonos y Fitosanitarios.'
+				);
+			}
+		});
+
+		// 6. Cuando abre la pestaña de gráficos o exporta el informe
+		document.getElementById('tab-graficos-btn')?.addEventListener('click', () => {
+			marcarMisionCompletada(
+				'exportar',
+				'🎉 ¡Genial! Aquí tienes el historial mes a mes de lluvia y temperatura de los satélites de la NASA.'
+			);
+		});
+		document.getElementById('btn-exportar-pdf')?.addEventListener('click', () => {
+			marcarMisionCompletada('exportar', '🎉 ¡Excelente! Has generado el informe técnico completo en PDF.');
+		});
+		document.getElementById('btn-exportar-csv')?.addEventListener('click', () => {
+			marcarMisionCompletada('exportar', '🎉 ¡Excelente! Has descargado la hoja de cálculo para Excel.');
+		});
+
+		// Abrir automáticamente la bienvenida en la primera visita del usuario
+		if (!sessionStorage.getItem('terrasync_tour_visto')) {
+			sessionStorage.setItem('terrasync_tour_visto', '1');
+			setTimeout(() => {
+				abrirAsistente(true);
+			}, 900);
+		}
+	});
+</script>
+

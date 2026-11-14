@@ -1,0 +1,186 @@
+---
+interface Props {
+	title?: string;
+}
+
+const { title = 'TerraSync - Dashboard Agronómico con NASA POWER' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+
+		<!-- Bootstrap 5.3 CSS CDN -->
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+			crossorigin="anonymous"
+		/>
+
+		<style is:global>
+			:root {
+				--ts-green: #146c43;
+				--ts-green-soft: #d1e7dd;
+				--ts-bg: #f4f7f5;
+			}
+			body {
+				background-color: var(--ts-bg);
+				color: #1e2923;
+				font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			}
+			.ts-topbar {
+				position: sticky;
+				top: 0;
+				z-index: 1020;
+				background: rgba(255, 255, 255, 0.96);
+				backdrop-filter: blur(8px);
+			}
+			.ts-card {
+				border: 1px solid rgba(20, 108, 67, 0.12);
+				border-radius: 0.75rem;
+				transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+			}
+			.ts-card-top1 {
+				border: 2px solid #198754 !important;
+				background: linear-gradient(180deg, #f8fffb 0%, #ffffff 45%);
+			}
+			@keyframes tsFlashUpdate {
+				0% {
+					transform: translateY(3px);
+					opacity: 0.65;
+				}
+				100% {
+					transform: translateY(0);
+					opacity: 1;
+				}
+			}
+			.ts-animate-in {
+				animation: tsFlashUpdate 0.28s ease-out forwards;
+			}
+			.ts-priority-btn {
+				border: 1px solid #ced4da;
+				background: #fff;
+				color: #495057;
+				font-weight: 600;
+				font-size: 0.85rem;
+				padding: 0.42rem 0.75rem;
+				transition: all 0.15s ease;
+			}
+			.ts-priority-btn:hover {
+				background: #f8f9fa;
+			}
+			.ts-priority-btn.active {
+				background: #198754;
+				color: #fff;
+				border-color: #198754;
+				box-shadow: 0 2px 6px rgba(25, 135, 84, 0.25);
+			}
+			.ts-kpi-box {
+				background: #fff;
+				border: 1px solid #e9ecef;
+				border-radius: 0.6rem;
+				padding: 0.55rem 0.65rem;
+			}
+			.ts-chip {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.25rem;
+				padding: 0.2rem 0.55rem;
+				border-radius: 999px;
+				font-size: 0.75rem;
+				font-weight: 600;
+			}
+			.nav-pills .nav-link {
+				color: #495057;
+				font-weight: 600;
+				border-radius: 0.5rem;
+				padding: 0.45rem 0.9rem;
+			}
+			.nav-pills .nav-link.active {
+				background-color: #198754;
+				color: #fff;
+			}
+			.ts-cal-grid {
+				display: grid;
+				grid-template-columns: repeat(12, 1fr);
+				gap: 3px;
+			}
+			.ts-cal-month {
+				text-align: center;
+				font-size: 0.65rem;
+				font-weight: 600;
+				padding: 3px 1px;
+				border-radius: 4px;
+				background: #f1f3f5;
+				color: #6c757d;
+				border: 1px solid #dee2e6;
+				position: relative;
+			}
+			.ts-cal-month.optimal {
+				background: #d1e7dd;
+				color: #0f5132;
+				border-color: #a3cfbb;
+			}
+			.ts-cal-month.current {
+				outline: 2px solid #0d6efd;
+				outline-offset: 0px;
+				font-weight: 800;
+			}
+			.ts-cost-panel {
+				background: #f8faf9;
+				border: 1px dashed #badbcc;
+				border-radius: 0.5rem;
+				padding: 0.55rem 0.75rem;
+			}
+		</style>
+	</head>
+	<body class="min-vh-100 d-flex flex-column">
+		<nav class="navbar navbar-dark bg-success py-2 shadow-sm">
+			<div class="container-fluid px-lg-4 d-flex justify-content-between align-items-center">
+				<a class="navbar-brand fw-bold mb-0 fs-5 d-flex align-items-center gap-2" href="/">
+					<span>🌱 TerraSync</span>
+					<span class="badge bg-white text-success fw-semibold" style="font-size: 0.7rem;">
+						NASA POWER + Escáner Satelital
+					</span>
+				</a>
+				<div class="d-flex align-items-center gap-2">
+					<span class="text-white-50 small d-none d-lg-inline">
+						Planificador Inteligente de Rotación de Cultivos en Colombia
+					</span>
+					<button
+						type="button"
+						id="btn-abrir-tutorial-nav"
+						class="btn btn-light btn-sm fw-bold text-success py-1 px-2 shadow-sm"
+						style="font-size: 0.78rem;"
+					>
+						🧑‍🌾 ¿Cómo usar TerraSync? (Tour Guiado)
+					</button>
+				</div>
+			</div>
+		</nav>
+
+		<main class="container-fluid px-lg-4 my-3 flex-grow-1">
+			<slot />
+		</main>
+
+		<footer class="bg-white border-top py-2 mt-auto">
+			<div class="container-fluid px-lg-4 d-flex justify-content-between text-muted small">
+				<span>TerraSync MVP &mdash; Agroclimatología NASA POWER</span>
+				<span>Catálogo Regional Colombiano (24 Cultivos)</span>
+			</div>
+		</footer>
+
+		<!-- Bootstrap 5.3 JS Bundle CDN -->
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+			integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+			crossorigin="anonymous"
+		></script>
+	</body>
+</html>

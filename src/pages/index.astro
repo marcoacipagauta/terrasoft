@@ -1,0 +1,1680 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MapSelector from '../components/MapSelector.astro';
+import RotationCards from '../components/RotationCards.astro';
+import AssistantTour from '../components/AssistantTour.astro';
+import cultivos from '../data/cultivos.json';
+
+// Agrupar cultivos por macroregión colombiana para el selector
+const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'General')));
+---
+
+<Layout title="TerraSync - Dashboard de Rotación Agrícola">
+	<!-- 1. BARRA SUPERIOR UNIFICADA DE CONTROL (STICKY) -->
+	<div class="card ts-card ts-topbar shadow-sm mb-3">
+		<div class="card-body py-2 px-3">
+			<form id="form-terrasync" class="row g-2 align-items-center">
+				<!-- Selector de Cultivo Actual -->
+				<div class="col-xl-4 col-lg-4 col-md-6">
+					<div class="input-group input-group-sm">
+						<label class="input-group-text bg-success text-white fw-semibold" for="select-cultivo">
+							🌾 Cultivo Actual
+						</label>
+						<select id="select-cultivo" class="form-select form-select-sm fw-semibold" required>
+							{
+								macroregiones.map((macro) => (
+									<optgroup label={`🇨🇴 ${macro}`}>
+										{cultivos
+											.filter((c) => (c.macroregion || 'General') === macro)
+											.map((c) => (
+												<option value={c.id}>
+													{c.nombre} ({c.familia})
+												</option>
+											))}
+									</optgroup>
+								))
+							}
+						</select>
+					</div>
+				</div>
+
+				<!-- Selector de Área del Lote para Cálculo de Costos -->
+				<div class="col-xl-3 col-lg-3 col-md-6">
+					<div class="input-group input-group-sm">
+						<span class="input-group-text bg-light fw-semibold text-secondary">📐 Lote</span>
+						<input
+							type="number"
+							id="input-area-lote"
+							class="form-control form-control-sm fw-bold"
+							value="1200"
+							min="10"
+							step="any"
+							title="Tamaño de tu lote o parcela"
+						/>
+						<select id="select-unidad-area" class="form-select form-select-sm bg-light fw-semibold" style="max-width: 115px;">
+							<option value="m2" selected>m² (Metros²)</option>
+							<option value="fanegada">Fanegadas</option>
+							<option value="ha">Hectáreas</option>
+						</select>
+					</div>
+				</div>
+
+				<!-- Selector Rápido de Prioridad (Botones Segmentados) -->
+				<div class="col-xl-4 col-lg-3 col-md-8">
+					<input type="hidden" id="select-prioridad" value="suelo" />
+					<div class="btn-group w-100" role="group" aria-label="Prioridad del próximo ciclo">
+						<button
+							type="button"
+							class="btn ts-priority-btn active"
+							data-priority-val="suelo"
+						>
+							🌱 Suelo
+						</button>
+						<button
+							type="button"
+							class="btn ts-priority-btn"
+							data-priority-val="agua"
+						>
+							💧 Agua
+						</button>
+						<button
+							type="button"
+							class="btn ts-priority-btn"
+							data-priority-val="rentabilidad"
+						>
+							💰 Rentabilidad
+						</button>
+					</div>
+				</div>
+
+				<!-- Estado en Vivo y Botón Actualizar -->
+				<div class="col-xl-1 col-lg-2 col-md-4 d-flex justify-content-end align-items-center gap-2">
+					<div id="spinner-clima" class="spinner-border spinner-border-sm text-success d-none" role="status">
+						<span class="visually-hidden">Consultando...</span>
+					</div>
+					<button type="submit" id="btn-analizar" class="btn btn-outline-success btn-sm w-100 fw-semibold" title="Actualizar consulta satelital">
+						🛰️
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<div id="alerta-error-clima" class="alert alert-danger small d-none mb-3 py-2"></div>
+
+	<!-- 2. VISTA PRINCIPAL DIVIDIDA (2 COLUMNAS EN PARALELO) -->
+	<div class="row g-3 align-items-start">
+		<!-- COLUMNA IZQUIERDA (5/12): Mapa Interactivo + Cinta Compacta de Suelo y Clima -->
+		<div class="col-lg-5">
+			<MapSelector />
+
+			<!-- Panel Compacto de Diagnóstico de Suelo y KPIs NASA POWER -->
+			<div class="card ts-card shadow-sm border-0">
+				<div class="card-body p-3">
+					<!-- Banner de Aptitud de Superficie -->
+					<div id="banner-terreno" class="alert alert-secondary small mb-2 py-2 px-3">
+						Verificando superficie en el punto seleccionado...
+					</div>
+
+					<!-- Cinta de 3 KPIs Climáticos NASA POWER -->
+					<div class="row g-2 text-center mb-2">
+						<div class="col-4">
+							<div class="ts-kpi-box">
+								<div class="text-muted" style="font-size: 0.7rem;">🌡️ Temp. Máx</div>
+								<div class="fw-bold text-danger fs-6" id="kpi-temp-max">-- °C</div>
+								<div class="text-secondary" style="font-size: 0.68rem;" id="kpi-piso-termico">Piso térmico</div>
+							</div>
+						</div>
+						<div class="col-4">
+							<div class="ts-kpi-box">
+								<div class="text-muted" style="font-size: 0.7rem;">🌧️ Lluvia Anual</div>
+								<div class="fw-bold text-primary fs-6" id="kpi-lluvia-anual">-- mm</div>
+								<div class="text-secondary" style="font-size: 0.68rem;" id="kpi-regimen-lluvia">Régimen</div>
+							</div>
+						</div>
+						<div class="col-4">
+							<div class="ts-kpi-box">
+								<div class="text-muted" style="font-size: 0.7rem;">💧 Prom. Diario</div>
+								<div class="fw-bold text-info fs-6" id="kpi-lluvia-diaria">-- mm/d</div>
+								<div class="text-secondary" style="font-size: 0.68rem;" id="clima-coords-label">NASA 2023</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Escáner Óptico Satelital Integrado -->
+					<div class="d-flex align-items-center gap-2 p-2 rounded bg-light border">
+						<canvas
+							id="canvas-muestra-satelital"
+							width="46"
+							height="46"
+							class="rounded border border-secondary-subtle flex-shrink-0"
+							title="Muestra satelital 6m x 6m bajo el marcador"
+						></canvas>
+						<div class="flex-grow-1" style="font-size: 0.75rem;">
+							<div class="fw-bold text-dark" id="titulo-espectral">🔬 Escáner Óptico Satelital (Radio 4m)</div>
+							<div class="text-muted" id="detalle-espectral">Muestreando reflectancia RGB...</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- COLUMNA DERECHA (7/12): Panel de Análisis con Pestañas (Recomendaciones vs Gráficos) -->
+		<div class="col-lg-7">
+			<div class="card ts-card shadow-sm border-0">
+				<div class="card-header bg-white border-bottom py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+					<!-- Pestañas de Navegación -->
+					<ul class="nav nav-pills" id="terrasync-tabs" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button
+								class="nav-link active btn-sm"
+								id="tab-recomendaciones-btn"
+								data-bs-toggle="pill"
+								data-bs-target="#pane-recomendaciones"
+								type="button"
+								role="tab"
+							>
+								🌾 Top 3 Rotaciones, Calendario y Costos
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button
+								class="nav-link btn-sm"
+								id="tab-graficos-btn"
+								data-bs-toggle="pill"
+								data-bs-target="#pane-graficos"
+								type="button"
+								role="tab"
+							>
+								📊 Gráficos Climáticos (NASA POWER)
+							</button>
+						</li>
+					</ul>
+
+					<div class="d-flex align-items-center gap-2 flex-wrap">
+						<span class="badge bg-success-subtle text-success border border-success-subtle" id="badge-estado-rotacion">
+							Analizando...
+						</span>
+						<div class="btn-group btn-group-sm" role="group" aria-label="Exportar informe">
+							<button
+								type="button"
+								id="btn-exportar-pdf"
+								class="btn btn-success btn-sm fw-semibold"
+								title="Generar informe técnico completo en PDF / Vista de impresión"
+							>
+								📄 Informe PDF
+							</button>
+							<button
+								type="button"
+								id="btn-exportar-csv"
+								class="btn btn-outline-success btn-sm fw-semibold"
+								title="Descargar tabla detallada para Excel (.csv)"
+							>
+								📥 Excel (.CSV)
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="card-body p-3">
+					<div class="tab-content">
+						<!-- PESTAÑA 1: Top 3 Recomendaciones de Rotación + Calendario + Costos -->
+						<div
+							class="tab-pane fade show active"
+							id="pane-recomendaciones"
+							role="tabpanel"
+						>
+							<RotationCards />
+						</div>
+
+						<!-- PESTAÑA 2: Gráficos Históricos de Lluvia y Temperatura (NASA POWER) -->
+						<div
+							class="tab-pane fade"
+							id="pane-graficos"
+							role="tabpanel"
+						>
+							<div class="mb-2 d-flex justify-content-between align-items-center">
+								<span class="fw-bold text-secondary small">
+									Comportamiento Mensual Histórico (Enero – Diciembre 2023)
+								</span>
+								<span class="badge bg-light text-dark border small" id="diagnostico-climatico">
+									Datos satelitales NASA POWER
+								</span>
+							</div>
+
+							<div class="row g-3">
+								<div class="col-12">
+									<div class="p-3 rounded bg-light border">
+										<h3 class="h6 fw-bold text-primary mb-2 small">
+											🌧️ Precipitación Mensual Acumulada (mm)
+										</h3>
+										<div style="height: 210px;">
+											<canvas id="chart-lluvia"></canvas>
+										</div>
+									</div>
+								</div>
+								<div class="col-12">
+									<div class="p-3 rounded bg-light border">
+										<h3 class="h6 fw-bold text-danger mb-2 small">
+											🌡️ Temperatura Máxima Promedio Mensual (°C)
+										</h3>
+										<div style="height: 210px;">
+											<canvas id="chart-temperatura"></canvas>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Asistente Didáctico e Interactivo "Don Terra" -->
+	<AssistantTour />
+
+	<!-- Chart.js CDN -->
+	<script is:inline src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+	<!-- Lógica integrada del Dashboard: Clima + Suelo + Calendario Actual + Presupuesto COP -->
+	<script is:inline>
+		document.addEventListener('DOMContentLoaded', () => {
+			const inputLat = document.getElementById('input-lat');
+			const inputLon = document.getElementById('input-lon');
+			const selectCultivo = document.getElementById('select-cultivo');
+			const inputAreaLote = document.getElementById('input-area-lote');
+			const selectUnidadArea = document.getElementById('select-unidad-area');
+			const selectPrioridad = document.getElementById('select-prioridad');
+			const priorityButtons = document.querySelectorAll('[data-priority-val]');
+			const formTerraSync = document.getElementById('form-terrasync');
+			const btnAnalizar = document.getElementById('btn-analizar');
+
+			const spinnerClima = document.getElementById('spinner-clima');
+			const climaCoordsLabel = document.getElementById('clima-coords-label');
+			const alertaError = document.getElementById('alerta-error-clima');
+			const bannerTerreno = document.getElementById('banner-terreno');
+			const canvasMuestra = document.getElementById('canvas-muestra-satelital');
+			const tituloEspectral = document.getElementById('titulo-espectral');
+			const detalleEspectral = document.getElementById('detalle-espectral');
+
+			const kpiTempMax = document.getElementById('kpi-temp-max');
+			const kpiPisoTermico = document.getElementById('kpi-piso-termico');
+			const kpiLluviaAnual = document.getElementById('kpi-lluvia-anual');
+			const kpiRegimenLluvia = document.getElementById('kpi-regimen-lluvia');
+			const kpiLluviaDiaria = document.getElementById('kpi-lluvia-diaria');
+			const diagnosticoClimatico = document.getElementById('diagnostico-climatico');
+
+			const seccionRotacion = document.getElementById('seccion-rotacion');
+			const rotationContainer = document.getElementById('rotation-cards-container');
+			const subtituloRotacion = document.getElementById('subtitulo-rotacion');
+			const badgeEstadoRotacion = document.getElementById('badge-estado-rotacion');
+			const chipCultivoOrigen = document.getElementById('chip-cultivo-origen');
+			const chipCultivoDestino = document.getElementById('chip-cultivo-destino');
+			const chipFechaActual = document.getElementById('chip-fecha-actual');
+
+			const catalogoCultivos = JSON.parse(seccionRotacion?.dataset.cultivos || '[]');
+			const etiquetasAgua = JSON.parse(seccionRotacion?.dataset.etiquetasAgua || '{}');
+			const etiquetasBeneficio = JSON.parse(seccionRotacion?.dataset.etiquetasBeneficio || '{}');
+
+			const NOMBRES_MESES_CORTO = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+			const NOMBRES_MESES_LARGO = [
+				'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+				'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+			];
+
+			const fechaHoy = new Date();
+			const mesActualNum = fechaHoy.getMonth() + 1; // 1..12
+			const nombreMesActual = NOMBRES_MESES_LARGO[mesActualNum - 1];
+
+			if (chipFechaActual) {
+				chipFechaActual.textContent = `📅 Hoy: ${fechaHoy.getDate()} de ${nombreMesActual}`;
+			}
+
+			const formatoCOP = new Intl.NumberFormat('es-CO', {
+				style: 'currency',
+				currency: 'COP',
+				maximumFractionDigits: 0,
+			});
+
+			let ultimoClima = null;
+			let ultimasRecomendaciones = [];
+			let ultimoEspectral = null;
+			let chartLluvia = null;
+			let chartTemp = null;
+			let controladorPeticion = null;
+
+			/**
+			 * Convierte el área ingresada por el usuario (m², fanegadas o ha) a Hectáreas (1 ha = 10,000 m², 1 fanegada = 6,400 m²).
+			 */
+			function obtenerAreaEnHectareas() {
+				const valor = Math.max(1, parseFloat(inputAreaLote?.value || '1200') || 1200);
+				const unidad = selectUnidadArea?.value || 'm2';
+				if (unidad === 'ha') {
+					return { areaHa: valor, etiquetaArea: `${valor} ha` };
+				}
+				if (unidad === 'fanegada') {
+					return { areaHa: (valor * 6400) / 10000, etiquetaArea: `${valor} fanegada(s)` };
+				}
+				return { areaHa: valor / 10000, etiquetaArea: `${valor.toLocaleString('es-CO')} m²` };
+			}
+
+			/**
+			 * Evalúa si el mes actual es ideal para sembrar el cultivo y genera el consejo para el campesino.
+			 */
+			function evaluarCalendarioSiembra(cultivo, mensualNasa) {
+				const mesesOptimos = Array.isArray(cultivo.mesesSiembra) ? cultivo.mesesSiembra : [3, 4, 5, 9, 10];
+				const mesSiguiente = (mesActualNum % 12) + 1;
+				const lluviaMesActual = Array.isArray(mensualNasa) && mensualNasa[mesActualNum - 1]
+					? mensualNasa[mesActualNum - 1].lluviaTotal
+					: null;
+
+				const textoLluviaMes =
+					typeof lluviaMesActual === 'number'
+						? ` (Histórico NASA en ${nombreMesActual}: ${lluviaMesActual} mm)`
+						: '';
+
+				if (mesesOptimos.includes(mesActualNum)) {
+					return {
+						estado: 'ideal',
+						bonoPuntaje: 10,
+						badgeClase: 'bg-success text-white',
+						icono: '🟢',
+						titulo: `¡Fecha Ideal! ${nombreMesActual} está en ventana óptima de siembra`,
+						consejo: `Puedes iniciar la siembra ahora en ${nombreMesActual}${textoLluviaMes}. ${cultivo.notaCalendario || ''}`,
+					};
+				}
+
+				if (mesesOptimos.includes(mesSiguiente)) {
+					const nombreSig = NOMBRES_MESES_LARGO[mesSiguiente - 1];
+					return {
+						estado: 'preparacion',
+						bonoPuntaje: 4,
+						badgeClase: 'bg-warning text-dark',
+						icono: '🟡',
+						titulo: `Etapa de Preparación: Siembra óptima inicia el próximo mes (${nombreSig})`,
+						consejo: `Aprovecha ${nombreMesActual} para preparar el suelo, aplicar correctivos y conseguir semilla certificada para sembrar en ${nombreSig}.`,
+					};
+				}
+
+				// Buscar el próximo mes óptimo en el calendario
+				let proximoMes = mesesOptimos[0];
+				for (let offset = 1; offset <= 12; offset++) {
+					const candidato = ((mesActualNum - 1 + offset) % 12) + 1;
+					if (mesesOptimos.includes(candidato)) {
+						proximoMes = candidato;
+						break;
+					}
+				}
+				const nombreProx = NOMBRES_MESES_LARGO[proximoMes - 1];
+
+				return {
+					estado: 'espera',
+					bonoPuntaje: -6,
+					badgeClase: 'bg-secondary-subtle text-secondary-emphasis border',
+					icono: '⏳',
+					titulo: `Fuera de temporada hoy (${nombreMesActual}) — Próxima ventana: ${nombreProx}`,
+					consejo: `No se aconseja sembrar en ${nombreMesActual} a secano${textoLluviaMes}. Programa la siembra para ${nombreProx} o asegura riego suplementario.`,
+				};
+			}
+
+			/**
+			 * Calcula el presupuesto estimado del cultivo para el área del lote ingresada,
+			 * aplicando descuento en fertilizantes si se rota después de una leguminosa.
+			 */
+			function calcularPresupuestoLote(cultivo, objCultivoActual) {
+				const { areaHa, etiquetaArea } = obtenerAreaEnHectareas();
+				const costoBaseHa = cultivo.costoTotalHaCOP || 10000000;
+				const pcts = cultivo.desgloseCostosPct || {
+					semilla: 22,
+					manoObra: 35,
+					fertilizantes: 25,
+					fitosanitarios: 18,
+				};
+
+				const costoBrutoLote = costoBaseHa * areaHa;
+				const rubSemilla = Math.round((costoBrutoLote * pcts.semilla) / 100);
+				const rubManoObra = Math.round((costoBrutoLote * pcts.manoObra) / 100);
+				let rubFertilizantes = Math.round((costoBrutoLote * pcts.fertilizantes) / 100);
+				const rubFitosanitarios = Math.round((costoBrutoLote * pcts.fitosanitarios) / 100);
+
+				// Si el cultivo anterior en la parcela fue una Leguminosa (Fabáceas) y el nuevo cultivo es diferente,
+				// el nitrógeno biológico fijado ahorra ~18% en fertilizantes nitrogenados
+				let ahorroNitrogeno = 0;
+				if (
+					objCultivoActual &&
+					objCultivoActual.familia?.includes('Leguminosas') &&
+					cultivo.id !== objCultivoActual.id
+				) {
+					ahorroNitrogeno = Math.round(rubFertilizantes * 0.18);
+					rubFertilizantes -= ahorroNitrogeno;
+				}
+
+				const costoTotalNeto = rubSemilla + rubManoObra + rubFertilizantes + rubFitosanitarios;
+				const rendimientoTonLote = Number(((cultivo.rendimientoTonHa || 5) * areaHa).toFixed(2));
+				const rendimientoTexto =
+					rendimientoTonLote >= 1
+						? `${rendimientoTonLote} ton`
+						: `${Math.round(rendimientoTonLote * 1000).toLocaleString('es-CO')} kg`;
+
+				return {
+					etiquetaArea,
+					costoTotalNeto,
+					ahorroNitrogeno,
+					rubSemilla,
+					rubManoObra,
+					rubFertilizantes,
+					rubFitosanitarios,
+					rendimientoTexto,
+				};
+			}
+
+			function analizarSuperficieSatelital(lat, lon) {
+				return new Promise((resolve) => {
+					const zoom = 18;
+					const n = Math.pow(2, zoom);
+					const xFloat = ((lon + 180) / 360) * n;
+					const latRad = (lat * Math.PI) / 180;
+					const yFloat =
+						((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
+
+					const tileX = Math.floor(xFloat);
+					const tileY = Math.floor(yFloat);
+					const px = Math.floor((xFloat - tileX) * 256);
+					const py = Math.floor((yFloat - tileY) * 256);
+
+					const img = new Image();
+					img.crossOrigin = 'anonymous';
+					img.onload = () => {
+						try {
+							const offCanvas = document.createElement('canvas');
+							offCanvas.width = 256;
+							offCanvas.height = 256;
+							const ctx = offCanvas.getContext('2d');
+							ctx.drawImage(img, 0, 0);
+
+							if (canvasMuestra) {
+								const ctxMini = canvasMuestra.getContext('2d');
+								ctxMini.imageSmoothingEnabled = false;
+								const radioVista = 10;
+								const sx = Math.max(0, Math.min(256 - radioVista * 2, px - radioVista));
+								const sy = Math.max(0, Math.min(256 - radioVista * 2, py - radioVista));
+								ctxMini.clearRect(0, 0, 46, 46);
+								ctxMini.drawImage(img, sx, sy, radioVista * 2, radioVista * 2, 0, 0, 46, 46);
+								ctxMini.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+								ctxMini.lineWidth = 1.5;
+								ctxMini.strokeRect(18, 18, 10, 10);
+							}
+
+							const radio = 4;
+							const x0 = Math.max(0, px - radio);
+							const y0 = Math.max(0, py - radio);
+							const w = Math.min(255, px + radio) - x0 + 1;
+							const h = Math.min(255, py + radio) - y0 + 1;
+							const imgData = ctx.getImageData(x0, y0, w, h).data;
+
+							let totalPixeles = 0;
+							let pixelesVegetacion = 0;
+							let pixelesTierraArada = 0;
+							let pixelesHieloNieve = 0;
+							let pixelesGrisArtificialORoca = 0;
+
+							for (let i = 0; i < imgData.length; i += 4) {
+								const r = imgData[i];
+								const g = imgData[i + 1];
+								const b = imgData[i + 2];
+								totalPixeles++;
+
+								const maxC = Math.max(r, g, b);
+								const minC = Math.min(r, g, b);
+								const delta = maxC - minC;
+								const saturacion = maxC === 0 ? 0 : delta / maxC;
+								const brillo = (r + g + b) / 3;
+
+								const exG = 2 * g - r - b;
+								const indiceTierra = r - b;
+
+								if (brillo >= 205 && (saturacion < 0.2 || b >= r - 5)) {
+									pixelesHieloNieve++;
+								} else if (exG >= 12 && g >= r - 5 && brillo > 25 && brillo < 205) {
+									pixelesVegetacion++;
+								} else if (
+									r > g &&
+									g >= b - 4 &&
+									indiceTierra >= 20 &&
+									saturacion >= 0.16 &&
+									brillo > 45 &&
+									brillo < 205
+								) {
+									pixelesTierraArada++;
+								} else if (
+									saturacion < 0.17 ||
+									(Math.abs(r - g) <= 12 && Math.abs(g - b) <= 14 && exG < 10)
+								) {
+									pixelesGrisArtificialORoca++;
+								} else {
+									if (exG >= 6 || indiceTierra >= 16) {
+										pixelesTierraArada++;
+									} else {
+										pixelesGrisArtificialORoca++;
+									}
+								}
+							}
+
+							const pctVeg = Math.round((pixelesVegetacion / totalPixeles) * 100);
+							const pctTierra = Math.round((pixelesTierraArada / totalPixeles) * 100);
+							const pctHielo = Math.round((pixelesHieloNieve / totalPixeles) * 100);
+							const pctAsfalto = Math.max(0, 100 - pctVeg - pctTierra - pctHielo);
+
+							resolve({
+								disponible: true,
+								pctVeg,
+								pctTierra,
+								pctHielo,
+								pctAsfalto,
+								esHieloONieve: pctHielo >= 45 || (pctHielo + pctAsfalto >= 65 && Math.abs(lat) >= 58),
+								esSuperficieGrisSinSuelo: pctAsfalto + pctHielo >= 58 && pctVeg + pctTierra <= 42,
+							});
+						} catch {
+							resolve({ disponible: false });
+						}
+					};
+					img.onerror = () => resolve({ disponible: false });
+					img.src = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tileY}/${tileX}`;
+				});
+			}
+
+			function inicializarGraficos() {
+				const ctxLluvia = document.getElementById('chart-lluvia');
+				const ctxTemp = document.getElementById('chart-temperatura');
+				if (!ctxLluvia || !ctxTemp || typeof Chart === 'undefined') return;
+
+				chartLluvia = new Chart(ctxLluvia, {
+					type: 'bar',
+					data: {
+						labels: NOMBRES_MESES_CORTO,
+						datasets: [
+							{
+								label: 'Precipitación (mm)',
+								data: new Array(12).fill(0),
+								backgroundColor: 'rgba(13, 110, 253, 0.65)',
+								borderColor: 'rgb(13, 110, 253)',
+								borderWidth: 1,
+								borderRadius: 4,
+							},
+						],
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						scales: {
+							y: { beginAtZero: true, title: { display: true, text: 'mm' } },
+						},
+					},
+				});
+
+				chartTemp = new Chart(ctxTemp, {
+					type: 'line',
+					data: {
+						labels: NOMBRES_MESES_CORTO,
+						datasets: [
+							{
+								label: 'Temp. Máx (°C)',
+								data: new Array(12).fill(0),
+								borderColor: 'rgb(220, 53, 69)',
+								backgroundColor: 'rgba(220, 53, 69, 0.15)',
+								tension: 0.3,
+								fill: true,
+								pointRadius: 4,
+							},
+						],
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						scales: {
+							y: { title: { display: true, text: '°C' } },
+						},
+					},
+				});
+			}
+
+			function actualizarGraficos(mensual) {
+				if (!chartLluvia || !chartTemp || !Array.isArray(mensual)) return;
+				const labels = mensual.map((m) => m.mes);
+				const lluvias = mensual.map((m) => m.lluviaTotal);
+				const temps = mensual.map((m) => m.tempMaxPromedio);
+
+				chartLluvia.data.labels = labels;
+				chartLluvia.data.datasets[0].data = lluvias;
+				chartLluvia.update();
+
+				chartTemp.data.labels = labels;
+				chartTemp.data.datasets[0].data = temps;
+				chartTemp.update();
+			}
+
+			function renderizarTerrenoNoApto(clima) {
+				if (!rotationContainer || !clima?.terreno) return;
+				const { terreno, coordenadas } = clima;
+
+				const iconosPorTipo = {
+					hielo_glaciar: '❄️',
+					desierto_arido: '🏜️',
+					cuerpo_agua: '🌊',
+					asfalto_via: '🛣️',
+					urbano_edificado: '🏙️',
+					no_cultivable: '🪨',
+				};
+				const iconoPrincipal = iconosPorTipo[terreno.clasificacion] || '🚫';
+
+				let consejoAccion =
+					'Haz clic sobre los lotes verdes o de tierra arada alrededor de la vía, o confirma manualmente si estás en tierra cultivable.';
+				if (terreno.clasificacion === 'hielo_glaciar') {
+					consejoAccion =
+						'Esta coordenada se encuentra en una región polar, glaciar o de congelamiento permanente (permafrost/nieve). Selecciona una región templada o tropical con suelo agrícola descubierto.';
+				} else if (terreno.clasificacion === 'desierto_arido') {
+					consejoAccion =
+						'Esta coordenada presenta aridez extrema sin lluvias suficientes para agricultura de secano.';
+				} else if (terreno.clasificacion === 'cuerpo_agua') {
+					consejoAccion =
+						'El marcador está sobre el océano, un lago o un río. Selecciona una parcela en tierra firme.';
+				} else if (terreno.clasificacion === 'no_cultivable') {
+					consejoAccion =
+						'El punto presenta roca desnuda o suelo estéril sin cobertura vegetal. Desplaza el marcador hacia una zona con suelo fértil.';
+				}
+
+				if (chipCultivoDestino) {
+					chipCultivoDestino.className = 'badge bg-danger text-white';
+					chipCultivoDestino.textContent = 'No Cultivable';
+				}
+				subtituloRotacion.textContent = `Lat ${coordenadas.lat}, Lon ${coordenadas.lon}`;
+				badgeEstadoRotacion.className = 'badge bg-danger text-white';
+				badgeEstadoRotacion.textContent = `${iconoPrincipal} Siembra No Viable`;
+
+				rotationContainer.innerHTML = `
+					<div class="col-12 ts-animate-in">
+						<div class="card border-danger border-2 shadow-sm">
+							<div class="card-body p-3">
+								<div class="d-flex align-items-center mb-2">
+									<span class="fs-2 me-3">${iconoPrincipal}</span>
+									<div>
+										<h3 class="h6 fw-bold text-danger mb-1">
+											No es posible sembrar aquí: ${terreno.etiqueta}
+										</h3>
+										<p class="text-muted small mb-0">
+											<strong>Ubicación:</strong> ${terreno.ubicacionNombre}
+										</p>
+									</div>
+								</div>
+								<p class="mb-3 small text-dark">${terreno.motivo}</p>
+								<div class="p-2 px-3 bg-light rounded border small text-secondary d-flex flex-wrap justify-content-between align-items-center gap-2">
+									<span><strong>💡 Sugerencia:</strong> ${consejoAccion}</span>
+									<button type="button" id="btn-forzar-lote" class="btn btn-outline-success btn-sm fw-semibold">
+										✅ Forzar simulación aquí
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+
+				document.getElementById('btn-forzar-lote')?.addEventListener('click', () => {
+					if (ultimoClima && ultimoClima.terreno) {
+						ultimoClima.terreno.aptoParaSiembra = true;
+						if (bannerTerreno) {
+							bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
+							bannerTerreno.innerHTML =
+								'<strong>✅ Simulación habilitada manualmente:</strong> Mostrando recomendaciones para esta coordenada.';
+						}
+						calcularYRenderizarRotacion(ultimoClima);
+					}
+				});
+			}
+
+			function calcularYRenderizarRotacion(clima) {
+				if (!rotationContainer || !catalogoCultivos.length) return;
+
+				const cultivoActualId = selectCultivo?.value || 'papa';
+				const objCultivoActual = catalogoCultivos.find((c) => c.id === cultivoActualId);
+				if (chipCultivoOrigen && objCultivoActual) {
+					chipCultivoOrigen.textContent = objCultivoActual.nombre.split('(')[0].trim();
+				}
+
+				if (clima?.terreno && !clima.terreno.aptoParaSiembra) {
+					renderizarTerrenoNoApto(clima);
+					return;
+				}
+
+				badgeEstadoRotacion.className =
+					'badge bg-success-subtle text-success border border-success-subtle';
+
+				const prioridad = selectPrioridad?.value || 'suelo';
+				const lluviaTotalAnual = clima?.promedios?.lluviaTotalAnual;
+				const tempMaxPromedio = clima?.promedios?.tempMax;
+				const ubicacionTexto = (clima?.terreno?.ubicacionNombre || '').toLowerCase();
+
+				const evaluados = catalogoCultivos.map((cultivo) => {
+					let puntaje = 52;
+					const razones = [];
+					const chips = [];
+
+					// Evaluación de calendario respecto a la fecha actual
+					const evalCal = evaluarCalendarioSiembra(cultivo, clima?.mensual);
+					puntaje += evalCal.bonoPuntaje;
+
+					// Cálculo de costos para el área del lote ingresada
+					const presupuesto = calcularPresupuestoLote(cultivo, objCultivoActual);
+
+					// 0. Vocación Regional por Departamento en Colombia
+					if (Array.isArray(cultivo.departamentos) && ubicacionTexto) {
+						const deptoCoincidente = cultivo.departamentos.find((dep) =>
+							ubicacionTexto.includes(dep.toLowerCase())
+						);
+						if (deptoCoincidente) {
+							puntaje += 14;
+							chips.push({ texto: `🇨🇴 Vocación en ${deptoCoincidente}`, clase: 'bg-success-subtle text-success-emphasis' });
+							razones.push(`Vocación productiva comprobada en ${deptoCoincidente} (${cultivo.macroregion}).`);
+						}
+					}
+
+					// 1. Prioridad del agricultor
+					if (prioridad === 'agua') {
+						if (cultivo.agua === 'baja') {
+							puntaje += 20;
+							chips.push({ texto: '💧 Ahorro Hídrico', clase: 'bg-info-subtle text-info-emphasis' });
+							razones.push('Baja demanda de agua, ideal para tu prioridad de ahorro hídrico.');
+						} else if (cultivo.agua === 'media') {
+							puntaje += 8;
+						} else {
+							puntaje -= 12;
+						}
+					} else if (prioridad === 'suelo') {
+						if (cultivo.beneficio === 'mejora_suelo_nitrogeno') {
+							puntaje += 24;
+							chips.push({ texto: '🌱 Fija Nitrógeno', clase: 'bg-success-subtle text-success-emphasis' });
+							razones.push(`Leguminosa fijadora de nitrógeno que restaura el suelo.`);
+						} else if (cultivo.id === 'avena_forrajera' || cultivo.id === 'cebada') {
+							puntaje += 12;
+							chips.push({ texto: '🌾 Abono Verde', clase: 'bg-success-subtle text-success-emphasis' });
+							razones.push('Aporta materia orgánica y descompacta el suelo.');
+						}
+					} else if (prioridad === 'rentabilidad') {
+						if (cultivo.beneficio === 'rentabilidad') {
+							puntaje += 22;
+							chips.push({ texto: '💰 Alta Rentabilidad', clase: 'bg-warning-subtle text-warning-emphasis' });
+							razones.push('Excelente retorno comercial en mercados regionales.');
+						} else if (cultivo.beneficio === 'mejora_suelo_nitrogeno') {
+							puntaje += 10;
+							razones.push('Ahorra fertilizantes nitrogenados en la cosecha posterior.');
+						}
+					}
+
+					// 2. Rotación de Familias Botánicas
+					if (cultivoActualId === cultivo.id) {
+						puntaje -= 35;
+						razones.push(`⚠️ Monocultivo: evita repetir el mismo cultivo consecutivo.`);
+					} else if (
+						Array.isArray(cultivo.evitarDespuesDe) &&
+						cultivo.evitarDespuesDe.includes(cultivoActualId)
+					) {
+						puntaje -= 20;
+						razones.push(`⚠️ Comparte ciclo sanitario (${cultivo.familia}) con tu cultivo actual.`);
+					} else if (objCultivoActual && objCultivoActual.familia !== cultivo.familia) {
+						puntaje += 14;
+						chips.push({ texto: '🧬 Corta Plagas', clase: 'bg-secondary-subtle text-secondary-emphasis' });
+						razones.push(`Alterna de ${objCultivoActual.familia} a ${cultivo.familia}, rompiendo plagas.`);
+					}
+
+					// 3. Compatibilidad con Rango Térmico (NASA POWER)
+					if (typeof tempMaxPromedio === 'number' && Array.isArray(cultivo.tempOptima)) {
+						const [tMin, tMax] = cultivo.tempOptima;
+						if (tempMaxPromedio >= tMin && tempMaxPromedio <= tMax) {
+							puntaje += 20;
+							chips.push({ texto: `🌡️ Clima Ideal (${tMin}–${tMax}°C)`, clase: 'bg-danger-subtle text-danger-emphasis' });
+							razones.push(`La temperatura de la parcela (${tempMaxPromedio} °C) encaja en su óptimo (${tMin}–${tMax} °C).`);
+						} else {
+							const desviacion = tempMaxPromedio < tMin ? tMin - tempMaxPromedio : tempMaxPromedio - tMax;
+							if (desviacion <= 2.5) {
+								puntaje += 4;
+								razones.push(`Temperatura cercana a su rango óptimo (${tMin}–${tMax} °C).`);
+							} else {
+								puntaje -= Math.min(35, Math.round(desviacion * 4));
+								razones.push(`Fuera de su piso térmico ideal (${tMin}–${tMax} °C vs ${tempMaxPromedio} °C local).`);
+							}
+						}
+					}
+
+					// 4. Compatibilidad con Precipitación Anual (NASA POWER)
+					if (typeof lluviaTotalAnual === 'number' && Array.isArray(cultivo.lluviaOptima)) {
+						const [lMin, lMax] = cultivo.lluviaOptima;
+						if (lluviaTotalAnual >= lMin && lluviaTotalAnual <= lMax) {
+							puntaje += 16;
+							razones.push(`Lluvia local (${lluviaTotalAnual} mm/año) óptima para su rango (${lMin}–${lMax} mm).`);
+						} else if (lluviaTotalAnual < lMin) {
+							if (cultivo.agua === 'baja') {
+								puntaje += 6;
+								razones.push(`Tolera bien lluvias moderadas/bajas (${lluviaTotalAnual} mm/año).`);
+							} else {
+								puntaje -= 16;
+								razones.push(`Lluvia insuficiente (${lluviaTotalAnual} mm vs ${lMin} mm mín.): requiere riego.`);
+							}
+						} else {
+							if (cultivo.agua === 'alta') {
+								puntaje += 6;
+								razones.push(`Buena oferta hídrica (${lluviaTotalAnual} mm/año); cuidar drenaje.`);
+							} else {
+								puntaje -= 12;
+								razones.push(`Exceso de lluvia (${lluviaTotalAnual} mm/año) frente a su óptimo (${lMax} mm).`);
+							}
+						}
+					}
+
+					const score = Math.max(15, Math.min(99, Math.round(puntaje)));
+					return {
+						...cultivo,
+						score,
+						razones: razones.slice(0, 3),
+						chips: chips.slice(0, 3),
+						evalCal,
+						presupuesto,
+					};
+				});
+
+				evaluados.sort((a, b) => b.score - a.score);
+				const topRecomendados = evaluados.slice(0, 3);
+				ultimasRecomendaciones = topRecomendados;
+
+				if (chipCultivoDestino && topRecomendados[0]) {
+					chipCultivoDestino.className = 'badge bg-success text-white';
+					chipCultivoDestino.textContent = `${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
+				}
+
+				if (clima?.coordenadas) {
+					subtituloRotacion.textContent = `${lluviaTotalAnual} mm/año | ${tempMaxPromedio} °C`;
+					badgeEstadoRotacion.textContent = `Top #1: ${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
+				}
+
+				rotationContainer.innerHTML = topRecomendados
+					.map((item, idx) => {
+						const infoAgua = etiquetasAgua[item.agua] || {
+							texto: `Agua: ${item.agua}`,
+							badge: 'bg-secondary',
+						};
+						const infoBeneficio = etiquetasBeneficio[item.beneficio] || {
+							titulo: item.beneficio,
+							descripcion: '',
+							icono: '🌿',
+						};
+						const esMejor = idx === 0;
+						const barColor = item.score >= 80 ? 'bg-success' : item.score >= 60 ? 'bg-primary' : 'bg-warning';
+						const mesesOptimos = Array.isArray(item.mesesSiembra) ? item.mesesSiembra : [3, 4, 5, 9, 10];
+						const collapseId = `desglose-costos-${item.id}-${idx}`;
+
+						// Cinta visual de los 12 meses del año
+						const htmlMeses = NOMBRES_MESES_CORTO.map((nomMes, mIdx) => {
+							const numMes = mIdx + 1;
+							const esOptimo = mesesOptimos.includes(numMes);
+							const esActual = numMes === mesActualNum;
+							const tituloMes = `${NOMBRES_MESES_LARGO[mIdx]}${esActual ? ' (MES ACTUAL)' : ''}: ${
+								esOptimo ? '✅ Mes óptimo de siembra' : 'Fuera de ventana principal'
+							}`;
+							return `<div class="ts-cal-month ${esOptimo ? 'optimal' : ''} ${
+								esActual ? 'current' : ''
+							}" title="${tituloMes}">${nomMes}${esActual ? '📍' : ''}</div>`;
+						}).join('');
+
+						const p = item.presupuesto;
+
+						return `
+						<div class="col-12 ts-animate-in" style="animation-delay: ${idx * 45}ms;">
+							<div class="card ts-card shadow-sm ${esMejor ? 'ts-card-top1' : ''}">
+								<div class="card-body p-3">
+									<!-- Fila 1: Nombre, Píldoras y Porcentaje -->
+									<div class="row align-items-center g-2">
+										<div class="col-md-8">
+											<div class="d-flex align-items-center gap-2 mb-1">
+												<span class="badge ${esMejor ? 'bg-success' : 'bg-secondary'}">#${idx + 1}</span>
+												<span class="fs-5">${infoBeneficio.icono}</span>
+												<h3 class="h6 mb-0 fw-bold text-dark">${item.nombre}</h3>
+											</div>
+											<div class="d-flex flex-wrap gap-1 mb-1">
+												<span class="badge bg-light text-secondary border">${item.familia}</span>
+												<span class="badge ${infoAgua.badge}">${infoAgua.texto}</span>
+												<span class="badge bg-light text-dark border">⏱️ ${item.cicloDias}</span>
+												${item.chips
+													.map((ch) => `<span class="badge ${ch.clase}">${ch.texto}</span>`)
+													.join('')}
+											</div>
+										</div>
+
+										<div class="col-md-4 text-md-end">
+											<div class="d-flex justify-content-md-end align-items-baseline gap-2 mb-1">
+												<span class="text-muted small">Afinidad:</span>
+												<span class="fs-5 fw-bold ${esMejor ? 'text-success' : 'text-dark'}">${item.score}%</span>
+											</div>
+											<div class="progress" style="height: 7px;">
+												<div class="progress-bar ${barColor}" role="progressbar" style="width: ${item.score}%"></div>
+											</div>
+										</div>
+									</div>
+
+									<!-- Fila 2: Calendario Óptimo de Siembra y Consejo para la Fecha Actual -->
+									<div class="mt-2 pt-2 border-top">
+										<div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-1">
+											<span class="badge ${item.evalCal.badgeClase}" style="font-size: 0.74rem;">
+												${item.evalCal.icono} ${item.evalCal.titulo}
+											</span>
+											<span class="text-muted" style="font-size: 0.7rem;">
+												🟩 = Meses óptimos &nbsp;|&nbsp; 📍 = Mes actual (${nombreMesActual})
+											</span>
+										</div>
+										<div class="ts-cal-grid mb-1">${htmlMeses}</div>
+										<div class="text-secondary" style="font-size: 0.76rem;">
+											${item.evalCal.consejo}
+										</div>
+									</div>
+
+									<!-- Fila 3: Presupuesto Estimado para el Lote (COP $) + Botón Desglose -->
+									<div class="mt-2 ts-cost-panel">
+										<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+											<div>
+												<span class="text-secondary fw-semibold small">
+													💵 Inversión Estimada (${p.etiquetaArea}):
+												</span>
+												<span class="fs-6 fw-bold text-success ms-1">
+													${formatoCOP.format(p.costoTotalNeto)}
+												</span>
+												<span class="badge bg-white text-secondary border ms-1" style="font-size: 0.7rem;">
+													📦 Prod. est.: ~${p.rendimientoTexto}
+												</span>
+												${
+													p.ahorroNitrogeno > 0
+														? `<div class="text-success fw-semibold" style="font-size: 0.73rem;">
+															🌱 Incl. ahorro de ${formatoCOP.format(p.ahorroNitrogeno)} en fertilizante por nitrógeno fijado del cultivo previo
+														   </div>`
+														: ''
+												}
+											</div>
+											<button
+												class="btn btn-outline-secondary btn-sm py-0 px-2"
+												style="font-size: 0.74rem;"
+												type="button"
+												data-bs-toggle="collapse"
+												data-bs-target="#${collapseId}"
+											>
+												📋 Ver desglose de gastos
+											</button>
+										</div>
+
+										<!-- Desglose colapsable por rubros -->
+										<div class="collapse mt-2 pt-2 border-top" id="${collapseId}">
+											<div class="row g-2 text-center" style="font-size: 0.75rem;">
+												<div class="col-6 col-sm-3">
+													<div class="p-1 bg-white rounded border">
+														<div class="text-muted">🌱 Semilla/Colino</div>
+														<div class="fw-bold text-dark">${formatoCOP.format(p.rubSemilla)}</div>
+													</div>
+												</div>
+												<div class="col-6 col-sm-3">
+													<div class="p-1 bg-white rounded border">
+														<div class="text-muted">🚜 Mano de Obra</div>
+														<div class="fw-bold text-dark">${formatoCOP.format(p.rubManoObra)}</div>
+													</div>
+												</div>
+												<div class="col-6 col-sm-3">
+													<div class="p-1 bg-white rounded border">
+														<div class="text-muted">🧪 Fertilizantes</div>
+														<div class="fw-bold text-success">${formatoCOP.format(p.rubFertilizantes)}</div>
+													</div>
+												</div>
+												<div class="col-6 col-sm-3">
+													<div class="p-1 bg-white rounded border">
+														<div class="text-muted">🛡️ Fitosanitarios</div>
+														<div class="fw-bold text-dark">${formatoCOP.format(p.rubFitosanitarios)}</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<!-- Fila 4: Justificación Agronómica y Región -->
+									<div class="mt-2 pt-2 border-top d-flex flex-wrap justify-content-between align-items-start gap-2">
+										<ul class="small text-muted ps-3 mb-0 flex-grow-1" style="font-size: 0.78rem;">
+											${item.razones.map((r) => `<li>${r}</li>`).join('')}
+										</ul>
+										<span class="badge bg-light text-secondary border align-self-end" style="font-size: 0.68rem;">
+											📍 ${item.macroregion || item.region}
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>`;
+					})
+					.join('');
+			}
+
+			async function consultarParcela(lat, lon) {
+				if (isNaN(lat) || isNaN(lon)) return;
+
+				if (controladorPeticion) {
+					controladorPeticion.abort();
+				}
+				controladorPeticion = new AbortController();
+
+				spinnerClima?.classList.remove('d-none');
+				alertaError?.classList.add('d-none');
+				if (btnAnalizar) {
+					btnAnalizar.disabled = true;
+				}
+
+				try {
+					const [resp, analisisSatelital] = await Promise.all([
+						fetch(`/api/clima?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`, {
+							signal: controladorPeticion.signal,
+						}),
+						analizarSuperficieSatelital(lat, lon),
+					]);
+
+					const data = await resp.json();
+
+					if (!resp.ok) {
+						throw new Error(data.error || 'Error al obtener datos de NASA POWER');
+					}
+
+					if (analisisSatelital?.disponible && detalleEspectral && tituloEspectral) {
+						ultimoEspectral = analisisSatelital;
+						const { pctVeg, pctTierra, pctHielo, pctAsfalto, esHieloONieve, esSuperficieGrisSinSuelo } =
+							analisisSatelital;
+						const tempMaxAnual = data?.promedios?.tempMax ?? 20;
+						const tieneInfra = Boolean(data?.terreno?.tieneInfraestructuraCercana);
+						const esClimaFrioExtremo =
+							tempMaxAnual < 7 || data?.terreno?.clasificacion === 'hielo_glaciar';
+
+						if (esClimaFrioExtremo || esHieloONieve) {
+							const pctCoberturaNival = Math.min(100, pctHielo + pctAsfalto);
+							detalleEspectral.innerHTML = `❄️ Hielo/Nieve: <strong>${pctCoberturaNival}%</strong> | 🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Suelo: <strong>${pctTierra}%</strong>`;
+						} else if (tieneInfra) {
+							detalleEspectral.innerHTML = `🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Tierra: <strong>${pctTierra}%</strong> | 🛣️ Pavimento/Techo: <strong>${pctAsfalto + pctHielo}%</strong>`;
+						} else {
+							detalleEspectral.innerHTML = `🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Tierra: <strong>${pctTierra}%</strong> | 🪨 Roca: <strong>${pctAsfalto + pctHielo}%</strong>`;
+						}
+
+						if (esSuperficieGrisSinSuelo && data.terreno?.aptoParaSiembra) {
+							data.terreno.aptoParaSiembra = false;
+							if (esClimaFrioExtremo || (esHieloONieve && tempMaxAnual < 12)) {
+								data.terreno.clasificacion = 'hielo_glaciar';
+								data.terreno.etiqueta = `❄️ Superficie Cubierta de Nieve / Hielo (${pctHielo + pctAsfalto}%)`;
+								data.terreno.motivo = `La imagen satelital y el registro térmico (${tempMaxAnual} °C máx.) indican cobertura de nieve, hielo glaciar o suelo congelado.`;
+							} else if (tieneInfra) {
+								data.terreno.clasificacion = 'asfalto_via';
+								data.terreno.etiqueta = `🛣️ Pavimento / Concreto o Techo (${pctAsfalto + pctHielo}% Superficie Artificial)`;
+								data.terreno.motivo = `El análisis óptico satelital detecta un ${
+									pctAsfalto + pctHielo
+								}% de superficie pavimentada o techo construido y solo ${pctVeg + pctTierra}% de suelo vegetal.`;
+							} else {
+								data.terreno.clasificacion = 'no_cultivable';
+								data.terreno.etiqueta = `🪨 Suelo Rocoso / Afloramiento Mineral Estéril (${pctAsfalto + pctHielo}%)`;
+								data.terreno.motivo = `El análisis satelital muestra un ${
+									pctAsfalto + pctHielo
+								}% de roca desnuda o terreno sin suelo agrícola fértil.`;
+							}
+						}
+					}
+
+					ultimoClima = data;
+
+					window.dispatchEvent(
+						new CustomEvent('terrasync:terreno-evaluado', {
+							detail: data,
+						})
+					);
+
+					if (bannerTerreno && data.terreno) {
+						if (data.terreno.aptoParaSiembra) {
+							bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
+							bannerTerreno.innerHTML = `<strong>✅ ${data.terreno.etiqueta}:</strong> ${data.terreno.motivo}`;
+						} else {
+							bannerTerreno.className = 'alert alert-danger small mb-2 py-2 px-3';
+							bannerTerreno.innerHTML = `<strong>🚫 ${data.terreno.etiqueta}:</strong> ${data.terreno.motivo}`;
+						}
+					}
+
+					const temp = data.promedios.tempMax;
+					const lluvia = data.promedios.lluviaTotalAnual;
+
+					if (climaCoordsLabel) {
+						climaCoordsLabel.textContent = `${data.coordenadas.lat}, ${data.coordenadas.lon}`;
+					}
+					if (kpiTempMax) kpiTempMax.textContent = `${temp} °C`;
+					if (kpiLluviaAnual) kpiLluviaAnual.textContent = `${lluvia} mm`;
+					if (kpiLluviaDiaria) kpiLluviaDiaria.textContent = `${data.promedios.lluviaDiaria} mm/d`;
+
+					if (kpiPisoTermico) {
+						let piso = 'Templado';
+						if (temp <= 5) piso = 'Polar / Nival';
+						else if (temp < 12) piso = 'Páramo';
+						else if (temp <= 22) piso = 'Frío Andino';
+						else if (temp <= 28) piso = 'Templado';
+						else piso = 'Cálido';
+						kpiPisoTermico.textContent = piso;
+					}
+
+					if (kpiRegimenLluvia) {
+						let reg = 'Subhúmedo';
+						if (lluvia < 120) reg = 'Hiperárido';
+						else if (lluvia < 650) reg = 'Seco';
+						else if (lluvia <= 1400) reg = 'Moderado';
+						else reg = 'Húmedo';
+						kpiRegimenLluvia.textContent = reg;
+					}
+
+					if (diagnosticoClimatico) {
+						diagnosticoClimatico.textContent = `${temp} °C máx. prom | ${lluvia} mm/año`;
+					}
+
+					actualizarGraficos(data.mensual);
+					calcularYRenderizarRotacion(data);
+				} catch (err) {
+					if (err.name === 'AbortError') return;
+					if (alertaError) {
+						alertaError.textContent = err.message || 'No se pudo conectar con la API de NASA POWER.';
+						alertaError.classList.remove('d-none');
+					}
+				} finally {
+					spinnerClima?.classList.add('d-none');
+					if (btnAnalizar) {
+						btnAnalizar.disabled = false;
+					}
+				}
+			}
+
+			inicializarGraficos();
+
+			document.getElementById('tab-graficos-btn')?.addEventListener('shown.bs.tab', () => {
+				chartLluvia?.resize();
+				chartTemp?.resize();
+			});
+
+			priorityButtons.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					priorityButtons.forEach((b) => b.classList.remove('active'));
+					btn.classList.add('active');
+					if (selectPrioridad) {
+						selectPrioridad.value = btn.getAttribute('data-priority-val') || 'suelo';
+					}
+					if (ultimoClima) calcularYRenderizarRotacion(ultimoClima);
+				});
+			});
+
+			window.addEventListener('terrasync:location-change', (e) => {
+				const { lat, lon } = e.detail;
+				consultarParcela(lat, lon);
+			});
+
+			// Recalcular costos y recomendaciones al cambiar el cultivo actual o el área/unidad del lote
+			selectCultivo?.addEventListener('change', () => {
+				if (ultimoClima) calcularYRenderizarRotacion(ultimoClima);
+			});
+			inputAreaLote?.addEventListener('input', () => {
+				if (ultimoClima) calcularYRenderizarRotacion(ultimoClima);
+			});
+			selectUnidadArea?.addEventListener('change', () => {
+				if (ultimoClima) calcularYRenderizarRotacion(ultimoClima);
+			});
+
+			/**
+			 * Genera y abre un Informe Técnico Agronómico completo listo para guardar en PDF o imprimir.
+			 */
+			function exportarInformeDetalladoPDF() {
+				if (!ultimoClima) {
+					alert('Primero espera a que se carguen los datos climáticos de la parcela.');
+					return;
+				}
+
+				const cultivoActualId = selectCultivo?.value || 'papa';
+				const objCultivoActual = catalogoCultivos.find((c) => c.id === cultivoActualId);
+				const prioridadVal = selectPrioridad?.value || 'suelo';
+				const mapaPrioridades = {
+					suelo: 'Mejorar Fertilidad del Suelo (Fijación de Nitrógeno)',
+					agua: 'Conservar Recurso Hídrico (Resiliencia a Sequía)',
+					rentabilidad: 'Maximizar Rentabilidad Comercial',
+				};
+				const { etiquetaArea } = obtenerAreaEnHectareas();
+				const fechaEmision = new Date().toLocaleDateString('es-CO', {
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit',
+				});
+
+				const filasMensuales = (ultimoClima.mensual || [])
+					.map(
+						(m) => `
+						<tr>
+							<td><strong>${m.mes}</strong></td>
+							<td>${m.lluviaTotal} mm</td>
+							<td>${m.lluviaPromedioDiaria} mm/día</td>
+							<td>${m.tempMaxPromedio} °C</td>
+						</tr>`
+					)
+					.join('');
+
+				const bloquesCultivos = ultimasRecomendaciones
+					.map((item, idx) => {
+						const p = item.presupuesto;
+						const mesesTexto = (item.mesesSiembra || [])
+							.map((num) => NOMBRES_MESES_LARGO[num - 1])
+							.join(', ');
+
+						return `
+						<div class="crop-section">
+							<div class="crop-header">
+								<div>
+									<span class="rank-badge">Opción #${idx + 1}</span>
+									<strong style="font-size: 16px;">${item.nombre}</strong>
+									<span style="color: #555; font-size: 12px;"> — Familia: ${item.familia} | Ciclo: ${item.cicloDias}</span>
+								</div>
+								<div class="score-pill">Compatibilidad: ${item.score}%</div>
+							</div>
+
+							<p style="margin: 6px 0; font-size: 12.5px; color: #333;">
+								<strong>Descripción y Manejo:</strong> ${item.descripcion}
+							</p>
+							<p style="margin: 4px 0 8px 0; font-size: 12px; color: #555;">
+								<strong>Región de Vocación:</strong> ${item.region} (${item.macroregion}) &nbsp;|&nbsp;
+								<strong>Rango Térmico Óptimo:</strong> ${item.tempOptima?.[0]}–${item.tempOptima?.[1]} °C &nbsp;|&nbsp;
+								<strong>Lluvia Óptima:</strong> ${item.lluviaOptima?.[0]}–${item.lluviaOptima?.[1]} mm/año
+							</p>
+
+							<div class="box-grid">
+								<div class="sub-box">
+									<div class="sub-title">📅 Calendario Óptimo y Diagnóstico en ${nombreMesActual}</div>
+									<p style="margin: 4px 0; font-size: 12px;">
+										<strong>Estado Actual:</strong> ${item.evalCal.icono} ${item.evalCal.titulo}
+									</p>
+									<p style="margin: 4px 0; font-size: 12px;">
+										<strong>Meses ideales de siembra:</strong> ${mesesTexto}
+									</p>
+									<p style="margin: 4px 0; font-size: 11.5px; color: #444;">
+										${item.evalCal.consejo}
+									</p>
+								</div>
+
+								<div class="sub-box">
+									<div class="sub-title">💵 Presupuesto Estimado para el Lote (${p.etiquetaArea})</div>
+									<p style="margin: 4px 0; font-size: 13px;">
+										<strong>Inversión Total Estimada:</strong>
+										<span style="color: #146c43; font-weight: bold;">${formatoCOP.format(p.costoTotalNeto)} COP</span>
+										&nbsp;|&nbsp; <strong>Producción esperada:</strong> ~${p.rendimientoTexto}
+									</p>
+									${
+										p.ahorroNitrogeno > 0
+											? `<p style="margin: 2px 0 4px 0; font-size: 11.5px; color: #146c43;">
+												🌱 Incluye ahorro de <strong>${formatoCOP.format(p.ahorroNitrogeno)}</strong> en fertilizantes por fijación previa de nitrógeno.
+											   </p>`
+											: ''
+									}
+									<table class="mini-table">
+										<thead>
+											<tr>
+												<th>Semilla / Material</th>
+												<th>Mano de Obra</th>
+												<th>Fertilizantes</th>
+												<th>Fitosanitarios</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>${formatoCOP.format(p.rubSemilla)}</td>
+												<td>${formatoCOP.format(p.rubManoObra)}</td>
+												<td>${formatoCOP.format(p.rubFertilizantes)}</td>
+												<td>${formatoCOP.format(p.rubFitosanitarios)}</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+
+							<div style="margin-top: 8px; font-size: 12px;">
+								<strong>Justificación Técnica para esta Parcela:</strong>
+								<ul style="margin: 4px 0 0 18px; padding: 0;">
+									${item.razones.map((r) => `<li>${r}</li>`).join('')}
+								</ul>
+							</div>
+						</div>`;
+					})
+					.join('');
+
+				const ventana = window.open('', '_blank', 'width=980,height=800');
+				if (!ventana) {
+					alert('Permite las ventanas emergentes en tu navegador para generar el informe PDF.');
+					return;
+				}
+
+				ventana.document.write(`
+					<!doctype html>
+					<html lang="es">
+					<head>
+						<meta charset="UTF-8" />
+						<title>Informe Técnico de Rotación Agrícola - TerraSync</title>
+						<style>
+							body {
+								font-family: "Segoe UI", Roboto, Arial, sans-serif;
+								color: #1e2923;
+								margin: 24px 32px;
+								line-height: 1.45;
+							}
+							.header {
+								display: flex;
+								justify-content: space-between;
+								align-items: flex-start;
+								border-bottom: 3px solid #198754;
+								padding-bottom: 12px;
+								margin-bottom: 16px;
+							}
+							.title {
+								font-size: 22px;
+								font-weight: 800;
+								color: #146c43;
+								margin: 0;
+							}
+							.subtitle {
+								font-size: 12.5px;
+								color: #555;
+								margin-top: 4px;
+							}
+							.meta-grid {
+								display: grid;
+								grid-template-columns: repeat(3, 1fr);
+								gap: 10px;
+								background: #f4f7f5;
+								border: 1px solid #d1e7dd;
+								border-radius: 8px;
+								padding: 12px;
+								margin-bottom: 16px;
+								font-size: 12.5px;
+							}
+							h2 {
+								font-size: 15px;
+								color: #146c43;
+								border-bottom: 1px solid #ccc;
+								padding-bottom: 4px;
+								margin: 18px 0 10px 0;
+								text-transform: uppercase;
+							}
+							.climate-table, .mini-table {
+								width: 100%;
+								border-collapse: collapse;
+								font-size: 11.5px;
+							}
+							.climate-table th, .climate-table td,
+							.mini-table th, .mini-table td {
+								border: 1px solid #ced4da;
+								padding: 4px 8px;
+								text-align: center;
+							}
+							.climate-table th, .mini-table th {
+								background: #e9ecef;
+								font-weight: 700;
+							}
+							.crop-section {
+								border: 1px solid #a3cfbb;
+								border-radius: 8px;
+								padding: 12px 14px;
+								margin-bottom: 14px;
+								page-break-inside: avoid;
+							}
+							.crop-header {
+								display: flex;
+								justify-content: space-between;
+								align-items: center;
+								border-bottom: 1px solid #e2e8f0;
+								padding-bottom: 6px;
+							}
+							.rank-badge {
+								background: #198754;
+								color: #fff;
+								padding: 2px 8px;
+								border-radius: 4px;
+								font-size: 12px;
+								font-weight: bold;
+								margin-right: 6px;
+							}
+							.score-pill {
+								background: #d1e7dd;
+								color: #0f5132;
+								font-weight: 800;
+								padding: 3px 10px;
+								border-radius: 99px;
+								font-size: 13px;
+							}
+							.box-grid {
+								display: grid;
+								grid-template-columns: 1fr 1fr;
+								gap: 10px;
+								margin-top: 8px;
+							}
+							.sub-box {
+								background: #fafcfb;
+								border: 1px solid #dee2e6;
+								border-radius: 6px;
+								padding: 8px 10px;
+							}
+							.sub-title {
+								font-weight: 700;
+								font-size: 12px;
+								color: #146c43;
+								margin-bottom: 4px;
+							}
+							.no-print-bar {
+								background: #198754;
+								color: white;
+								padding: 10px 16px;
+								border-radius: 6px;
+								margin-bottom: 16px;
+								display: flex;
+								justify-content: space-between;
+								align-items: center;
+							}
+							.btn-print {
+								background: white;
+								color: #146c43;
+								border: none;
+								padding: 6px 14px;
+								border-radius: 4px;
+								font-weight: bold;
+								cursor: pointer;
+							}
+							@media print {
+								.no-print-bar { display: none !important; }
+								body { margin: 10px; }
+							}
+						</style>
+					</head>
+					<body>
+						<div class="no-print-bar">
+							<span>📄 <strong>Vista Previa del Informe Técnico TerraSync</strong> — Usa "Guardar como PDF" en el diálogo de impresión.</span>
+							<button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+						</div>
+
+						<div class="header">
+							<div>
+								<h1 class="title">🌱 TerraSync — Informe Técnico de Rotación y Presupuesto Agrícola</h1>
+								<div class="subtitle">Datos Agroclimáticos Satelitales NASA POWER + Catálogo Regional Colombiano</div>
+							</div>
+							<div style="text-align: right; font-size: 12px; color: #444;">
+								<strong>Fecha de Emisión:</strong><br/>${fechaEmision}
+							</div>
+						</div>
+
+						<div class="meta-grid">
+							<div>
+								<strong>📍 Ubicación Detectada:</strong><br/>
+								${ultimoClima.terreno?.ubicacionNombre || 'Parcela rural'}
+							</div>
+							<div>
+								<strong>🌐 Coordenadas y Superficie:</strong><br/>
+								Lat: ${ultimoClima.coordenadas.lat}, Lon: ${ultimoClima.coordenadas.lon}<br/>
+								Estado: ${ultimoClima.terreno?.etiqueta || 'Apto'}
+							</div>
+							<div>
+								<strong>📐 Parámetros del Productor:</strong><br/>
+								Área del Lote: <strong>${etiquetaArea}</strong><br/>
+								Cultivo Actual: <strong>${objCultivoActual?.nombre || cultivoActualId}</strong><br/>
+								Prioridad: <strong>${mapaPrioridades[prioridadVal] || prioridadVal}</strong>
+							</div>
+						</div>
+
+						<h2>1. Resumen Agroclimático de la Parcela (NASA POWER - Últimos 12 Meses)</h2>
+						<p style="font-size: 12.5px; margin: 4px 0 8px 0;">
+							<strong>Temperatura Máxima Promedio Anual:</strong> ${ultimoClima.promedios.tempMax} °C &nbsp;|&nbsp;
+							<strong>Precipitación Anual Acumulada:</strong> ${ultimoClima.promedios.lluviaTotalAnual} mm/año &nbsp;|&nbsp;
+							<strong>Promedio Diario de Lluvia:</strong> ${ultimoClima.promedios.lluviaDiaria} mm/día
+						</p>
+
+						<table class="climate-table">
+							<thead>
+								<tr>
+									<th>Mes</th>
+									<th>Lluvia Mensual Acumulada</th>
+									<th>Lluvia Promedio Diaria</th>
+									<th>Temperatura Máxima Promedio</th>
+								</tr>
+							</thead>
+							<tbody>
+								${filasMensuales}
+							</tbody>
+						</table>
+
+						<h2>2. Estrategias de Rotación, Calendario y Presupuesto Estimado (${etiquetaArea})</h2>
+						${
+							ultimoClima.terreno && !ultimoClima.terreno.aptoParaSiembra
+								? `<p style="color: #dc3545; font-weight: bold;">🚫 ${ultimoClima.terreno.etiqueta}: ${ultimoClima.terreno.motivo}</p>`
+								: bloquesCultivos
+						}
+
+						<div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 11px; color: #666; text-align: center;">
+							Informe generado por TerraSync MVP — Fuentes: NASA POWER Agroclimatology API, OpenStreetMap &amp; Referencias de Costos Agropecuarios Colombia (COP).
+						</div>
+					</body>
+					</html>
+				`);
+				ventana.document.close();
+				setTimeout(() => ventana.print(), 350);
+			}
+
+			/**
+			 * Descarga un archivo CSV (compatible con Microsoft Excel en español con tildes)
+			 * con el resumen de la parcela, los datos mensuales de NASA POWER y las 3 sugerencias con su desglose de costos.
+			 */
+			function exportarInformeCSV() {
+				if (!ultimoClima) {
+					alert('Primero espera a que se carguen los datos climáticos de la parcela.');
+					return;
+				}
+
+				const cultivoActualId = selectCultivo?.value || 'papa';
+				const objCultivoActual = catalogoCultivos.find((c) => c.id === cultivoActualId);
+				const { etiquetaArea } = obtenerAreaEnHectareas();
+
+				const escapar = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
+
+				const lineas = [
+					['INFORME TECNICO DE ROTACION Y COSTOS AGRICOLAS - TERRASYNC'],
+					['Fecha de generacion', new Date().toLocaleString('es-CO')],
+					['Coordenadas', `Lat ${ultimoClima.coordenadas.lat}, Lon ${ultimoClima.coordenadas.lon}`],
+					['Ubicacion', ultimoClima.terreno?.ubicacionNombre || ''],
+					['Estado del Terreno', ultimoClima.terreno?.etiqueta || ''],
+					['Area del Lote', etiquetaArea],
+					['Cultivo Actual', objCultivoActual?.nombre || cultivoActualId],
+					['Temp. Maxima Promedio Anual (C)', ultimoClima.promedios.tempMax],
+					['Lluvia Total Anual (mm)', ultimoClima.promedios.lluviaTotalAnual],
+					[],
+					['1. RECOMENDACIONES DE ROTACION, CALENDARIO Y PRESUPUESTO (COP)'],
+					[
+						'Ranking',
+						'Cultivo Recomendado',
+						'Familia Botanica',
+						'Compatibilidad (%)',
+						'Ciclo',
+						'Demanda Agua',
+						'Estado Fecha Actual',
+						'Meses Optimos de Siembra',
+						'Inversion Total Estimada (COP)',
+						'Costo Semilla (COP)',
+						'Costo Mano de Obra (COP)',
+						'Costo Fertilizantes (COP)',
+						'Costo Fitosanitarios (COP)',
+						'Ahorro por Nitrogeno Previo (COP)',
+						'Produccion Estimada Lote',
+						'Justificacion Tecnica',
+					],
+				];
+
+				ultimasRecomendaciones.forEach((item, idx) => {
+					const p = item.presupuesto;
+					const mesesTexto = (item.mesesSiembra || [])
+						.map((num) => NOMBRES_MESES_LARGO[num - 1])
+						.join(' - ');
+
+					lineas.push([
+						`#${idx + 1}`,
+						item.nombre,
+						item.familia,
+						`${item.score}%`,
+						item.cicloDias,
+						item.agua,
+						item.evalCal.titulo,
+						mesesTexto,
+						p.costoTotalNeto,
+						p.rubSemilla,
+						p.rubManoObra,
+						p.rubFertilizantes,
+						p.rubFitosanitarios,
+						p.ahorroNitrogeno,
+						p.rendimientoTexto,
+						item.razones.join(' | '),
+					]);
+				});
+
+				lineas.push(
+					[],
+					['2. HISTORICO CLIMATICO MENSUAL NASA POWER (2023)'],
+					['Mes', 'Lluvia Mensual Total (mm)', 'Lluvia Promedio Diaria (mm/dia)', 'Temperatura Maxima Promedio (C)']
+				);
+
+				(ultimoClima.mensual || []).forEach((m) => {
+					lineas.push([m.mes, m.lluviaTotal, m.lluviaPromedioDiaria, m.tempMaxPromedio]);
+				});
+
+				// Usamos punto y coma (;) y BOM UTF-8 para apertura directa en Excel en español
+				const contenidoCsv = '\uFEFF' + lineas.map((fila) => fila.map(escapar).join(';')).join('\r\n');
+				const blob = new Blob([contenidoCsv], { type: 'text/csv;charset=utf-8;' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `Informe_TerraSync_${ultimoClima.coordenadas.lat}_${ultimoClima.coordenadas.lon}.csv`;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+			}
+
+			document.getElementById('btn-exportar-pdf')?.addEventListener('click', exportarInformeDetalladoPDF);
+			document.getElementById('btn-exportar-csv')?.addEventListener('click', exportarInformeCSV);
+
+			formTerraSync?.addEventListener('submit', (e) => {
+				e.preventDefault();
+				const lat = parseFloat(inputLat?.value || '5.79482');
+				const lon = parseFloat(inputLon?.value || '-72.99667');
+				consultarParcela(lat, lon);
+			});
+
+			const latInicial = parseFloat(inputLat?.value || '5.79482');
+			const lonInicial = parseFloat(inputLon?.value || '-72.99667');
+			consultarParcela(latInicial, lonInicial);
+		});
+	</script>
+</Layout>
