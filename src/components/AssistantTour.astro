@@ -138,9 +138,118 @@
 		border-radius: 0.5rem;
 		transition: background 0.15s ease;
 	}
+	.ts-header-ctrl-btn {
+		background: rgba(255, 255, 255, 0.14);
+		color: #ffffff;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		border-radius: 0.45rem;
+		padding: 2px 8px;
+		font-size: 0.74rem;
+		font-weight: 700;
+		line-height: 1.2;
+		cursor: pointer;
+		transition: background 0.15s ease;
+	}
+	.ts-header-ctrl-btn:hover {
+		background: rgba(245, 176, 65, 0.3);
+		border-color: #f5b041;
+	}
+	.ts-why-toggle-btn {
+		background: #eef4fb;
+		color: #0d2647;
+		border: 1px solid #93c5fd;
+		border-radius: 999px;
+		padding: 1px 8px;
+		font-size: 0.7rem;
+		font-weight: 700;
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+
+	/* Estado Plegado / Minimizado (Barra mínima de ~42px en la base) */
+	.ts-assistant-card.ts-minimized #asistente-subbarra,
+	.ts-assistant-card.ts-minimized #vista-tour,
+	.ts-assistant-card.ts-minimized #vista-capsulas {
+		display: none !important;
+	}
+
+	/* OPTIMIZACIÓN COMPACTA PARA MÓVIL (<= 767.98px: Mini-Dock Inferior ~20% de pantalla) */
+	@media (max-width: 767.98px) {
+		.ts-assistant-fab {
+			bottom: 10px;
+			right: 10px;
+			padding: 7px 12px;
+			font-size: 0.78rem;
+			gap: 6px;
+		}
+		.ts-assistant-fab .ts-assistant-avatar {
+			width: 26px;
+			height: 26px;
+			font-size: 0.95rem;
+		}
+		.ts-assistant-card {
+			bottom: 8px;
+			left: 8px;
+			right: 8px;
+			width: auto;
+			max-width: none;
+			border-radius: 0.85rem;
+			box-shadow: 0 10px 28px rgba(7, 20, 40, 0.42);
+		}
+		.ts-assistant-header {
+			padding: 7px 10px;
+		}
+		.ts-assistant-header .ts-assistant-avatar {
+			width: 26px;
+			height: 26px;
+			font-size: 0.95rem;
+		}
+		#asistente-subtitulo {
+			display: none !important;
+		}
+		#asistente-subbarra {
+			padding: 4px 10px !important;
+		}
+		#asistente-subbarra .btn {
+			font-size: 0.72rem !important;
+			padding: 2px 7px !important;
+		}
+		#vista-tour {
+			padding: 8px 10px !important;
+		}
+		#tour-step-title {
+			font-size: 0.84rem !important;
+			margin-bottom: 0 !important;
+		}
+		/* En móvil ocultamos el párrafo largo por defecto y se muestra solo al tocar "ℹ️ ¿Por qué?" */
+		#tour-step-desc {
+			display: none;
+			font-size: 0.74rem !important;
+			margin-top: 4px;
+			margin-bottom: 6px !important;
+		}
+		#tour-step-desc.ts-desc-expanded {
+			display: block !important;
+		}
+		.ts-mission-box {
+			padding: 6px 9px;
+			font-size: 0.75rem;
+			margin-bottom: 6px !important;
+		}
+		#vista-capsulas {
+			padding: 8px 10px !important;
+			max-height: 35vh;
+			overflow-y: auto;
+		}
+	}
+	@media (min-width: 768px) {
+		.ts-why-toggle-btn {
+			display: none !important;
+		}
+	}
 </style>
 
-<!-- Botón Flotante (FAB) siempre accesible -->
+<!-- Botón Flotante (FAB) accesible cuando el panel está cerrado -->
 <button
 	type="button"
 	id="btn-assistant-fab"
@@ -152,29 +261,45 @@
 	<span class="badge bg-warning text-dark rounded-pill" id="badge-fab-paso">Aprende fácil</span>
 </button>
 
-<!-- Ventana Flotante del Asistente "Don Terra" -->
+<!-- Ventana Flotante / Mini-Dock del Asistente "Don Terra" -->
 <div id="panel-asistente" class="ts-assistant-card d-none" role="dialog" aria-label="Asistente Don Terra">
-	<!-- Encabezado del Asistente -->
-	<div class="ts-assistant-header d-flex justify-content-between align-items-center">
-		<div class="d-flex align-items-center gap-2">
-			<span class="ts-assistant-avatar">🧑‍🌾</span>
-			<div>
-				<div class="fw-bold" style="font-size: 0.95rem; line-height: 1.1;">Don Terra — Tu Agrónomo Guía</div>
-				<small class="text-white-50" style="font-size: 0.74rem;" id="asistente-subtitulo">
+	<!-- Encabezado del Asistente con botón de Plegar/Minimizar y Cerrar -->
+	<div class="ts-assistant-header d-flex justify-content-between align-items-center gap-2">
+		<div class="d-flex align-items-center gap-2" style="min-width: 0;">
+			<span class="ts-assistant-avatar flex-shrink-0">🧑‍🌾</span>
+			<div class="text-truncate">
+				<div class="fw-bold text-truncate" style="font-size: 0.88rem; line-height: 1.15;" id="asistente-titulo-header">
+					Don Terra — Tu Agrónomo Guía
+				</div>
+				<small class="text-white-50" style="font-size: 0.72rem;" id="asistente-subtitulo">
 					Aprende a planificar tu siembra paso a paso
 				</small>
 			</div>
 		</div>
-		<button
-			type="button"
-			id="btn-cerrar-asistente"
-			class="btn-close btn-close-white"
-			aria-label="Cerrar asistente"
-		></button>
+		<div class="d-flex align-items-center gap-1 flex-shrink-0">
+			<span class="badge border d-md-none" style="background: rgba(245,176,65,0.2); color: #f5b041; border-color: rgba(245,176,65,0.5) !important; font-size: 0.68rem;" id="badge-progreso-movil">
+				1/6
+			</span>
+			<button
+				type="button"
+				id="btn-minimizar-asistente"
+				class="ts-header-ctrl-btn"
+				title="Plegar o expandir panel para ver mejor el mapa"
+			>
+				🔽 Plegar
+			</button>
+			<button
+				type="button"
+				id="btn-cerrar-asistente"
+				class="btn-close btn-close-white ms-1"
+				style="font-size: 0.75rem;"
+				aria-label="Cerrar asistente"
+			></button>
+		</div>
 	</div>
 
 	<!-- Pestañas internas del Asistente: [1] Tour Paso a Paso | [2] Cápsulas Didácticas -->
-	<div class="bg-light border-bottom px-3 py-1 d-flex justify-content-between align-items-center">
+	<div id="asistente-subbarra" class="bg-light border-bottom px-3 py-1 d-flex justify-content-between align-items-center">
 		<div class="btn-group btn-group-sm" role="group">
 			<button type="button" id="btn-modo-tour" class="btn ts-btn-space btn-sm fw-semibold py-1">
 				🎯 Tour Paso a Paso (6)
@@ -183,18 +308,23 @@
 				💡 Cápsulas Agronómicas
 			</button>
 		</div>
-		<span class="badge border" style="background: #eef4fb; color: #0d2647; border-color: #93c5fd !important;" id="badge-progreso-tour">
+		<span class="badge border d-none d-md-inline-block" style="background: #eef4fb; color: #0d2647; border-color: #93c5fd !important;" id="badge-progreso-tour">
 			Paso 1 / 6
 		</span>
 	</div>
 
 	<!-- CONTENIDO MODO 1: TOUR GUIADO INTERACTIVO -->
 	<div id="vista-tour" class="p-3">
-		<h3 class="h6 fw-bold mb-2" style="color: #0d2647;" id="tour-step-title">
-			📍 Paso 1: Elige tu Lote en el Mapa Satelital
-		</h3>
+		<div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+			<h3 class="h6 fw-bold mb-0" style="color: #0d2647;" id="tour-step-title">
+				📍 Paso 1: Elige tu Lote en el Mapa Satelital
+			</h3>
+			<button type="button" id="btn-toggle-explicacion" class="ts-why-toggle-btn">
+				ℹ️ ¿Por qué?
+			</button>
+		</div>
 
-		<p class="small text-secondary mb-2" id="tour-step-desc" style="line-height: 1.45;">
+		<p class="small text-secondary mb-2" id="tour-step-desc" style="line-height: 1.4;">
 			El mapa muestra imágenes satelitales reales. Cuando haces clic en un punto, TerraSoft verifica si es tierra cultivable y consulta el clima histórico de la NASA.
 		</p>
 
@@ -253,13 +383,17 @@
 		const navTourBtn = document.getElementById('btn-abrir-tutorial-nav');
 		const panelAsistente = document.getElementById('panel-asistente');
 		const cerrarBtn = document.getElementById('btn-cerrar-asistente');
+		const minimizarBtn = document.getElementById('btn-minimizar-asistente');
+		const toggleExplicacionBtn = document.getElementById('btn-toggle-explicacion');
 
 		const btnModoTour = document.getElementById('btn-modo-tour');
 		const btnModoCapsulas = document.getElementById('btn-modo-capsulas');
 		const vistaTour = document.getElementById('vista-tour');
 		const vistaCapsulas = document.getElementById('vista-capsulas');
 		const badgeProgreso = document.getElementById('badge-progreso-tour');
+		const badgeProgresoMovil = document.getElementById('badge-progreso-movil');
 		const badgeFabPaso = document.getElementById('badge-fab-paso');
+		const tituloHeader = document.getElementById('asistente-titulo-header');
 
 		const stepTitle = document.getElementById('tour-step-title');
 		const stepDesc = document.getElementById('tour-step-desc');
@@ -408,7 +542,35 @@
 			if (el) {
 				elementoIluminado = el;
 				el.classList.add('ts-spotlight-target');
-				el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				const esMovil = window.innerWidth < 768;
+				if (esMovil) {
+					el.style.scrollMarginTop = '68px';
+					el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				} else {
+					el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}
+			}
+		}
+
+		function expandirAsistente() {
+			panelAsistente?.classList.remove('ts-minimized');
+			if (minimizarBtn) {
+				minimizarBtn.textContent = '🔽 Plegar';
+			}
+			if (tituloHeader) {
+				tituloHeader.textContent = 'Don Terra — Tu Agrónomo Guía';
+			}
+		}
+
+		function alternarMinimizadoAsistente() {
+			if (!panelAsistente) return;
+			const minimizado = panelAsistente.classList.toggle('ts-minimized');
+			if (minimizarBtn) {
+				minimizarBtn.textContent = minimizado ? '🔼 Expandir' : '🔽 Plegar';
+			}
+			if (tituloHeader) {
+				const est = ESTACIONES_TOUR[pasoActual];
+				tituloHeader.textContent = minimizado && est ? est.titulo : 'Don Terra — Tu Agrónomo Guía';
 			}
 		}
 
@@ -422,9 +584,19 @@
 			}
 
 			if (badgeProgreso) badgeProgreso.textContent = `Paso ${pasoActual + 1} / ${ESTACIONES_TOUR.length}`;
+			if (badgeProgresoMovil) badgeProgresoMovil.textContent = `${pasoActual + 1}/${ESTACIONES_TOUR.length}`;
 			if (badgeFabPaso) badgeFabPaso.textContent = `Paso ${pasoActual + 1}/${ESTACIONES_TOUR.length}`;
 			if (stepTitle) stepTitle.textContent = est.titulo;
-			if (stepDesc) stepDesc.textContent = est.descripcion;
+			if (stepDesc) {
+				stepDesc.textContent = est.descripcion;
+				stepDesc.classList.remove('ts-desc-expanded');
+			}
+			if (toggleExplicacionBtn) {
+				toggleExplicacionBtn.textContent = 'ℹ️ ¿Por qué?';
+			}
+			if (panelAsistente?.classList.contains('ts-minimized') && tituloHeader) {
+				tituloHeader.textContent = est.titulo;
+			}
 
 			const yaCompletado = pasosCompletados.has(est.id);
 			if (missionBox && missionTitle && missionText) {
@@ -466,6 +638,9 @@
 
 			if (estActual && estActual.id === idEstacion && missionBox && missionTitle && missionText) {
 				cancelarAutoAvance();
+				if (tourVisible) {
+					expandirAsistente();
+				}
 				const esUltimoPaso = pasoActual === ESTACIONES_TOUR.length - 1;
 				const textoExito = mensajeExtra || estActual.completadoTexto;
 
@@ -498,6 +673,8 @@
 
 		function abrirAsistente(enModoTour = true) {
 			panelAsistente?.classList.remove('d-none');
+			fabBtn?.classList.add('d-none');
+			expandirAsistente();
 			if (enModoTour) {
 				mostrarModoTour();
 			} else {
@@ -508,6 +685,7 @@
 		function cerrarAsistente() {
 			cancelarAutoAvance();
 			panelAsistente?.classList.add('d-none');
+			fabBtn?.classList.remove('d-none');
 			quitarSpotlight();
 		}
 
@@ -540,6 +718,12 @@
 			abrirAsistente(true);
 		});
 		cerrarBtn?.addEventListener('click', cerrarAsistente);
+		minimizarBtn?.addEventListener('click', alternarMinimizadoAsistente);
+		toggleExplicacionBtn?.addEventListener('click', () => {
+			if (!stepDesc) return;
+			const expandido = stepDesc.classList.toggle('ts-desc-expanded');
+			toggleExplicacionBtn.textContent = expandido ? '🔼 Ocultar' : 'ℹ️ ¿Por qué?';
+		});
 
 		btnModoTour?.addEventListener('click', mostrarModoTour);
 		btnModoCapsulas?.addEventListener('click', mostrarModoCapsulas);
