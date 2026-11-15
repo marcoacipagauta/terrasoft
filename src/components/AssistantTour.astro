@@ -95,6 +95,26 @@
 		border-left: 4px solid #198754;
 		color: #0f5132;
 	}
+	@keyframes tsAutoAdvanceBar {
+		from {
+			width: 0%;
+		}
+		to {
+			width: 100%;
+		}
+	}
+	.ts-auto-advance-progress {
+		height: 4px;
+		background: rgba(25, 135, 84, 0.2);
+		border-radius: 99px;
+		overflow: hidden;
+		margin-top: 8px;
+	}
+	.ts-auto-advance-fill {
+		height: 100%;
+		background: linear-gradient(90deg, #198754, #0284c7);
+		animation: tsAutoAdvanceBar 2.2s linear forwards;
+	}
 	.ts-step-dot {
 		width: 10px;
 		height: 10px;
@@ -186,7 +206,7 @@
 			</div>
 		</div>
 
-		<!-- Indicador de progreso y controles de navegación -->
+		<!-- Indicador de progreso y controles de navegación (avance automático por misión) -->
 		<div class="d-flex justify-content-between align-items-center pt-2 border-top">
 			<button type="button" id="btn-tour-prev" class="btn btn-outline-secondary btn-sm fw-semibold" disabled>
 				⬅ Anterior
@@ -194,9 +214,9 @@
 
 			<div class="d-flex gap-1 align-items-center" id="tour-dots-container"></div>
 
-			<button type="button" id="btn-tour-next" class="btn ts-btn-amber btn-sm fw-bold">
-				Siguiente ➡
-			</button>
+			<span class="badge bg-light text-secondary border" style="font-size: 0.7rem;">
+				⚡ Avance automático
+			</span>
 		</div>
 	</div>
 
@@ -247,24 +267,23 @@
 		const missionTitle = document.getElementById('tour-mission-title');
 		const missionText = document.getElementById('tour-mission-text');
 		const btnPrev = document.getElementById('btn-tour-prev');
-		const btnNext = document.getElementById('btn-tour-next');
 		const dotsContainer = document.getElementById('tour-dots-container');
 		const cajaCapsula = document.getElementById('caja-respuesta-capsula');
 
-		// Definición de las 6 Estaciones Didácticas del Tour sincronizadas con las 3 Pestañas Maestras
+		// Definición de las 6 Estaciones Didácticas del Tour en el Dashboard Principal de Control Unificado
 		const ESTACIONES_TOUR = [
 			{
 				id: 'mapa',
 				selector: '#terrasync-map',
-				titulo: '📍 Estación 1: Monitoreo Satelital y Clima NASA',
+				titulo: '📍 Estación 1: Elige tu Lote en el Mapa Satelital',
 				descripcion:
-					'En la Pestaña 1 (🛰️ Monitoreo Satelital) ves tu terreno desde el espacio junto a las gráficas mensuales de lluvia y temperatura de NASA POWER. Al hacer clic en un punto, TerraSoft verifica si hay tierra fértil o si es una carretera, edificio o glaciar.',
+					'En la columna izquierda del Dashboard ves tu terreno desde el espacio y los KPIs de NASA POWER. Al hacer clic en un punto, TerraSoft verifica si hay tierra fértil o si es una carretera, edificio o glaciar.',
 				mision:
 					'👉 Haz clic en cualquier lote verde o tierra arada en el mapa (o pincha sobre una carretera para poner a prueba el detector).',
 				completadoTexto:
 					'✅ ¡Lo lograste! El satélite analizó el suelo de esa coordenada y descargó el clima de la NASA.',
 				onEnter: () => {
-					window.activarPestanaTerraSoft?.('monitoreo', false);
+					window.abrirDashboardTerraSoft?.();
 				},
 			},
 			{
@@ -272,69 +291,69 @@
 				selector: '#select-cultivo',
 				titulo: '🌾 Estación 2: ¿Qué sembraste por última vez?',
 				descripcion:
-					'En la Pestaña 2 (🌾 Simular Rotación) indicas tu cultivo actual. En agricultura nunca debemos repetir la misma familia botánica dos veces seguidas, porque las plagas quedan en el suelo.',
+					'En la barra superior del Dashboard indicas tu cultivo actual. En agricultura nunca debemos repetir la misma familia botánica dos veces seguidas, porque las plagas quedan en el suelo.',
 				mision:
 					'👉 Abre el selector "🌾 Cultivo Actual" (agrupado por las 6 regiones de Colombia) y elige un cultivo.',
 				completadoTexto:
 					'✅ ¡Muy bien! Ahora TerraSoft penalizará cultivos de la misma familia y buscará rotaciones que corten las plagas.',
 				onEnter: () => {
-					window.activarPestanaTerraSoft?.('rotacion', false);
-				},
-			},
-			{
-				id: 'prioridad',
-				selector: '[aria-label="Prioridad del próximo ciclo"]',
-				titulo: '🎯 Estación 3: Define tu Prioridad para este Ciclo',
-				descripcion:
-					'¿Tu suelo está cansado y necesita nitrógeno (🌱 Suelo)? ¿Vienen meses secos (💧 Agua)? ¿O buscas el mayor ingreso comercial (💰 Rentabilidad)?',
-				mision:
-					'👉 Haz clic en cualquiera de los 3 botones (🌱 Suelo, 💧 Agua o 💰 Rentabilidad) y observa cómo se reordenan las 3 tarjetas de abajo.',
-				completadoTexto:
-					'✅ ¡Excelente! Viste cómo el ranking y los porcentajes de afinidad se reordenaron al instante.',
-				onEnter: () => {
-					window.activarPestanaTerraSoft?.('rotacion', false);
-				},
-			},
-			{
-				id: 'recomendaciones',
-				selector: '#seccion-rotacion',
-				titulo: '🏆 Estación 4: Compara el Top 3 de Cultivos Recomendados',
-				descripcion:
-					'Aquí ves las 3 mejores opciones de rotación para tu parcela con su afinidad (%), familia botánica y justificación técnica.',
-				mision:
-					'👉 Haz clic en el botón "📅 Ver Calendario y Costos" dentro de cualquiera de las tarjetas para ir al Módulo 3.',
-				completadoTexto:
-					'✅ ¡Genial! Acabas de abrir el módulo de Calendario Óptimo y Presupuesto.',
-				onEnter: () => {
-					window.activarPestanaTerraSoft?.('rotacion', false);
+					window.abrirDashboardTerraSoft?.();
 				},
 			},
 			{
 				id: 'area',
 				selector: '#input-area-lote',
-				titulo: '📐 Estación 5: Tamaño del Lote, Calendario y Costos ($ COP)',
+				titulo: '📐 Estación 3: Indica el Tamaño de tu Lote',
 				descripcion:
-					'En la Pestaña 3 (📅 Calendario y Presupuesto) puedes indicar el tamaño real de tu terreno en m², Fanegadas o Hectáreas, ver la cinta de los 12 meses y el presupuesto desglosado en Semilla, Mano de Obra, Fertilizantes y Fitosanitarios.',
+					'Escribe cuántos metros cuadrados (m²), fanegadas o hectáreas tiene tu terreno. TerraSoft calculará automáticamente cuánta semilla, abono y jornales necesitas en Pesos Colombianos ($ COP).',
 				mision:
-					'👉 Escribe un área diferente en "📐 Tamaño de tu Lote" o cambia la unidad entre m², Fanegadas o Hectáreas.',
+					'👉 Escribe un área diferente en "📐 Área del Lote" o cambia la unidad entre m², Fanegadas o Hectáreas.',
 				completadoTexto:
 					'✅ ¡Perfecto! Todos los costos de semilla, mano de obra y abonos se acaban de recalcular a la medida de tu lote.',
 				onEnter: () => {
-					window.activarPestanaTerraSoft?.('calendario', false);
+					window.abrirDashboardTerraSoft?.();
+				},
+			},
+			{
+				id: 'prioridad',
+				selector: '[aria-label="Prioridad del próximo ciclo"]',
+				titulo: '🎯 Estación 4: Define tu Prioridad para este Ciclo',
+				descripcion:
+					'¿Tu suelo está cansado y necesita nitrógeno (🌱 Suelo)? ¿Vienen meses secos (💧 Agua)? ¿O buscas el mayor ingreso comercial (💰 Rentabilidad)?',
+				mision:
+					'👉 Haz clic en cualquiera de los 3 botones (🌱 Suelo, 💧 Agua o 💰 Rentabilidad) y observa cómo cambian las recomendaciones.',
+				completadoTexto:
+					'✅ ¡Excelente! Viste cómo el ranking y los porcentajes de afinidad se reordenaron al instante.',
+				onEnter: () => {
+					window.abrirDashboardTerraSoft?.();
+				},
+			},
+			{
+				id: 'recomendaciones',
+				selector: '#seccion-rotacion',
+				titulo: '🏆 Estación 5: Explora el Top 3, Calendario y Desglose de Costos',
+				descripcion:
+					'Cada tarjeta recomendada muestra la barra de los 12 meses del año (🟦 = mes óptimo, 📍 = mes actual) y el costo estimado con botón para desplegar los 4 rubros.',
+				mision:
+					'👉 Haz clic en el botón "📋 Ver desglose de costos ▾" dentro de cualquiera de las 3 tarjetas recomendadas.',
+				completadoTexto:
+					'✅ ¡Genial! Ahí tienes el detalle exacto de Semilla, Mano de Obra, Fertilizantes y Fitosanitarios.',
+				onEnter: () => {
+					window.abrirDashboardTerraSoft?.();
 				},
 			},
 			{
 				id: 'exportar',
-				selector: '#calendario-costos',
-				titulo: '📄 Estación 6: Descarga tu Informe Técnico en PDF o Excel',
+				selector: '#btn-exportar-pdf',
+				titulo: '📄 Estación 6: Descarga tu Informe Técnico desde el Dashboard',
 				descripcion:
-					'Con los botones "📄 Descargar Informe PDF" o "📥 Exportar Excel (.CSV)" puedes llevarte todo el estudio agroclimático, calendario de siembra y presupuesto listo para imprimir o guardar.',
+					'Exclusivamente dentro del Dashboard de Control tienes los botones "📄 Informe PDF" y "📥 Excel (.CSV)" para llevarte todo el estudio agroclimático, calendario y presupuesto.',
 				mision:
-					'👉 Haz clic en "📄 Descargar Informe PDF" o en "📥 Exportar Excel (.CSV)" para completar tu recorrido.',
+					'👉 Haz clic en "📄 Informe PDF" o en "📥 Excel (.CSV)" en la cabecera de resultados para completar tu recorrido.',
 				completadoTexto:
-					'🎉 ¡Felicitaciones! Ya dominas todas las pestañas de TerraSoft como un experto.',
+					'🎉 ¡Felicitaciones! Ya dominas el Dashboard de Control de TerraSoft como un experto.',
 				onEnter: () => {
-					window.activarPestanaTerraSoft?.('calendario', false);
+					window.abrirDashboardTerraSoft?.();
 				},
 			},
 		];
@@ -365,6 +384,15 @@
 		let pasoActual = 0;
 		const pasosCompletados = new Set();
 		let elementoIluminado = null;
+		let timerAutoAvance = null;
+		let timerDebounceArea = null;
+
+		function cancelarAutoAvance() {
+			if (timerAutoAvance) {
+				clearTimeout(timerAutoAvance);
+				timerAutoAvance = null;
+			}
+		}
 
 		function quitarSpotlight() {
 			if (elementoIluminado) {
@@ -385,6 +413,7 @@
 		}
 
 		function renderizarPasoTour() {
+			cancelarAutoAvance();
 			const est = ESTACIONES_TOUR[pasoActual];
 			if (!est) return;
 
@@ -411,10 +440,6 @@
 			}
 
 			if (btnPrev) btnPrev.disabled = pasoActual === 0;
-			if (btnNext) {
-				btnNext.textContent =
-					pasoActual === ESTACIONES_TOUR.length - 1 ? '🎉 Finalizar Tour' : 'Siguiente ➡';
-			}
 
 			if (dotsContainer) {
 				dotsContainer.innerHTML = ESTACIONES_TOUR.map((e, idx) => {
@@ -436,10 +461,38 @@
 		function marcarMisionCompletada(idEstacion, mensajeExtra) {
 			pasosCompletados.add(idEstacion);
 			const estActual = ESTACIONES_TOUR[pasoActual];
+			const tourVisible =
+				!panelAsistente?.classList.contains('d-none') && !vistaTour?.classList.contains('d-none');
+
 			if (estActual && estActual.id === idEstacion && missionBox && missionTitle && missionText) {
+				cancelarAutoAvance();
+				const esUltimoPaso = pasoActual === ESTACIONES_TOUR.length - 1;
+				const textoExito = mensajeExtra || estActual.completadoTexto;
+
 				missionBox.classList.add('completed');
-				missionTitle.textContent = '🌟 ¡Misión Completada en Vivo!';
-				missionText.textContent = mensajeExtra || estActual.completadoTexto;
+				missionTitle.textContent = '🌟 ¡Misión Completada con Éxito!';
+				missionText.innerHTML = `
+					<div>${textoExito}</div>
+					<div class="fw-semibold mt-1" style="font-size: 0.75rem; color: #0b213f;">
+						${esUltimoPaso ? '🎉 ¡Recorrido finalizado! Cerrando guía...' : '⏭️ Avanzando automáticamente al siguiente paso...'}
+					</div>
+					<div class="ts-auto-advance-progress">
+						<div class="ts-auto-advance-fill"></div>
+					</div>
+				`;
+
+				if (tourVisible) {
+					timerAutoAvance = setTimeout(() => {
+						timerAutoAvance = null;
+						if (pasoActual < ESTACIONES_TOUR.length - 1) {
+							pasoActual++;
+							renderizarPasoTour();
+						} else {
+							cerrarAsistente();
+							if (badgeFabPaso) badgeFabPaso.textContent = '✅ Tour completado';
+						}
+					}, 2200);
+				}
 			}
 		}
 
@@ -453,6 +506,7 @@
 		}
 
 		function cerrarAsistente() {
+			cancelarAutoAvance();
 			panelAsistente?.classList.add('d-none');
 			quitarSpotlight();
 		}
@@ -497,16 +551,6 @@
 			}
 		});
 
-		btnNext?.addEventListener('click', () => {
-			if (pasoActual < ESTACIONES_TOUR.length - 1) {
-				pasoActual++;
-				renderizarPasoTour();
-			} else {
-				cerrarAsistente();
-				if (badgeFabPaso) badgeFabPaso.textContent = '✅ Tour completado';
-			}
-		});
-
 		// Cápsulas didácticas
 		document.querySelectorAll('[data-capsule]').forEach((btn) => {
 			btn.addEventListener('click', () => {
@@ -542,7 +586,7 @@
 			);
 		});
 
-		// 3. Cuando cambia el área o unidad del lote
+		// 3. Cuando cambia el área o unidad del lote (con pequeño debounce al escribir para que termine de digitar el número)
 		const handlerArea = () => {
 			const val = document.getElementById('input-area-lote')?.value || '1200';
 			const uni = document.getElementById('select-unidad-area')?.selectedOptions?.[0]?.text || 'm²';
@@ -551,7 +595,10 @@
 				`✅ Ajustaste tu lote a ${val} ${uni}. ¡Mira cómo cambiaron los presupuestos en pesos colombianos!`
 			);
 		};
-		document.getElementById('input-area-lote')?.addEventListener('input', handlerArea);
+		document.getElementById('input-area-lote')?.addEventListener('input', () => {
+			if (timerDebounceArea) clearTimeout(timerDebounceArea);
+			timerDebounceArea = setTimeout(handlerArea, 750);
+		});
 		document.getElementById('select-unidad-area')?.addEventListener('change', handlerArea);
 
 		// 4. Cuando hace clic en una prioridad
@@ -564,20 +611,17 @@
 			});
 		});
 
-		// 5. Cuando pasa de las tarjetas de rotación a Calendario y Costos
-		window.addEventListener('terrasoft:tab-changed', (e) => {
-			if (e.detail?.tab === 'calendario') {
+		// 5. Cuando despliega el desglose de costos en cualquiera de las tarjetas recomendadas
+		document.getElementById('rotation-cards-container')?.addEventListener('click', (e) => {
+			if (e.target.closest('[data-bs-toggle="collapse"]')) {
 				marcarMisionCompletada(
 					'recomendaciones',
-					'✅ ¡Excelente! Ahora estás viendo el calendario de 12 meses y el presupuesto desglosado.'
+					'✅ ¡Excelente! Ahora puedes ver cuánto cuesta cada rubro de la siembra.'
 				);
 			}
 		});
 
-		// 6. Cuando exporta el informe PDF o CSV
-		document.getElementById('btn-exportar-pdf-nav')?.addEventListener('click', () => {
-			marcarMisionCompletada('exportar', '🎉 ¡Excelente! Has generado el informe técnico completo en PDF.');
-		});
+		// 6. Cuando exporta el informe PDF o CSV desde el Dashboard
 		document.getElementById('btn-exportar-pdf')?.addEventListener('click', () => {
 			marcarMisionCompletada('exportar', '🎉 ¡Excelente! Has generado el informe técnico completo en PDF.');
 		});

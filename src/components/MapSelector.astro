@@ -20,6 +20,65 @@ const {
 	crossorigin=""
 />
 
+<style is:global>
+	/* Diseño horizontal y compacto para el mensaje emergente (Popup) dentro del mapa */
+	#terrasync-map .leaflet-popup-content-wrapper {
+		border-radius: 0.75rem;
+		padding: 2px;
+		box-shadow: 0 8px 24px rgba(7, 20, 40, 0.28);
+		border: 1.5px solid rgba(13, 38, 71, 0.22);
+	}
+	#terrasync-map .leaflet-popup-content {
+		min-width: 265px !important;
+		max-width: 340px !important;
+		width: max-content !important;
+		margin: 8px 12px !important;
+		line-height: 1.35 !important;
+		white-space: normal !important;
+	}
+	@media (max-width: 480px) {
+		#terrasync-map .leaflet-popup-content {
+			min-width: 215px !important;
+			max-width: 265px !important;
+		}
+	}
+	.ts-map-popup-box {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+	}
+	.ts-map-popup-icon {
+		width: 32px;
+		height: 32px;
+		border-radius: 0.5rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.05rem;
+		flex-shrink: 0;
+	}
+	.ts-map-popup-body {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.ts-map-popup-title {
+		font-weight: 700;
+		font-size: 0.8rem;
+		line-height: 1.25;
+		margin-bottom: 2px;
+		word-break: break-word;
+	}
+	.ts-map-popup-coords {
+		font-size: 0.72rem;
+		color: #64748b;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-wrap: wrap;
+	}
+</style>
+
 <div class="card ts-card shadow-sm border-0 mb-3 overflow-hidden">
 	<div class="card-header ts-card-header-space d-flex justify-content-between align-items-center py-2 px-3">
 		<div class="d-flex align-items-center gap-2">
@@ -124,11 +183,47 @@ const {
 			layers: [capaSatelite],
 		});
 
-		window.addEventListener('terrasoft:tab-changed', (e) => {
-			if (e.detail?.tab === 'monitoreo') {
-				setTimeout(() => map.invalidateSize(), 60);
-			}
-		});
+		function crearHtmlPopupCargando(lat, lon) {
+			return `
+				<div class="ts-map-popup-box">
+					<span class="ts-map-popup-icon" style="background: #eef4fb; color: #0d2647;">⏳</span>
+					<div class="ts-map-popup-body">
+						<div class="ts-map-popup-title" style="color: #0d2647;">Analizando punto satelital...</div>
+						<div class="ts-map-popup-coords">
+							<span>📍 Lat: <strong>${lat}</strong></span>
+							<span>•</span>
+							<span>Lon: <strong>${lon}</strong></span>
+						</div>
+					</div>
+				</div>
+			`;
+		}
+
+		function crearHtmlPopupEvaluado(terreno, coordenadas, promedios) {
+			const esApto = Boolean(terreno?.aptoParaSiembra);
+			const icono = esApto ? '✅' : '🚫';
+			const bgIcono = esApto ? '#dcfce7' : '#fee2e2';
+			const colorTitulo = esApto ? '#0d2647' : '#dc2626';
+			const infoClima =
+				promedios && typeof promedios.tempMax === 'number'
+					? `<span>• 🌡️ ${promedios.tempMax}°C</span><span>• 🌧️ ${promedios.lluviaTotalAnual} mm</span>`
+					: '';
+
+			return `
+				<div class="ts-map-popup-box">
+					<span class="ts-map-popup-icon" style="background: ${bgIcono};">${icono}</span>
+					<div class="ts-map-popup-body">
+						<div class="ts-map-popup-title" style="color: ${colorTitulo};">
+							${terreno.etiqueta}
+						</div>
+						<div class="ts-map-popup-coords">
+							<span>📍 ${coordenadas.lat}, ${coordenadas.lon}</span>
+							${infoClima}
+						</div>
+					</div>
+				</div>
+			`;
+		}
 
 		L.control
 			.layers(
@@ -143,10 +238,25 @@ const {
 
 		let marker = L.marker([initialLat, initialLon], { draggable: true })
 			.addTo(map)
-			.bindPopup(`<b>Verificando terreno...</b><br>Lat: ${initialLat.toFixed(5)}, Lon: ${initialLon.toFixed(5)}`)
+			.bindPopup(crearHtmlPopupCargando(initialLat.toFixed(5), initialLon.toFixed(5)), {
+				minWidth: 265,
+				maxWidth: 340,
+				autoPanPadding: [20, 20],
+			})
 			.openPopup();
 
 		let capaObstaculo = null;
+
+		window.addEventListener('terrasoft:tab-changed', (e) => {
+			if (e.detail?.tab === 'monitoreo') {
+				setTimeout(() => {
+					map.invalidateSize({ animate: false });
+					map.setView(marker.getLatLng(), map.getZoom(), { animate: false });
+					marker.getPopup()?.update();
+					marker.openPopup();
+				}, 65);
+			}
+		});
 
 		function updateCoordinates(lat, lon, pan = false) {
 			const roundedLat = Number(lat.toFixed(5));
@@ -156,9 +266,8 @@ const {
 			if (inputLon) inputLon.value = roundedLon;
 
 			marker.setLatLng([roundedLat, roundedLon]);
-			marker.setPopupContent(
-				`<b>⏳ Analizando punto...</b><br>Lat: ${roundedLat}, Lon: ${roundedLon}`
-			);
+			marker.setPopupContent(crearHtmlPopupCargando(roundedLat, roundedLon));
+			marker.getPopup()?.update();
 			marker.openPopup();
 
 			if (pan) {
@@ -173,7 +282,7 @@ const {
 		}
 
 		window.addEventListener('terrasync:terreno-evaluado', (e) => {
-			const { terreno, coordenadas } = e.detail || {};
+			const { terreno, coordenadas, promedios } = e.detail || {};
 			if (!terreno || !coordenadas) return;
 
 			if (capaObstaculo) {
@@ -190,14 +299,23 @@ const {
 				}).addTo(map);
 			}
 
-			const icono = terreno.aptoParaSiembra ? '✅' : '🚫';
-			const estadoColor = terreno.aptoParaSiembra ? 'color: #0d2647;' : 'color: #dc3545;';
-			marker.setPopupContent(
-				`<div style="min-width: 190px; font-size: 12px;">
-					<strong style="${estadoColor}">${icono} ${terreno.etiqueta}</strong><br>
-					<span style="color: #6c757d;">Lat: ${coordenadas.lat}, Lon: ${coordenadas.lon}</span>
-				</div>`
-			);
+			marker.setPopupContent(crearHtmlPopupEvaluado(terreno, coordenadas, promedios));
+			marker.getPopup()?.update();
+			marker.openPopup();
+		});
+
+		window.addEventListener('terrasync:terreno-error', (e) => {
+			const { lat, lon, error } = e.detail || {};
+			marker.setPopupContent(`
+				<div class="ts-map-popup-box">
+					<span class="ts-map-popup-icon" style="background: #fef3c7;">⚠️</span>
+					<div class="ts-map-popup-body">
+						<div class="ts-map-popup-title" style="color: #92400e;">${error || 'Reintenta el análisis del punto'}</div>
+						<div class="ts-map-popup-coords">📍 ${lat ?? ''}, ${lon ?? ''}</div>
+					</div>
+				</div>
+			`);
+			marker.getPopup()?.update();
 			marker.openPopup();
 		});
 

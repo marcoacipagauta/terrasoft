@@ -154,6 +154,7 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 
 		const res = await fetch(nominatimUrl, {
 			headers: { 'User-Agent': 'TerraSync-Agricultural-MVP/1.0' },
+			signal: AbortSignal.timeout(4500),
 		});
 
 		if (!res.ok) {
