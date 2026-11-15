@@ -14,259 +14,188 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 	<!-- 0. HERO AERO-AGRÍCOLA + TARJETAS PUENTE -->
 	<HeroSpace />
 
-	<!-- ESPACIO DE TRABAJO DEL SIMULADOR -->
-	<div class="container-fluid px-lg-4 pb-3" id="simulador-rotacion">
-		<!-- 1. BARRA SUPERIOR UNIFICADA DE CONTROL (STICKY) -->
-		<div class="card ts-card ts-topbar shadow-sm mb-3">
-		<div class="card-body py-2 px-3">
-			<form id="form-terrasync" class="row g-2 align-items-center">
-				<!-- Selector de Cultivo Actual -->
-				<div class="col-xl-4 col-lg-4 col-md-6">
-					<div class="input-group input-group-sm">
-						<label class="input-group-text border-0 fw-bold" for="select-cultivo" style="background: #f5b041; color: #071428;">
-							🌾 Cultivo Actual
-						</label>
-						<select id="select-cultivo" class="form-select form-select-sm fw-semibold" required>
-							{
-								macroregiones.map((macro) => (
-									<optgroup label={`🇨🇴 ${macro}`}>
-										{cultivos
-											.filter((c) => (c.macroregion || 'General') === macro)
-											.map((c) => (
-												<option value={c.id}>
-													{c.nombre} ({c.familia})
-												</option>
-											))}
-									</optgroup>
-								))
-							}
-						</select>
-					</div>
-				</div>
-
-				<!-- Selector de Área del Lote para Cálculo de Costos -->
-				<div class="col-xl-3 col-lg-3 col-md-6">
-					<div class="input-group input-group-sm">
-						<span class="input-group-text fw-bold" style="background: #163a66; color: #38bdf8; border-color: rgba(56,189,248,0.35);">📐 Lote</span>
-						<input
-							type="number"
-							id="input-area-lote"
-							class="form-control form-control-sm fw-bold"
-							value="1200"
-							min="10"
-							step="any"
-							title="Tamaño de tu lote o parcela"
-						/>
-						<select id="select-unidad-area" class="form-select form-select-sm bg-light fw-semibold" style="max-width: 115px;">
-							<option value="m2" selected>m² (Metros²)</option>
-							<option value="fanegada">Fanegadas</option>
-							<option value="ha">Hectáreas</option>
-						</select>
-					</div>
-				</div>
-
-				<!-- Selector Rápido de Prioridad (Botones Segmentados) -->
-				<div class="col-xl-4 col-lg-3 col-md-8">
-					<input type="hidden" id="select-prioridad" value="suelo" />
-					<div class="btn-group w-100" role="group" aria-label="Prioridad del próximo ciclo">
+	<!-- ESPACIO DE TRABAJO A PANTALLA COMPLETA (OCULTO EN LA PORTADA INICIAL) -->
+	<div class="container-fluid px-lg-4 ts-fullscreen-workspace d-none" id="simulador-rotacion">
+		<div>
+			<!-- BARRA SUPERIOR DE CONTROLES DE AVANCE, RETROCESO Y CAMBIO DE SECCIÓN -->
+			<div class="card ts-card ts-topbar shadow-sm mb-3">
+				<div class="card-body py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+					<!-- Izquierda: Volver a Portada + Botón Retroceso -->
+					<div class="d-flex align-items-center gap-2">
 						<button
 							type="button"
-							class="btn ts-priority-btn active"
-							data-priority-val="suelo"
+							class="btn btn-outline-light btn-sm rounded-pill fw-semibold px-3"
+							data-go-tab="portada"
+							title="Volver a la portada principal con las 3 secciones"
 						>
-							🌱 Suelo
+							🏠 Portada
 						</button>
 						<button
 							type="button"
-							class="btn ts-priority-btn"
-							data-priority-val="agua"
+							id="btn-wizard-prev"
+							class="btn btn-outline-info btn-sm rounded-pill text-white fw-semibold px-3"
 						>
-							💧 Agua
+							⬅ Anterior
 						</button>
+					</div>
+
+					<!-- Centro: Indicador Interactivo de las 3 Pantallas Completas -->
+					<div class="d-flex align-items-center gap-2 flex-wrap justify-content-center" role="tablist">
 						<button
 							type="button"
-							class="btn ts-priority-btn"
-							data-priority-val="rentabilidad"
+							class="btn ts-wizard-step-btn active"
+							data-wizard-step="monitoreo"
 						>
-							💰 Rentabilidad
+							1. 🛰️ Monitoreo Satelital
+						</button>
+						<span class="text-white-50 fw-bold d-none d-md-inline">➔</span>
+						<button
+							type="button"
+							class="btn ts-wizard-step-btn"
+							data-wizard-step="rotacion"
+						>
+							2. 🌾 Simular Rotación
+						</button>
+						<span class="text-white-50 fw-bold d-none d-md-inline">➔</span>
+						<button
+							type="button"
+							class="btn ts-wizard-step-btn"
+							data-wizard-step="calendario"
+						>
+							3. 📅 Calendario y Presupuesto
 						</button>
 					</div>
-				</div>
 
-				<!-- Estado en Vivo y Botón Actualizar -->
-				<div class="col-xl-1 col-lg-2 col-md-4 d-flex justify-content-end align-items-center gap-2">
-					<div id="spinner-clima" class="spinner-border spinner-border-sm text-warning d-none" role="status">
-						<span class="visually-hidden">Consultando...</span>
-					</div>
-					<button type="submit" id="btn-analizar" class="btn ts-btn-amber btn-sm w-100 fw-bold" title="Actualizar consulta satelital">
-						🛰️
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
-
-	<div id="alerta-error-clima" class="alert alert-danger small d-none mb-3 py-2"></div>
-
-	<!-- 2. VISTA PRINCIPAL DIVIDIDA (2 COLUMNAS EN PARALELO) -->
-	<div class="row g-3 align-items-start">
-		<!-- COLUMNA IZQUIERDA (5/12): Mapa Interactivo + Cinta Compacta de Suelo y Clima -->
-		<div class="col-lg-5" id="datos-satelitales">
-			<MapSelector />
-
-			<!-- Panel Compacto de Diagnóstico de Suelo y KPIs NASA POWER -->
-			<div class="card ts-card shadow-sm border-0">
-				<div class="card-body p-3">
-					<!-- Banner de Aptitud de Superficie -->
-					<div id="banner-terreno" class="alert alert-secondary small mb-2 py-2 px-3">
-						Verificando superficie en el punto seleccionado...
-					</div>
-
-					<!-- Cinta de 3 KPIs Climáticos NASA POWER -->
-					<div class="row g-2 text-center mb-2">
-						<div class="col-4">
-							<div class="ts-kpi-box">
-								<div class="text-white-50" style="font-size: 0.7rem;">🌡️ Temp. Máx</div>
-								<div class="fw-bold fs-6" style="color: #fbbf24;" id="kpi-temp-max">-- °C</div>
-								<div class="text-white-50" style="font-size: 0.68rem;" id="kpi-piso-termico">Piso térmico</div>
-							</div>
+					<!-- Derecha: Botón Avance -->
+					<div class="d-flex align-items-center gap-2">
+						<div id="spinner-clima" class="spinner-border spinner-border-sm text-warning d-none" role="status">
+							<span class="visually-hidden">Consultando...</span>
 						</div>
-						<div class="col-4">
-							<div class="ts-kpi-box">
-								<div class="text-white-50" style="font-size: 0.7rem;">🌧️ Lluvia Anual</div>
-								<div class="fw-bold fs-6" style="color: #38bdf8;" id="kpi-lluvia-anual">-- mm</div>
-								<div class="text-white-50" style="font-size: 0.68rem;" id="kpi-regimen-lluvia">Régimen</div>
-							</div>
-						</div>
-						<div class="col-4">
-							<div class="ts-kpi-box">
-								<div class="text-white-50" style="font-size: 0.7rem;">💧 Prom. Diario</div>
-								<div class="fw-bold fs-6" style="color: #7dd3fc;" id="kpi-lluvia-diaria">-- mm/d</div>
-								<div class="text-white-50" style="font-size: 0.68rem;" id="clima-coords-label">NASA 2023</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Escáner Óptico Satelital Integrado -->
-					<div class="d-flex align-items-center gap-2 p-2 rounded" style="background: #0b213f; border: 1px solid rgba(56,189,248,0.3); color: #e2e8f0;">
-						<canvas
-							id="canvas-muestra-satelital"
-							width="46"
-							height="46"
-							class="rounded flex-shrink-0"
-							style="border: 1.5px solid #38bdf8;"
-							title="Muestra satelital 6m x 6m bajo el marcador"
-						></canvas>
-						<div class="flex-grow-1" style="font-size: 0.75rem;">
-							<div class="fw-bold" style="color: #38bdf8;" id="titulo-espectral">🔬 Escáner Óptico Satelital (Radio 4m)</div>
-							<div class="text-white-50" id="detalle-espectral">Muestreando reflectancia RGB...</div>
-						</div>
+						<button
+							type="button"
+							id="btn-wizard-next"
+							class="btn ts-btn-amber btn-sm fw-bold px-3"
+						>
+							Siguiente: Simular Rotación ➔
+						</button>
 					</div>
 				</div>
 			</div>
-		</div>
 
-		<!-- COLUMNA DERECHA (7/12): Panel de Análisis con Pestañas (Recomendaciones vs Gráficos) -->
-		<div class="col-lg-7" id="calendario-costos">
-			<div class="card ts-card shadow-sm border-0">
-				<div class="card-header ts-card-header-space py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-					<!-- Pestañas de Navegación -->
-					<ul class="nav nav-pills" id="terrasync-tabs" role="tablist">
-						<li class="nav-item" role="presentation">
-							<button
-								class="nav-link active btn-sm"
-								id="tab-recomendaciones-btn"
-								data-bs-toggle="pill"
-								data-bs-target="#pane-recomendaciones"
-								type="button"
-								role="tab"
-							>
-								🌾 Top 3 Rotaciones, Calendario y Costos
-							</button>
-						</li>
-						<li class="nav-item" role="presentation">
-							<button
-								class="nav-link btn-sm"
-								id="tab-graficos-btn"
-								data-bs-toggle="pill"
-								data-bs-target="#pane-graficos"
-								type="button"
-								role="tab"
-							>
-								📊 Gráficos Climáticos (NASA POWER)
-							</button>
-						</li>
-					</ul>
+			<div id="alerta-error-clima" class="alert alert-danger small d-none mb-3 py-2"></div>
 
-					<div class="d-flex align-items-center gap-2 flex-wrap">
-						<span class="badge border" style="background: rgba(56,189,248,0.18); color: #7dd3fc; border-color: rgba(56,189,248,0.4) !important;" id="badge-estado-rotacion">
-							Analizando...
-						</span>
-						<div class="btn-group btn-group-sm" role="group" aria-label="Exportar informe">
-							<button
-								type="button"
-								id="btn-exportar-pdf"
-								class="btn ts-btn-amber btn-sm fw-bold"
-								title="Generar informe técnico completo en PDF / Vista de impresión"
-							>
-								📄 Informe PDF
-							</button>
-							<button
-								type="button"
-								id="btn-exportar-csv"
-								class="btn btn-outline-info btn-sm fw-semibold text-white"
-								title="Descargar tabla detallada para Excel (.csv)"
-							>
-								📥 Excel (.CSV)
-							</button>
+			<!-- =========================================================================
+			     PANTALLA COMPLETA 1: MONITOREO SATELITAL (MAPA + ESCÁNER RGB + CLIMA NASA)
+			     ========================================================================= -->
+			<section id="master-pane-monitoreo" class="ts-master-pane" data-master-pane="monitoreo">
+				<div class="row g-3 align-items-stretch flex-grow-1" id="datos-satelitales">
+					<!-- Columna Izquierda (6/12): Mapa Satelital Grande + Diagnóstico + Escáner RGB -->
+					<div class="col-lg-6 d-flex flex-column justify-content-between">
+						<MapSelector />
+
+						<div class="card ts-card shadow-sm border-0">
+							<div class="card-body p-3">
+								<div class="d-flex justify-content-between align-items-center mb-2">
+									<span class="fw-bold small" style="color: #0d2647;">
+										🛰️ Verificación de Superficie y Suelo Agrícola
+									</span>
+									<button
+										type="button"
+										id="btn-analizar"
+										class="btn btn-outline-primary btn-sm py-0 px-2 fw-semibold"
+										style="font-size: 0.75rem;"
+										title="Actualizar consulta satelital"
+									>
+										🔄 Re-escanear Coordenada
+									</button>
+								</div>
+
+								<!-- Banner de Aptitud de Superficie -->
+								<div id="banner-terreno" class="alert alert-secondary small mb-2 py-2 px-3">
+									Verificando superficie en el punto seleccionado...
+								</div>
+
+								<!-- Escáner Óptico Satelital Integrado -->
+								<div class="d-flex align-items-center gap-3 p-2 px-3 rounded" style="background: #0b213f; border: 1px solid rgba(56,189,248,0.3); color: #e2e8f0;">
+									<canvas
+										id="canvas-muestra-satelital"
+										width="46"
+										height="46"
+										class="rounded flex-shrink-0"
+										style="border: 1.5px solid #38bdf8;"
+										title="Muestra satelital 6m x 6m bajo el marcador"
+									></canvas>
+									<div class="flex-grow-1" style="font-size: 0.78rem;">
+										<div class="fw-bold" style="color: #38bdf8;" id="titulo-espectral">
+											🔬 Escáner Óptico Satelital (Radio 4m · 0.6m/px)
+										</div>
+										<div class="text-white-50" id="detalle-espectral">
+											Muestreando reflectancia RGB del suelo bajo el marcador...
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
-				</div>
 
-				<div class="card-body p-3">
-					<div class="tab-content">
-						<!-- PESTAÑA 1: Top 3 Recomendaciones de Rotación + Calendario + Costos -->
-						<div
-							class="tab-pane fade show active"
-							id="pane-recomendaciones"
-							role="tabpanel"
-						>
-							<RotationCards />
-						</div>
-
-						<!-- PESTAÑA 2: Gráficos Históricos de Lluvia y Temperatura (NASA POWER) -->
-						<div
-							class="tab-pane fade"
-							id="pane-graficos"
-							role="tabpanel"
-						>
-							<div class="mb-2 d-flex justify-content-between align-items-center">
-								<span class="fw-bold text-secondary small">
-									Comportamiento Mensual Histórico (Enero – Diciembre 2023)
+					<!-- Columna Derecha (6/12): 3 KPIs NASA POWER + 2 Gráficos Históricos Mensuales -->
+					<div class="col-lg-6 d-flex flex-column">
+						<div class="card ts-card shadow-sm border-0 flex-grow-1">
+							<div class="card-header ts-card-header-space py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+								<span class="fw-bold text-info small">
+									📊 Telemetría Agroclimática NASA POWER (Serie Mensual)
 								</span>
-								<span class="badge bg-light text-dark border small" id="diagnostico-climatico">
+								<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 small" id="diagnostico-climatico">
 									Datos satelitales NASA POWER
 								</span>
 							</div>
 
-							<div class="row g-3">
-								<div class="col-12">
-									<div class="p-3 rounded bg-light border">
-										<h3 class="h6 fw-bold text-primary mb-2 small">
-											🌧️ Precipitación Mensual Acumulada (mm)
-										</h3>
-										<div style="height: 210px;">
-											<canvas id="chart-lluvia"></canvas>
+							<div class="card-body p-3 d-flex flex-column justify-content-between">
+								<!-- Cinta de 3 KPIs Climáticos NASA POWER -->
+								<div class="row g-2 text-center mb-3">
+									<div class="col-4">
+										<div class="ts-kpi-box">
+											<div class="text-white-50" style="font-size: 0.7rem;">🌡️ Temp. Máx</div>
+											<div class="fw-bold fs-6" style="color: #fbbf24;" id="kpi-temp-max">-- °C</div>
+											<div class="text-white-50" style="font-size: 0.68rem;" id="kpi-piso-termico">Piso térmico</div>
+										</div>
+									</div>
+									<div class="col-4">
+										<div class="ts-kpi-box">
+											<div class="text-white-50" style="font-size: 0.7rem;">🌧️ Lluvia Anual</div>
+											<div class="fw-bold fs-6" style="color: #38bdf8;" id="kpi-lluvia-anual">-- mm</div>
+											<div class="text-white-50" style="font-size: 0.68rem;" id="kpi-regimen-lluvia">Régimen</div>
+										</div>
+									</div>
+									<div class="col-4">
+										<div class="ts-kpi-box">
+											<div class="text-white-50" style="font-size: 0.7rem;">💧 Prom. Diario</div>
+											<div class="fw-bold fs-6" style="color: #7dd3fc;" id="kpi-lluvia-diaria">-- mm/d</div>
+											<div class="text-white-50" style="font-size: 0.68rem;" id="clima-coords-label">NASA 2023</div>
 										</div>
 									</div>
 								</div>
-								<div class="col-12">
-									<div class="p-3 rounded bg-light border">
-										<h3 class="h6 fw-bold text-danger mb-2 small">
-											🌡️ Temperatura Máxima Promedio Mensual (°C)
-										</h3>
-										<div style="height: 210px;">
-											<canvas id="chart-temperatura"></canvas>
+
+								<!-- Gráficos Mensuales de Precipitación y Temperatura -->
+								<div class="row g-3">
+									<div class="col-12">
+										<div class="p-3 rounded bg-light border">
+											<h3 class="h6 fw-bold mb-2 small" style="color: #0284c7;">
+												🌧️ Precipitación Mensual Acumulada (mm)
+											</h3>
+											<div style="height: 210px;">
+												<canvas id="chart-lluvia"></canvas>
+											</div>
+										</div>
+									</div>
+									<div class="col-12">
+										<div class="p-3 rounded bg-light border">
+											<h3 class="h6 fw-bold text-danger mb-2 small">
+												🌡️ Temperatura Máxima Promedio Mensual (°C)
+											</h3>
+											<div style="height: 210px;">
+												<canvas id="chart-temperatura"></canvas>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -274,9 +203,194 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						</div>
 					</div>
 				</div>
+			</section>
+
+			<!-- =========================================================================
+			     PANTALLA COMPLETA 2: SIMULAR ROTACIÓN (SELECTOR + PRIORIDAD + TOP 3 RANKING)
+			     ========================================================================= -->
+			<section id="master-pane-rotacion" class="ts-master-pane d-none" data-master-pane="rotacion">
+				<!-- Barra de Control Agronómica -->
+				<div class="card ts-card shadow-sm border-0 mb-3" style="background: #0b213f; color: #fff;">
+					<div class="card-body py-2 px-3">
+						<form id="form-terrasync" class="row g-2 align-items-center">
+							<!-- Selector de Cultivo Actual -->
+							<div class="col-xl-6 col-lg-6 col-md-12">
+								<div class="input-group input-group-sm">
+									<label class="input-group-text border-0 fw-bold" for="select-cultivo" style="background: #f5b041; color: #071428;">
+										🌾 Cultivo Actual en tu Parcela
+									</label>
+									<select id="select-cultivo" class="form-select form-select-sm fw-semibold" required>
+										{
+											macroregiones.map((macro) => (
+												<optgroup label={`🇨🇴 ${macro}`}>
+													{cultivos
+														.filter((c) => (c.macroregion || 'General') === macro)
+														.map((c) => (
+															<option value={c.id}>
+																{c.nombre} ({c.familia})
+															</option>
+														))}
+												</optgroup>
+											))
+										}
+									</select>
+								</div>
+							</div>
+
+							<!-- Selector Rápido de Prioridad (Botones Segmentados) -->
+							<div class="col-xl-6 col-lg-6 col-md-12">
+								<input type="hidden" id="select-prioridad" value="suelo" />
+								<div class="btn-group w-100" role="group" aria-label="Prioridad del próximo ciclo">
+									<button type="button" class="btn ts-priority-btn active" data-priority-val="suelo">
+										🌱 Priorizar Suelo (Nitrógeno)
+									</button>
+									<button type="button" class="btn ts-priority-btn" data-priority-val="agua">
+										💧 Priorizar Agua (Sequía)
+									</button>
+									<button type="button" class="btn ts-priority-btn" data-priority-val="rentabilidad">
+										💰 Priorizar Rentabilidad
+									</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+
+				<!-- Tarjeta Contenedora del Ranking Top 3 de Rotación a Pantalla Completa -->
+				<div class="card ts-card shadow-sm border-0 flex-grow-1">
+					<div class="card-header ts-card-header-space py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+						<div class="d-flex align-items-center gap-2">
+							<span class="badge rounded-pill" style="background: #f5b041; color: #071428; font-weight: 800;">
+								🌾 PANTALLA 2 DE 3
+							</span>
+							<span class="fw-bold text-white small">
+								Top 3 Recomendaciones de Rotación Agronómica para tu Lote
+							</span>
+						</div>
+						<span class="badge border" style="background: rgba(56,189,248,0.18); color: #7dd3fc; border-color: rgba(56,189,248,0.4) !important;" id="badge-estado-rotacion">
+							Analizando...
+						</span>
+					</div>
+					<div class="card-body p-3">
+						<RotationCards />
+					</div>
+				</div>
+			</section>
+
+			<!-- =========================================================================
+			     PANTALLA COMPLETA 3: CALENDARIO ÓPTIMO Y PRESUPUESTO EN PESOS ($ COP)
+			     ========================================================================= -->
+			<section id="master-pane-calendario" class="ts-master-pane d-none" data-master-pane="calendario">
+				<!-- Barra de Dimensionamiento del Lote y Exportación -->
+				<div class="card ts-card shadow-sm border-0 mb-3" id="calendario-costos" style="background: #0b213f; color: #fff;">
+					<div class="card-body py-2 px-3">
+						<div class="row g-2 align-items-center justify-content-between">
+							<!-- Selector de Área del Lote para Cálculo de Costos -->
+							<div class="col-xl-6 col-lg-6 col-md-12">
+								<div class="input-group input-group-sm">
+									<span class="input-group-text fw-bold" style="background: #f5b041; color: #071428; border: 0;">
+										📐 Tamaño de tu Lote
+									</span>
+									<input
+										type="number"
+										id="input-area-lote"
+										class="form-control form-control-sm fw-bold"
+										value="1200"
+										min="10"
+										step="any"
+										title="Tamaño de tu lote o parcela"
+									/>
+									<select id="select-unidad-area" class="form-select form-select-sm bg-light fw-semibold" style="max-width: 165px;">
+										<option value="m2" selected>m² (Metros²)</option>
+										<option value="fanegada">Fanegadas (6,400 m²)</option>
+										<option value="ha">Hectáreas (10,000 m²)</option>
+									</select>
+								</div>
+							</div>
+
+							<!-- Botones de Exportación e Impresión -->
+							<div class="col-xl-6 col-lg-6 col-md-12 d-flex flex-wrap justify-content-lg-end align-items-center gap-2">
+								<button
+									type="button"
+									id="btn-exportar-pdf"
+									class="btn ts-btn-amber btn-sm fw-bold"
+									title="Generar informe técnico completo en PDF / Vista de impresión"
+								>
+									📄 Descargar Informe PDF
+								</button>
+								<button
+									type="button"
+									id="btn-exportar-csv"
+									class="btn btn-outline-info btn-sm fw-semibold text-white"
+									title="Descargar tabla detallada para Excel (.csv)"
+								>
+									📥 Exportar Excel (.CSV)
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Contenedor de Tarjetas de Calendario (12 Meses) + Desglose de Costos COP -->
+				<div class="card ts-card shadow-sm border-0 flex-grow-1">
+					<div class="card-header ts-card-header-space py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+						<div class="d-flex align-items-center gap-2">
+							<span class="badge rounded-pill" style="background: #f5b041; color: #071428; font-weight: 800;">
+								📅 PANTALLA 3 DE 3
+							</span>
+							<span class="fw-bold text-white small">
+								Calendario Óptimo de Siembra y Presupuesto Estimado en Pesos ($ COP)
+							</span>
+						</div>
+						<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50" id="chip-fecha-actual-cal">
+							📅 Evaluando fecha actual...
+						</span>
+					</div>
+					<div class="card-body p-3">
+						<div class="row g-3" id="calendar-cost-cards-container">
+							<div class="col-12 text-center py-4 text-muted">
+								Calculando calendario óptimo y costos para tu parcela...
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<!-- BARRA INFERIOR DE CONTROLES DE AVANCE Y RETROCESO -->
+		<div class="card ts-card shadow-sm border-0 mt-3" style="background: linear-gradient(90deg, #071428 0%, #0e294b 100%); color: #fff;">
+			<div class="card-body py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+				<button
+					type="button"
+					id="btn-footer-prev"
+					class="btn btn-outline-info btn-sm rounded-pill text-white fw-semibold px-3"
+				>
+					⬅ Anterior
+				</button>
+
+				<div class="d-flex align-items-center gap-2 small text-white-50">
+					<span id="wizard-footer-label" class="fw-semibold text-info">
+						Pantalla 1 de 3: Monitoreo Satelital
+					</span>
+					<span class="d-none d-sm-inline">•</span>
+					<button
+						type="button"
+						class="btn btn-link btn-sm text-warning text-decoration-none p-0 fw-semibold d-none d-sm-inline"
+						data-go-tab="portada"
+					>
+						🏠 Volver a las 3 Secciones Iniciales
+					</button>
+				</div>
+
+				<button
+					type="button"
+					id="btn-footer-next"
+					class="btn ts-btn-amber btn-sm fw-bold px-3"
+				>
+					Siguiente: Simular Rotación ➔
+				</button>
 			</div>
 		</div>
-	</div>
 	</div>
 
 	<!-- Asistente Didáctico e Interactivo "Don Terra" -->
@@ -315,11 +429,157 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 
 			const seccionRotacion = document.getElementById('seccion-rotacion');
 			const rotationContainer = document.getElementById('rotation-cards-container');
+			const calendarCostContainer = document.getElementById('calendar-cost-cards-container');
 			const subtituloRotacion = document.getElementById('subtitulo-rotacion');
 			const badgeEstadoRotacion = document.getElementById('badge-estado-rotacion');
 			const chipCultivoOrigen = document.getElementById('chip-cultivo-origen');
 			const chipCultivoDestino = document.getElementById('chip-cultivo-destino');
 			const chipFechaActual = document.getElementById('chip-fecha-actual');
+			const chipFechaActualCal = document.getElementById('chip-fecha-actual-cal');
+
+			// Controlador global de Portada Inicial vs las 3 Pantallas Completas (Monitoreo | Rotación | Calendario)
+			const vistaPortada = document.getElementById('vista-portada-inicial');
+			const vistaFullscreen = document.getElementById('simulador-rotacion');
+			const btnVolverPortadaNav = document.getElementById('btn-volver-portada-nav');
+			const brandHome = document.getElementById('brand-terrasoft-home');
+
+			const masterTabButtons = document.querySelectorAll('[data-master-tab]');
+			const wizardStepButtons = document.querySelectorAll('[data-wizard-step]');
+			const masterPanes = document.querySelectorAll('[data-master-pane]');
+
+			const btnWizardPrev = document.getElementById('btn-wizard-prev');
+			const btnWizardNext = document.getElementById('btn-wizard-next');
+			const btnFooterPrev = document.getElementById('btn-footer-prev');
+			const btnFooterNext = document.getElementById('btn-footer-next');
+			const wizardFooterLabel = document.getElementById('wizard-footer-label');
+
+			const ORDEN_PASOS = ['monitoreo', 'rotacion', 'calendario'];
+			const CONFIG_PASOS = {
+				monitoreo: {
+					num: 1,
+					titulo: 'Pantalla 1 de 3: Monitoreo Satelital y Clima NASA',
+					prevLabel: '🏠 Volver a Portada',
+					prevTarget: 'portada',
+					nextLabel: 'Siguiente: Simular Rotación ➔',
+					nextTarget: 'rotacion',
+				},
+				rotacion: {
+					num: 2,
+					titulo: 'Pantalla 2 de 3: Simular Rotación Agronómica',
+					prevLabel: '⬅ Anterior: Monitoreo Satelital',
+					prevTarget: 'monitoreo',
+					nextLabel: 'Siguiente: Calendario y Presupuesto ➔',
+					nextTarget: 'calendario',
+				},
+				calendario: {
+					num: 3,
+					titulo: 'Pantalla 3 de 3: Calendario Óptimo y Presupuesto ($ COP)',
+					prevLabel: '⬅ Anterior: Simular Rotación',
+					prevTarget: 'rotacion',
+					nextLabel: '📄 Descargar Informe PDF',
+					nextTarget: 'exportar_pdf',
+				},
+			};
+
+			let vistaActivaActual = 'portada';
+
+			function activarPestanaTerraSoft(tabId) {
+				if (tabId === 'exportar_pdf') {
+					exportarInformeDetalladoPDF();
+					return;
+				}
+
+				if (tabId === 'portada') {
+					vistaActivaActual = 'portada';
+					vistaPortada?.classList.remove('d-none');
+					vistaFullscreen?.classList.add('d-none');
+					btnVolverPortadaNav?.classList.add('d-none');
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+					return;
+				}
+
+				// Mostrar modo Pantalla Completa y ocultar la Portada
+				vistaActivaActual = tabId;
+				vistaPortada?.classList.add('d-none');
+				vistaFullscreen?.classList.remove('d-none');
+				btnVolverPortadaNav?.classList.remove('d-none');
+
+				wizardStepButtons.forEach((btn) => {
+					const stepId = btn.getAttribute('data-wizard-step');
+					btn.classList.toggle('active', stepId === tabId);
+				});
+
+				masterPanes.forEach((pane) => {
+					const id = pane.getAttribute('data-master-pane');
+					pane.classList.toggle('d-none', id !== tabId);
+				});
+
+				const cfg = CONFIG_PASOS[tabId] || CONFIG_PASOS.monitoreo;
+				if (btnWizardPrev) {
+					btnWizardPrev.textContent = cfg.prevLabel;
+					btnWizardPrev.setAttribute('data-go-tab', cfg.prevTarget);
+				}
+				if (btnFooterPrev) {
+					btnFooterPrev.textContent = cfg.prevLabel;
+					btnFooterPrev.setAttribute('data-go-tab', cfg.prevTarget);
+				}
+				if (btnWizardNext) {
+					btnWizardNext.textContent = cfg.nextLabel;
+					btnWizardNext.setAttribute('data-go-tab', cfg.nextTarget);
+				}
+				if (btnFooterNext) {
+					btnFooterNext.textContent = cfg.nextLabel;
+					btnFooterNext.setAttribute('data-go-tab', cfg.nextTarget);
+				}
+				if (wizardFooterLabel) {
+					wizardFooterLabel.textContent = cfg.titulo;
+				}
+
+				if (tabId === 'monitoreo') {
+					setTimeout(() => {
+						chartLluvia?.resize();
+						chartTemp?.resize();
+					}, 70);
+				}
+
+				window.dispatchEvent(
+					new CustomEvent('terrasoft:tab-changed', {
+						detail: { tab: tabId },
+					})
+				);
+
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+
+			window.activarPestanaTerraSoft = activarPestanaTerraSoft;
+
+			masterTabButtons.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const tabId = btn.getAttribute('data-master-tab') || 'monitoreo';
+					activarPestanaTerraSoft(tabId);
+				});
+			});
+
+			wizardStepButtons.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const stepId = btn.getAttribute('data-wizard-step') || 'monitoreo';
+					activarPestanaTerraSoft(stepId);
+				});
+			});
+
+			btnVolverPortadaNav?.addEventListener('click', () => activarPestanaTerraSoft('portada'));
+			brandHome?.addEventListener('click', (e) => {
+				e.preventDefault();
+				activarPestanaTerraSoft('portada');
+			});
+
+			document.addEventListener('click', (e) => {
+				const trigger = e.target.closest('[data-go-tab]');
+				if (trigger) {
+					const destino = trigger.getAttribute('data-go-tab');
+					if (destino) activarPestanaTerraSoft(destino);
+				}
+			});
 
 			const catalogoCultivos = JSON.parse(seccionRotacion?.dataset.cultivos || '[]');
 			const etiquetasAgua = JSON.parse(seccionRotacion?.dataset.etiquetasAgua || '{}');
@@ -337,6 +597,9 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 
 			if (chipFechaActual) {
 				chipFechaActual.textContent = `📅 Hoy: ${fechaHoy.getDate()} de ${nombreMesActual}`;
+			}
+			if (chipFechaActualCal) {
+				chipFechaActualCal.textContent = `📅 Hoy: ${fechaHoy.getDate()} de ${nombreMesActual}`;
 			}
 
 			const formatoCOP = new Intl.NumberFormat('es-CO', {
@@ -710,7 +973,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				if (bridgeTop1) bridgeTop1.textContent = `${iconoPrincipal} Siembra bloqueada en este punto ➔`;
 				if (bridgeCosto) bridgeCosto.textContent = 'Mover marcador a un lote apto ➔';
 
-				rotationContainer.innerHTML = `
+				const htmlBloqueo = `
 					<div class="col-12 ts-animate-in">
 						<div class="card border-danger border-2 shadow-sm">
 							<div class="card-body p-3">
@@ -728,25 +991,37 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 								<p class="mb-3 small text-dark">${terreno.motivo}</p>
 								<div class="p-2 px-3 bg-light rounded border small text-secondary d-flex flex-wrap justify-content-between align-items-center gap-2">
 									<span><strong>💡 Sugerencia:</strong> ${consejoAccion}</span>
-									<button type="button" id="btn-forzar-lote" class="btn btn-outline-success btn-sm fw-semibold">
-										✅ Forzar simulación aquí
-									</button>
+									<div class="d-flex gap-2">
+										<button type="button" class="btn btn-outline-primary btn-sm fw-semibold" data-go-tab="monitoreo">
+											🛰️ Ir al Mapa Satelital
+										</button>
+										<button type="button" class="btn btn-outline-success btn-sm fw-semibold btn-forzar-lote-action">
+											✅ Forzar simulación aquí
+										</button>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				`;
 
-				document.getElementById('btn-forzar-lote')?.addEventListener('click', () => {
-					if (ultimoClima && ultimoClima.terreno) {
-						ultimoClima.terreno.aptoParaSiembra = true;
-						if (bannerTerreno) {
-							bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
-							bannerTerreno.innerHTML =
-								'<strong>✅ Simulación habilitada manualmente:</strong> Mostrando recomendaciones para esta coordenada.';
+				rotationContainer.innerHTML = htmlBloqueo;
+				if (calendarCostContainer) {
+					calendarCostContainer.innerHTML = htmlBloqueo;
+				}
+
+				document.querySelectorAll('.btn-forzar-lote-action').forEach((btn) => {
+					btn.addEventListener('click', () => {
+						if (ultimoClima && ultimoClima.terreno) {
+							ultimoClima.terreno.aptoParaSiembra = true;
+							if (bannerTerreno) {
+								bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
+								bannerTerreno.innerHTML =
+									'<strong>✅ Simulación habilitada manualmente:</strong> Mostrando recomendaciones para esta coordenada.';
+							}
+							calcularYRenderizarRotacion(ultimoClima);
 						}
-						calcularYRenderizarRotacion(ultimoClima);
-					}
+					});
 				});
 			}
 
@@ -942,6 +1217,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					bridgeCosto.textContent = `${topRecomendados[0].evalCal.icono} ${formatoCOP.format(p0.costoTotalNeto)} (${p0.etiquetaArea}) ➔`;
 				}
 
+				// 1) RENDERIZAR PESTAÑA 2 (SIMULAR ROTACIÓN — ENFOQUE AGRONÓMICO LIMPIO)
 				rotationContainer.innerHTML = topRecomendados
 					.map((item, idx) => {
 						const infoAgua = etiquetasAgua[item.agua] || {
@@ -955,150 +1231,192 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						};
 						const esMejor = idx === 0;
 						const barBg = item.score >= 80 ? 'linear-gradient(90deg, #0d2647, #0284c7)' : item.score >= 60 ? '#0284c7' : '#f5b041';
-						const mesesOptimos = Array.isArray(item.mesesSiembra) ? item.mesesSiembra : [3, 4, 5, 9, 10];
-						const collapseId = `desglose-costos-${item.id}-${idx}`;
-
-						// Cinta visual de los 12 meses del año
-						const htmlMeses = NOMBRES_MESES_CORTO.map((nomMes, mIdx) => {
-							const numMes = mIdx + 1;
-							const esOptimo = mesesOptimos.includes(numMes);
-							const esActual = numMes === mesActualNum;
-							const tituloMes = `${NOMBRES_MESES_LARGO[mIdx]}${esActual ? ' (MES ACTUAL)' : ''}: ${
-								esOptimo ? '✅ Mes óptimo de siembra' : 'Fuera de ventana principal'
-							}`;
-							return `<div class="ts-cal-month ${esOptimo ? 'optimal' : ''} ${
-								esActual ? 'current' : ''
-							}" title="${tituloMes}">${nomMes}${esActual ? '📍' : ''}</div>`;
-						}).join('');
-
 						const p = item.presupuesto;
 
 						return `
-						<div class="col-12 ts-animate-in" style="animation-delay: ${idx * 45}ms;">
-							<div class="card ts-card shadow-sm ${esMejor ? 'ts-card-top1' : ''}">
-								<div class="card-body p-3">
-									<!-- Fila 1: Nombre, Píldoras y Porcentaje -->
-									<div class="row align-items-center g-2">
-										<div class="col-md-8">
-											<div class="d-flex align-items-center gap-2 mb-1">
+						<div class="col-lg-4 col-md-6 col-12 ts-animate-in" style="animation-delay: ${idx * 45}ms;">
+							<div class="card ts-card h-100 shadow-sm ${esMejor ? 'ts-card-top1' : ''}">
+								<div class="card-body p-3 d-flex flex-column justify-content-between">
+									<div>
+										<!-- Encabezado: Medalla, Nombre y Porcentaje de Afinidad -->
+										<div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+											<div class="d-flex align-items-center gap-2">
 												<span class="badge fw-bold" style="${esMejor ? 'background: #f5b041; color: #071428;' : 'background: #0d2647; color: #38bdf8;'}">#${idx + 1}</span>
 												<span class="fs-5">${infoBeneficio.icono}</span>
 												<h3 class="h6 mb-0 fw-bold" style="color: #071428;">${item.nombre}</h3>
 											</div>
-											<div class="d-flex flex-wrap gap-1 mb-1">
-												<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">${item.familia}</span>
-												<span class="badge ${infoAgua.badge}">${infoAgua.texto}</span>
-												<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">⏱️ ${item.cicloDias}</span>
-												${item.chips
-													.map((ch) => `<span class="badge ${ch.clase}">${ch.texto}</span>`)
-													.join('')}
-											</div>
-										</div>
-
-										<div class="col-md-4 text-md-end">
-											<div class="d-flex justify-content-md-end align-items-baseline gap-2 mb-1">
-												<span class="text-muted small">Afinidad:</span>
+											<div class="text-end flex-shrink-0">
 												<span class="fs-5 fw-bold" style="color: ${esMejor ? '#0284c7' : '#0d2647'};">${item.score}%</span>
 											</div>
-											<div class="progress" style="height: 8px; background: #e2e8f0;">
-												<div class="progress-bar" role="progressbar" style="width: ${item.score}%; background: ${barBg};"></div>
+										</div>
+
+										<div class="progress mb-2" style="height: 7px; background: #e2e8f0;">
+											<div class="progress-bar" role="progressbar" style="width: ${item.score}%; background: ${barBg};"></div>
+										</div>
+
+										<!-- Píldoras Agronómicas -->
+										<div class="d-flex flex-wrap gap-1 mb-2">
+											<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">${item.familia}</span>
+											<span class="badge ${infoAgua.badge}">${infoAgua.texto}</span>
+											<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">⏱️ ${item.cicloDias}</span>
+											${item.chips
+												.map((ch) => `<span class="badge ${ch.clase}">${ch.texto}</span>`)
+												.join('')}
+										</div>
+
+										<p class="small text-secondary mb-2" style="font-size: 0.78rem;">
+											${item.descripcion}
+										</p>
+
+										<!-- Razones Agronómicas -->
+										<div class="p-2 rounded bg-light border mb-2">
+											<div class="fw-bold small mb-1" style="color: #0d2647; font-size: 0.74rem;">
+												🔬 Por qué funciona en tu lote:
 											</div>
+											<ul class="small text-muted ps-3 mb-0" style="font-size: 0.76rem;">
+												${item.razones.map((r) => `<li>${r}</li>`).join('')}
+											</ul>
 										</div>
 									</div>
 
-									<!-- Fila 2: Calendario Óptimo de Siembra y Consejo para la Fecha Actual -->
-									<div class="mt-2 pt-2 border-top">
-										<div class="d-flex flex-wrap justify-content-between align-items-start gap-1 mb-2">
-											<span class="badge ts-cal-badge py-1 px-2 ${item.evalCal.badgeClase}" style="font-size: 0.74rem;">
-												${item.evalCal.icono} ${item.evalCal.titulo}
-											</span>
-											<span class="text-muted" style="font-size: 0.7rem; overflow-wrap: anywhere;">
-												🟦 = Meses óptimos &nbsp;|&nbsp; 📍 = Mes actual (${nombreMesActual})
-											</span>
-										</div>
-										<div class="ts-cal-grid mb-2">${htmlMeses}</div>
-										<div class="text-secondary" style="font-size: 0.76rem; line-height: 1.4; overflow-wrap: anywhere; word-break: break-word;">
-											${item.evalCal.consejo}
-										</div>
-									</div>
-
-									<!-- Fila 3: Presupuesto Estimado para el Lote (COP $) + Botón Desglose -->
-									<div class="mt-2 ts-cost-panel">
-										<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-											<div>
-												<span class="fw-semibold small" style="color: #0d2647;">
-													💵 Inversión Estimada (${p.etiquetaArea}):
-												</span>
-												<span class="fs-6 fw-bold ms-1" style="color: #0284c7;">
-													${formatoCOP.format(p.costoTotalNeto)}
-												</span>
-												<span class="badge bg-white border ms-1" style="font-size: 0.7rem; color: #0d2647;">
-													📦 Prod. est.: ~${p.rendimientoTexto}
-												</span>
-												${
-													p.ahorroNitrogeno > 0
-														? `<div class="fw-semibold" style="font-size: 0.73rem; color: #b45309;">
-															🌱 Incl. ahorro de ${formatoCOP.format(p.ahorroNitrogeno)} en fertilizante por nitrógeno fijado del cultivo previo
-														   </div>`
-														: ''
-												}
-											</div>
-											<button
-												class="btn btn-sm py-0 px-2 fw-semibold"
-												style="font-size: 0.74rem; background: #0d2647; color: #f5b041; border: 1px solid #163a66;"
-												type="button"
-												data-bs-toggle="collapse"
-												data-bs-target="#${collapseId}"
-											>
-												📋 Ver desglose de gastos
-											</button>
-										</div>
-
-										<!-- Desglose colapsable por rubros -->
-										<div class="collapse mt-2 pt-2 border-top" id="${collapseId}">
-											<div class="row g-2 text-center" style="font-size: 0.75rem;">
-												<div class="col-6 col-sm-3">
-													<div class="p-1 bg-white rounded border">
-														<div class="text-muted">🌱 Semilla/Colino</div>
-														<div class="fw-bold" style="color: #071428;">${formatoCOP.format(p.rubSemilla)}</div>
-													</div>
-												</div>
-												<div class="col-6 col-sm-3">
-													<div class="p-1 bg-white rounded border">
-														<div class="text-muted">🚜 Mano de Obra</div>
-														<div class="fw-bold" style="color: #071428;">${formatoCOP.format(p.rubManoObra)}</div>
-													</div>
-												</div>
-												<div class="col-6 col-sm-3">
-													<div class="p-1 bg-white rounded border">
-														<div class="text-muted">🧪 Fertilizantes</div>
-														<div class="fw-bold" style="color: #0284c7;">${formatoCOP.format(p.rubFertilizantes)}</div>
-													</div>
-												</div>
-												<div class="col-6 col-sm-3">
-													<div class="p-1 bg-white rounded border">
-														<div class="text-muted">🛡️ Fitosanitarios</div>
-														<div class="fw-bold" style="color: #071428;">${formatoCOP.format(p.rubFitosanitarios)}</div>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Fila 4: Justificación Agronómica y Región -->
-									<div class="mt-2 pt-2 border-top d-flex flex-wrap justify-content-between align-items-start gap-2">
-										<ul class="small text-muted ps-3 mb-0 flex-grow-1" style="font-size: 0.78rem;">
-											${item.razones.map((r) => `<li>${r}</li>`).join('')}
-										</ul>
-										<span class="badge bg-light text-secondary border align-self-end" style="font-size: 0.68rem;">
+									<!-- Pie de Tarjeta con Resumen Rápido y Salto a Pestaña 3 -->
+									<div class="pt-2 border-top d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2">
+										<span class="badge bg-light text-secondary border" style="font-size: 0.7rem;">
 											📍 ${item.macroregion || item.region}
 										</span>
+										<button
+											type="button"
+											class="btn btn-sm fw-semibold py-1 px-2"
+											style="font-size: 0.75rem; background: #0d2647; color: #f5b041;"
+											data-go-tab="calendario"
+										>
+											📅 Ver Calendario y Costos (${formatoCOP.format(p.costoTotalNeto)}) ➔
+										</button>
 									</div>
 								</div>
 							</div>
 						</div>`;
 					})
 					.join('');
+
+				// 2) RENDERIZAR PESTAÑA 3 (CALENDARIO DE 12 MESES + DESGLOSE DE COSTOS EN $ COP)
+				if (calendarCostContainer) {
+					calendarCostContainer.innerHTML = topRecomendados
+						.map((item, idx) => {
+							const esMejor = idx === 0;
+							const mesesOptimos = Array.isArray(item.mesesSiembra) ? item.mesesSiembra : [3, 4, 5, 9, 10];
+							const p = item.presupuesto;
+
+							const htmlMeses = NOMBRES_MESES_CORTO.map((nomMes, mIdx) => {
+								const numMes = mIdx + 1;
+								const esOptimo = mesesOptimos.includes(numMes);
+								const esActual = numMes === mesActualNum;
+								const tituloMes = `${NOMBRES_MESES_LARGO[mIdx]}${esActual ? ' (MES ACTUAL)' : ''}: ${
+									esOptimo ? '✅ Mes óptimo de siembra' : 'Fuera de ventana principal'
+								}`;
+								return `<div class="ts-cal-month ${esOptimo ? 'optimal' : ''} ${
+									esActual ? 'current' : ''
+								}" title="${tituloMes}">${nomMes}${esActual ? '📍' : ''}</div>`;
+							}).join('');
+
+							return `
+							<div class="col-12 ts-animate-in" style="animation-delay: ${idx * 45}ms;">
+								<div class="card ts-card shadow-sm ${esMejor ? 'ts-card-top1' : ''}">
+									<div class="card-body p-3">
+										<!-- Encabezado del Cultivo en Pestaña 3 -->
+										<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pb-2 mb-3 border-bottom">
+											<div class="d-flex align-items-center gap-2">
+												<span class="badge fw-bold" style="${esMejor ? 'background: #f5b041; color: #071428;' : 'background: #0d2647; color: #38bdf8;'}">Opción #${idx + 1}</span>
+												<h3 class="h6 mb-0 fw-bold" style="color: #071428;">${item.nombre}</h3>
+												<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">⏱️ Ciclo: ${item.cicloDias}</span>
+											</div>
+											<span class="badge fw-bold" style="background: #0d2647; color: #38bdf8;">
+												Compatibilidad Agronómica: ${item.score}%
+											</span>
+										</div>
+
+										<div class="row g-3 align-items-stretch">
+											<!-- Mitad Izquierda (6/12): Calendario Óptimo de 12 Meses y Semáforo Hoy -->
+											<div class="col-lg-6">
+												<div class="p-3 rounded bg-light border h-100">
+													<div class="d-flex flex-wrap justify-content-between align-items-start gap-1 mb-2">
+														<span class="badge ts-cal-badge py-1 px-2 ${item.evalCal.badgeClase}" style="font-size: 0.75rem;">
+															${item.evalCal.icono} ${item.evalCal.titulo}
+														</span>
+													</div>
+													<div class="text-muted mb-2" style="font-size: 0.72rem; overflow-wrap: anywhere;">
+														🟦 = Meses óptimos de siembra &nbsp;|&nbsp; 📍 = Mes actual (${nombreMesActual})
+													</div>
+													<div class="ts-cal-grid mb-2">${htmlMeses}</div>
+													<div class="text-secondary mt-2" style="font-size: 0.78rem; line-height: 1.45; overflow-wrap: anywhere; word-break: break-word;">
+														<strong>💡 Consejo para ${nombreMesActual}:</strong> ${item.evalCal.consejo}
+													</div>
+												</div>
+											</div>
+
+											<!-- Mitad Derecha (6/12): Presupuesto Estimado en Pesos ($ COP) con 4 Rubros Visibles -->
+											<div class="col-lg-6">
+												<div class="ts-cost-panel h-100 d-flex flex-column justify-content-between">
+													<div>
+														<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+															<div>
+																<span class="fw-bold small" style="color: #0d2647;">
+																	💵 Inversión Estimada (${p.etiquetaArea}):
+																</span>
+																<span class="fs-5 fw-bold ms-1" style="color: #0284c7;">
+																	${formatoCOP.format(p.costoTotalNeto)}
+																</span>
+															</div>
+															<span class="badge bg-white border" style="font-size: 0.74rem; color: #0d2647;">
+																📦 Producción esperada: ~${p.rendimientoTexto}
+															</span>
+														</div>
+
+														${
+															p.ahorroNitrogeno > 0
+																? `<div class="p-1 px-2 rounded mb-2 fw-semibold" style="font-size: 0.74rem; background: #fef3c7; color: #92400e; border: 1px solid #f5b041;">
+																	🌱 Incluye ahorro de <strong>${formatoCOP.format(p.ahorroNitrogeno)}</strong> en fertilizantes gracias al nitrógeno fijado por tu cultivo previo.
+																   </div>`
+																: ''
+														}
+													</div>
+
+													<!-- 4 Rubros del Presupuesto siempre visibles -->
+													<div class="row g-2 text-center mt-1" style="font-size: 0.76rem;">
+														<div class="col-6 col-sm-3">
+															<div class="p-2 bg-white rounded border h-100">
+																<div class="text-muted">🌱 Semilla/Colino</div>
+																<div class="fw-bold mt-1" style="color: #071428;">${formatoCOP.format(p.rubSemilla)}</div>
+															</div>
+														</div>
+														<div class="col-6 col-sm-3">
+															<div class="p-2 bg-white rounded border h-100">
+																<div class="text-muted">🚜 Mano de Obra</div>
+																<div class="fw-bold mt-1" style="color: #071428;">${formatoCOP.format(p.rubManoObra)}</div>
+															</div>
+														</div>
+														<div class="col-6 col-sm-3">
+															<div class="p-2 bg-white rounded border h-100">
+																<div class="text-muted">🧪 Fertilizantes</div>
+																<div class="fw-bold mt-1" style="color: #0284c7;">${formatoCOP.format(p.rubFertilizantes)}</div>
+															</div>
+														</div>
+														<div class="col-6 col-sm-3">
+															<div class="p-2 bg-white rounded border h-100">
+																<div class="text-muted">🛡️ Fitosanitarios</div>
+																<div class="fw-bold mt-1" style="color: #071428;">${formatoCOP.format(p.rubFitosanitarios)}</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>`;
+						})
+						.join('');
+				}
 			}
 
 			async function consultarParcela(lat, lon) {
@@ -1746,7 +2064,14 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 			}
 
 			document.getElementById('btn-exportar-pdf')?.addEventListener('click', exportarInformeDetalladoPDF);
+			document.getElementById('btn-exportar-pdf-nav')?.addEventListener('click', exportarInformeDetalladoPDF);
 			document.getElementById('btn-exportar-csv')?.addEventListener('click', exportarInformeCSV);
+
+			btnAnalizar?.addEventListener('click', () => {
+				const lat = parseFloat(inputLat?.value || '5.79482');
+				const lon = parseFloat(inputLon?.value || '-72.99667');
+				consultarParcela(lat, lon);
+			});
 
 			formTerraSync?.addEventListener('submit', (e) => {
 				e.preventDefault();

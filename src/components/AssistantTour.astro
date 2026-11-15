@@ -251,77 +251,91 @@
 		const dotsContainer = document.getElementById('tour-dots-container');
 		const cajaCapsula = document.getElementById('caja-respuesta-capsula');
 
-		// Definición de las 6 Estaciones Didácticas del Tour
+		// Definición de las 6 Estaciones Didácticas del Tour sincronizadas con las 3 Pestañas Maestras
 		const ESTACIONES_TOUR = [
 			{
 				id: 'mapa',
 				selector: '#terrasync-map',
-				titulo: '📍 Estación 1: Selecciona tu Parcela en el Mapa',
+				titulo: '📍 Estación 1: Monitoreo Satelital y Clima NASA',
 				descripcion:
-					'Aquí ves tu terreno desde el espacio. Al hacer clic en cualquier punto, TerraSoft combina mapas viales + análisis óptico satelital (a 0.6 metros por píxel) para verificar si hay tierra fértil o si es una carretera, edificio o glaciar.',
+					'En la Pestaña 1 (🛰️ Monitoreo Satelital) ves tu terreno desde el espacio junto a las gráficas mensuales de lluvia y temperatura de NASA POWER. Al hacer clic en un punto, TerraSoft verifica si hay tierra fértil o si es una carretera, edificio o glaciar.',
 				mision:
 					'👉 Haz clic en cualquier lote verde o tierra arada en el mapa (o pincha sobre una carretera para poner a prueba el detector).',
 				completadoTexto:
 					'✅ ¡Lo lograste! El satélite analizó el suelo de esa coordenada y descargó el clima de la NASA.',
+				onEnter: () => {
+					window.activarPestanaTerraSoft?.('monitoreo', false);
+				},
 			},
 			{
 				id: 'cultivo',
 				selector: '#select-cultivo',
 				titulo: '🌾 Estación 2: ¿Qué sembraste por última vez?',
 				descripcion:
-					'En agricultura, nunca debemos sembrar la misma familia botánica dos veces seguidas (por ejemplo, Papa después de Papa), porque las plagas quedan en el suelo.',
+					'En la Pestaña 2 (🌾 Simular Rotación) indicas tu cultivo actual. En agricultura nunca debemos repetir la misma familia botánica dos veces seguidas, porque las plagas quedan en el suelo.',
 				mision:
 					'👉 Abre el selector "🌾 Cultivo Actual" (agrupado por las 6 regiones de Colombia) y elige un cultivo.',
 				completadoTexto:
 					'✅ ¡Muy bien! Ahora TerraSoft penalizará cultivos de la misma familia y buscará rotaciones que corten las plagas.',
-			},
-			{
-				id: 'area',
-				selector: '#input-area-lote',
-				titulo: '📐 Estación 3: El Tamaño Exacto de tu Lote',
-				descripcion:
-					'No es lo mismo presupuestar una huerta de 1,200 m² que una fanegada (6,400 m²) o 5 hectáreas. Aquí puedes indicar el tamaño real de tu terreno.',
-				mision:
-					'👉 Escribe un área diferente en "📐 Lote" o cambia la unidad entre m², Fanegadas o Hectáreas.',
-				completadoTexto:
-					'✅ ¡Perfecto! Todos los costos de semilla, mano de obra y abonos se acaban de recalcular a la medida de tu lote.',
+				onEnter: () => {
+					window.activarPestanaTerraSoft?.('rotacion', false);
+				},
 			},
 			{
 				id: 'prioridad',
 				selector: '[aria-label="Prioridad del próximo ciclo"]',
-				titulo: '🎯 Estación 4: Define tu Prioridad para este Ciclo',
+				titulo: '🎯 Estación 3: Define tu Prioridad para este Ciclo',
 				descripcion:
 					'¿Tu suelo está cansado y necesita nitrógeno (🌱 Suelo)? ¿Vienen meses secos (💧 Agua)? ¿O buscas el mayor ingreso comercial (💰 Rentabilidad)?',
 				mision:
-					'👉 Haz clic en cualquiera de los 3 botones (🌱 Suelo, 💧 Agua o 💰 Rentabilidad) y observa cómo cambian las tarjetas a la derecha.',
+					'👉 Haz clic en cualquiera de los 3 botones (🌱 Suelo, 💧 Agua o 💰 Rentabilidad) y observa cómo se reordenan las 3 tarjetas de abajo.',
 				completadoTexto:
 					'✅ ¡Excelente! Viste cómo el ranking y los porcentajes de afinidad se reordenaron al instante.',
+				onEnter: () => {
+					window.activarPestanaTerraSoft?.('rotacion', false);
+				},
 			},
 			{
 				id: 'recomendaciones',
 				selector: '#seccion-rotacion',
-				titulo: '📅 Estación 5: Calendario Hoy y Presupuesto en Pesos ($ COP)',
+				titulo: '🏆 Estación 4: Compara el Top 3 de Cultivos Recomendados',
 				descripcion:
-					'En cada tarjeta verás: 1) El semáforo que te dice si el mes actual es ideal para sembrar, 2) La cinta de los 12 meses del año, y 3) La inversión estimada en pesos colombianos con ahorro en fertilizantes si rotas tras una leguminosa.',
+					'Aquí ves las 3 mejores opciones de rotación para tu parcela con su afinidad (%), familia botánica y justificación técnica.',
 				mision:
-					'👉 Haz clic en el botón "📋 Ver desglose de gastos" dentro de cualquiera de las tarjetas recomendadas.',
+					'👉 Haz clic en el botón "📅 Ver Calendario y Costos" dentro de cualquiera de las tarjetas para ir al Módulo 3.',
 				completadoTexto:
-					'✅ ¡Genial! Ahí tienes el presupuesto separado en Semilla, Mano de Obra, Fertilizantes y Fitosanitarios.',
+					'✅ ¡Genial! Acabas de abrir el módulo de Calendario Óptimo y Presupuesto.',
 				onEnter: () => {
-					const tabRec = document.getElementById('tab-recomendaciones-btn');
-					if (tabRec && !tabRec.classList.contains('active')) tabRec.click();
+					window.activarPestanaTerraSoft?.('rotacion', false);
+				},
+			},
+			{
+				id: 'area',
+				selector: '#input-area-lote',
+				titulo: '📐 Estación 5: Tamaño del Lote, Calendario y Costos ($ COP)',
+				descripcion:
+					'En la Pestaña 3 (📅 Calendario y Presupuesto) puedes indicar el tamaño real de tu terreno en m², Fanegadas o Hectáreas, ver la cinta de los 12 meses y el presupuesto desglosado en Semilla, Mano de Obra, Fertilizantes y Fitosanitarios.',
+				mision:
+					'👉 Escribe un área diferente en "📐 Tamaño de tu Lote" o cambia la unidad entre m², Fanegadas o Hectáreas.',
+				completadoTexto:
+					'✅ ¡Perfecto! Todos los costos de semilla, mano de obra y abonos se acaban de recalcular a la medida de tu lote.',
+				onEnter: () => {
+					window.activarPestanaTerraSoft?.('calendario', false);
 				},
 			},
 			{
 				id: 'exportar',
-				selector: '#terrasync-tabs',
-				titulo: '📊 Estación 6: Gráficos de la NASA e Informe Descargable',
+				selector: '#calendario-costos',
+				titulo: '📄 Estación 6: Descarga tu Informe Técnico en PDF o Excel',
 				descripcion:
-					'En la pestaña "📊 Gráficos Climáticos" puedes ver mes a mes la lluvia y temperatura de NASA POWER. Y con los botones "📄 Informe PDF" o "📥 Excel (.CSV)" puedes llevarte todo el estudio técnico listo para imprimir o guardar.',
+					'Con los botones "📄 Descargar Informe PDF" o "📥 Exportar Excel (.CSV)" puedes llevarte todo el estudio agroclimático, calendario de siembra y presupuesto listo para imprimir o guardar.',
 				mision:
-					'👉 Haz clic en la pestaña "📊 Gráficos Climáticos (NASA POWER)" o prueba descargar tu "📄 Informe PDF".',
+					'👉 Haz clic en "📄 Descargar Informe PDF" o en "📥 Exportar Excel (.CSV)" para completar tu recorrido.',
 				completadoTexto:
-					'🎉 ¡Felicitaciones! Ya dominas todas las herramientas de TerraSoft como un experto.',
+					'🎉 ¡Felicitaciones! Ya dominas todas las pestañas de TerraSoft como un experto.',
+				onEnter: () => {
+					window.activarPestanaTerraSoft?.('calendario', false);
+				},
 			},
 		];
 
@@ -550,22 +564,19 @@
 			});
 		});
 
-		// 5. Cuando abre el desglose de costos en alguna tarjeta
-		document.getElementById('rotation-cards-container')?.addEventListener('click', (e) => {
-			if (e.target.closest('[data-bs-toggle="collapse"]')) {
+		// 5. Cuando pasa de las tarjetas de rotación a Calendario y Costos
+		window.addEventListener('terrasoft:tab-changed', (e) => {
+			if (e.detail?.tab === 'calendario') {
 				marcarMisionCompletada(
 					'recomendaciones',
-					'✅ ¡Excelente! Ahora puedes ver cuánto dinero se destina a Semilla, Mano de Obra, Abonos y Fitosanitarios.'
+					'✅ ¡Excelente! Ahora estás viendo el calendario de 12 meses y el presupuesto desglosado.'
 				);
 			}
 		});
 
-		// 6. Cuando abre la pestaña de gráficos o exporta el informe
-		document.getElementById('tab-graficos-btn')?.addEventListener('click', () => {
-			marcarMisionCompletada(
-				'exportar',
-				'🎉 ¡Genial! Aquí tienes el historial mes a mes de lluvia y temperatura de los satélites de la NASA.'
-			);
+		// 6. Cuando exporta el informe PDF o CSV
+		document.getElementById('btn-exportar-pdf-nav')?.addEventListener('click', () => {
+			marcarMisionCompletada('exportar', '🎉 ¡Excelente! Has generado el informe técnico completo en PDF.');
 		});
 		document.getElementById('btn-exportar-pdf')?.addEventListener('click', () => {
 			marcarMisionCompletada('exportar', '🎉 ¡Excelente! Has generado el informe técnico completo en PDF.');

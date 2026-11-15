@@ -43,7 +43,7 @@ const {
 			data-initial-lat={initialLat}
 			data-initial-lon={initialLon}
 			data-initial-zoom={initialZoom}
-			style="height: 330px; width: 100%;"
+			style="height: 395px; width: 100%;"
 		></div>
 	</div>
 
@@ -122,6 +122,12 @@ const {
 			center: [initialLat, initialLon],
 			zoom: initialZoom,
 			layers: [capaSatelite],
+		});
+
+		window.addEventListener('terrasoft:tab-changed', (e) => {
+			if (e.detail?.tab === 'monitoreo') {
+				setTimeout(() => map.invalidateSize(), 60);
+			}
 		});
 
 		L.control
