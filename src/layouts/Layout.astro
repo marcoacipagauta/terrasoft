@@ -37,15 +37,22 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 			}
 			html {
 				scroll-behavior: smooth;
-				overflow-x: hidden;
-				max-width: 100%;
+				overflow-x: clip;
+				width: 100%;
+				max-width: 100vw;
 			}
 			body {
 				background-color: var(--ts-bg);
 				color: #0f172a;
 				font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-				overflow-x: hidden;
-				max-width: 100%;
+				overflow-x: clip;
+				width: 100%;
+				max-width: 100vw;
+				position: relative;
+			}
+			#simulador-rotacion {
+				overflow-x: clip;
+				max-width: 100vw;
 			}
 
 			/* 1. NAVBAR ESPACIAL (#071428) */
@@ -258,12 +265,22 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 					z-index: 20;
 				}
 			}
-			.ts-topbar .input-group {
-				min-width: 0;
-				flex: 1 1 0%;
+			.ts-topbar .row > * {
+				min-width: 0 !important;
+				max-width: 100% !important;
 			}
-			.ts-topbar .form-select {
-				min-width: 0;
+			.ts-topbar .input-group {
+				min-width: 0 !important;
+				max-width: 100% !important;
+				flex: 1 1 0% !important;
+				flex-wrap: nowrap !important;
+			}
+			.ts-topbar .form-select,
+			.ts-topbar .form-control {
+				width: 0 !important;
+				flex: 1 1 0% !important;
+				min-width: 0 !important;
+				max-width: 100% !important;
 				text-overflow: ellipsis;
 				overflow: hidden;
 				white-space: nowrap;

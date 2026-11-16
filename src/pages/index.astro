@@ -38,7 +38,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 								<select
 									id="select-cultivo"
 									class="form-select form-select-sm fw-semibold"
-									style="min-width: 0;"
+									style="min-width: 0; width: 0; flex: 1 1 0%;"
 									required
 								>
 									{
@@ -47,9 +47,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 												{cultivos
 													.filter((c) => (c.macroregion || 'General') === macro)
 													.map((c) => (
-														<option value={c.id}>
-															{c.nombre} ({c.familia})
-														</option>
+														<option value={c.id}>{c.nombre}</option>
 													))}
 											</optgroup>
 										))
@@ -62,30 +60,30 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						<div
 							id="menu-cultivos-movil"
 							class="d-none shadow-lg rounded-3 border bg-white text-dark position-absolute start-0 end-0 mt-1 mx-2"
-							style="z-index: 1085; max-height: 310px; overflow-y: auto; border-color: #0d2647 !important;"
+							style="z-index: 1085; max-height: 290px; max-width: calc(100vw - 24px); overflow-y: auto; overflow-x: hidden; box-sizing: border-box; border-color: #0d2647 !important;"
 						>
 							<div class="d-flex justify-content-between align-items-center px-3 py-2 sticky-top" style="background: #0d2647; color: #fff;">
-								<span class="fw-bold small">🌾 Selecciona tu Cultivo Actual</span>
-								<button type="button" id="btn-cerrar-menu-cultivos" class="btn-close btn-close-white" style="font-size: 0.7rem;" aria-label="Cerrar"></button>
+								<span class="fw-bold small text-truncate">🌾 Selecciona tu Cultivo Actual</span>
+								<button type="button" id="btn-cerrar-menu-cultivos" class="btn-close btn-close-white flex-shrink-0" style="font-size: 0.7rem;" aria-label="Cerrar"></button>
 							</div>
-							<div class="p-2">
+							<div class="p-2" style="max-width: 100%; overflow-x: hidden;">
 								{
 									macroregiones.map((macro) => (
 										<div class="mb-2">
-											<div class="px-2 py-1 rounded fw-bold small" style="background: #eef4fb; color: #0d2647; font-size: 0.74rem;">
+											<div class="px-2 py-1 rounded fw-bold small text-truncate" style="background: #eef4fb; color: #0d2647; font-size: 0.74rem;">
 												🇨🇴 {macro}
 											</div>
-											<div class="d-grid gap-1 mt-1">
+											<div class="d-flex flex-column gap-1 mt-1">
 												{cultivos
 													.filter((c) => (c.macroregion || 'General') === macro)
 													.map((c) => (
 														<button
 															type="button"
-															class="btn btn-sm text-start py-1 px-2 border-0 rounded ts-item-cultivo-movil"
+															class="btn btn-sm text-start py-1 px-2 border-0 rounded ts-item-cultivo-movil w-100"
 															data-crop-select-id={c.id}
-															style="font-size: 0.78rem; color: #0f172a;"
+															style="font-size: 0.77rem; color: #0f172a; white-space: normal !important; word-break: break-word; line-height: 1.25;"
 														>
-															<strong>{c.nombre}</strong> <span class="text-muted" style="font-size: 0.7rem;">({c.familia})</span>
+															<strong>{c.nombre}</strong> <span class="text-muted" style="font-size: 0.69rem;">({c.familia})</span>
 														</button>
 													))}
 											</div>
@@ -97,8 +95,8 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					</div>
 
 					<!-- Selector de Área del Lote para Cálculo de Costos -->
-					<div class="col-xl-3 col-lg-3 col-md-6">
-						<div class="input-group input-group-sm">
+					<div class="col-xl-3 col-lg-3 col-md-6 col-12">
+						<div class="input-group input-group-sm" id="grupo-area-lote">
 							<span class="input-group-text fw-bold" style="background: #163a66; color: #38bdf8; border-color: rgba(56,189,248,0.35);">📐 Lote</span>
 							<input
 								type="number"
@@ -109,7 +107,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 								step="any"
 								title="Tamaño de tu lote o parcela"
 							/>
-							<select id="select-unidad-area" class="form-select form-select-sm bg-light fw-semibold" style="max-width: 115px;">
+							<select id="select-unidad-area" class="form-select form-select-sm bg-light fw-semibold" style="max-width: 112px; flex: 0 0 auto !important; width: auto !important;">
 								<option value="m2" selected>m² (Metros²)</option>
 								<option value="fanegada">Fanegadas</option>
 								<option value="ha">Hectáreas</option>
@@ -148,17 +146,18 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				<div
 					id="topbar-resumen-movil"
 					class="d-lg-none mt-2 pt-2 border-top border-info border-opacity-25 d-flex justify-content-between align-items-center gap-2 small"
+					style="max-width: 100%; overflow: hidden;"
 				>
-					<div class="text-truncate" style="font-size: 0.76rem;">
+					<div class="text-truncate" style="font-size: 0.75rem; min-width: 0; flex: 1 1 0%;">
 						<span class="text-info fw-semibold">Rotación:</span>
 						<span class="text-white fw-bold ms-1" id="movil-chip-origen">Papa</span>
 						<span class="text-warning mx-1">➔</span>
-						<span class="badge text-dark fw-bold" style="background: #f5b041;" id="movil-chip-destino">Calculando...</span>
+						<span class="badge text-dark fw-bold" style="background: #f5b041; white-space: nowrap;" id="movil-chip-destino">Calculando...</span>
 					</div>
 					<a
 						href="#calendario-costos"
 						class="btn btn-outline-info btn-sm py-0 px-2 rounded-pill flex-shrink-0 text-white"
-						style="font-size: 0.72rem;"
+						style="font-size: 0.71rem;"
 					>
 						Ver Top 3 ⬇
 					</a>

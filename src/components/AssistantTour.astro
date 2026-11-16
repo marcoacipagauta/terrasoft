@@ -56,7 +56,6 @@
 		z-index: 1055 !important;
 		border-radius: 0.65rem;
 		animation: tsSpotlightPulse 1.8s infinite ease-in-out !important;
-		background-color: #ffffff;
 	}
 
 	/* Panel flotante del Asistente */
@@ -467,7 +466,7 @@
 			},
 			{
 				id: 'cultivo',
-				selector: '#select-cultivo',
+				selector: '#grupo-selector-cultivo',
 				titulo: '🌾 Estación 2: ¿Qué sembraste por última vez?',
 				descripcion:
 					'En la barra superior del Dashboard indicas tu cultivo actual. En agricultura nunca debemos repetir la misma familia botánica dos veces seguidas, porque las plagas quedan en el suelo.',
@@ -481,7 +480,7 @@
 			},
 			{
 				id: 'area',
-				selector: '#input-area-lote',
+				selector: '#grupo-area-lote',
 				titulo: '📐 Estación 3: Indica el Tamaño de tu Lote',
 				descripcion:
 					'Escribe cuántos metros cuadrados (m²), fanegadas o hectáreas tiene tu terreno. TerraSoft calculará automáticamente cuánta semilla, abono y jornales necesitas en Pesos Colombianos ($ COP).',
@@ -808,7 +807,7 @@
 
 		// 2. Cuando cambia el cultivo actual
 		document.getElementById('select-cultivo')?.addEventListener('change', (e) => {
-			const textoOpcion = e.target.options[e.target.selectedIndex]?.text || '';
+			const textoOpcion = (e.target.options[e.target.selectedIndex]?.text || '').trim();
 			marcarMisionCompletada(
 				'cultivo',
 				`✅ Elegiste "${textoOpcion}". Las tarjetas ahora buscan otra familia botánica para proteger tu suelo.`
