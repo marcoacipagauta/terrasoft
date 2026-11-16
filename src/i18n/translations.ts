@@ -10,7 +10,7 @@ export const TERRASOFT_I18N = {
 			heroBadge: 'Agricultura de Precisión · NASA POWER, FAO GAEZ & Colombia',
 			heroTitleHtml: 'Datos espaciales para<br />decisiones en tu campo',
 			heroLeadHtml:
-				'Selecciona tu parcela en el mapa satelital para obtener en tiempo real la aptitud del suelo, el clima histórico de <strong class="text-warning">NASA POWER</strong>, la zonificación <strong class="text-info">FAO GAEZ v4</strong>, la rotación ideal de cultivos y el presupuesto para tu lote.',
+				'TerraSoft integra mapas satelitales y datos ambientales para analizar parcelas agrícolas, consultar la aptitud del suelo, explorar el clima histórico de <strong class="text-warning">NASA POWER</strong>, la zonificación <strong class="text-info">FAO GAEZ v4</strong>, las alternativas de rotación de cultivos y los presupuestos estimados para cada terreno.',
 			heroPill1: '<strong>6 Macroregiones</strong> de Colombia',
 			heroPill2: '<strong>24 Cultivos</strong> y Familias Botánicas',
 			heroPill3: '<strong>Presupuesto en $ COP</strong> e Informe PDF',
@@ -141,7 +141,7 @@ export const TERRASOFT_I18N = {
 			heroBadge: 'Precision Agriculture · NASA POWER, FAO GAEZ & Colombia',
 			heroTitleHtml: 'Space data for<br />decisions in your field',
 			heroLeadHtml:
-				'Select your parcel on the satellite map to get real-time soil suitability, historical <strong class="text-warning">NASA POWER</strong> climate, <strong class="text-info">FAO GAEZ v4</strong> agro-ecological zoning, ideal crop rotation, and your lot budget.',
+				'TerraSoft integrates satellite maps and environmental data to analyze agricultural parcels, check soil suitability, explore historical <strong class="text-warning">NASA POWER</strong> climate, <strong class="text-info">FAO GAEZ v4</strong> zoning, crop rotation alternatives, and estimated budgets for each terrain.',
 			heroPill1: '<strong>6 Macro-regions</strong> of Colombia',
 			heroPill2: '<strong>24 Crops</strong> & Botanical Families',
 			heroPill3: '<strong>Budget in $ COP</strong> & PDF Report',

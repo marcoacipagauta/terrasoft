@@ -265,6 +265,19 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 					position: relative;
 					top: 0;
 					z-index: 20;
+					max-width: 100% !important;
+				}
+				/* Evitar que el <select> nativo capture foco o auto-zoom en móvil; se usa #menu-cultivos-movil */
+				#select-cultivo {
+					pointer-events: none !important;
+				}
+				#grupo-selector-cultivo {
+					cursor: pointer;
+				}
+				/* Evitar auto-zoom de iOS/Android al tocar el input numérico de área del lote */
+				#input-area-lote,
+				#select-unidad-area {
+					font-size: 16px !important;
 				}
 			}
 			.ts-topbar .row > * {
@@ -336,6 +349,17 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 				font-size: 0.83rem;
 				padding: 0.42rem 0.75rem;
 				transition: all 0.15s ease;
+				min-width: 0;
+				flex: 1 1 0%;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			@media (max-width: 575.98px) {
+				.ts-priority-btn {
+					font-size: 0.75rem !important;
+					padding: 0.36rem 0.35rem !important;
+				}
 			}
 			.ts-priority-btn,
 			.ts-priority-btn:focus,

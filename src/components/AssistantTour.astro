@@ -190,18 +190,27 @@
 			flex-shrink: 0;
 		}
 		.ts-assistant-card {
-			bottom: 8px;
-			left: 8px;
-			right: 8px;
-			width: calc(100vw - 16px) !important;
-			max-width: calc(100% - 16px) !important;
+			bottom: 8px !important;
+			left: 8px !important;
+			right: 8px !important;
+			width: auto !important;
+			max-width: calc(100vw - 16px) !important;
+			max-height: calc(100dvh - 16px) !important;
 			box-sizing: border-box !important;
 			border-radius: 0.85rem;
 			box-shadow: 0 10px 28px rgba(7, 20, 40, 0.42);
+			overflow-x: hidden !important;
+		}
+		.ts-spotlight-target {
+			animation: none !important;
+			outline: 2px solid #f5b041 !important;
+			outline-offset: -1px !important;
+			box-shadow: 0 0 0 3px rgba(245, 176, 65, 0.35) !important;
 		}
 		.ts-assistant-header {
 			padding: 6px 10px;
 			max-width: 100%;
+			overflow: hidden;
 		}
 		.ts-assistant-header .ts-assistant-avatar {
 			width: 24px;
@@ -217,10 +226,12 @@
 		#asistente-subbarra {
 			padding: 4px 8px !important;
 			max-width: 100%;
+			overflow: hidden;
 		}
 		#asistente-subbarra .btn-group {
 			width: 100%;
 			display: flex;
+			min-width: 0;
 		}
 		#asistente-subbarra .btn {
 			flex: 1 1 0%;
@@ -233,8 +244,11 @@
 		}
 		#vista-tour {
 			padding: 8px 10px !important;
-			max-width: 100%;
-			box-sizing: border-box;
+			max-width: 100% !important;
+			max-height: 36vh;
+			overflow-y: auto;
+			overflow-x: hidden !important;
+			box-sizing: border-box !important;
 		}
 		#tour-step-title {
 			font-size: 0.81rem !important;
@@ -261,9 +275,22 @@
 			padding: 6px 9px;
 			font-size: 0.74rem;
 			margin-bottom: 6px !important;
-			max-width: 100%;
-			overflow-wrap: anywhere;
-			word-break: break-word;
+			min-width: 0 !important;
+			max-width: 100% !important;
+			overflow: hidden !important;
+			overflow-wrap: anywhere !important;
+			word-break: break-word !important;
+			box-sizing: border-box !important;
+		}
+		#tour-mission-title,
+		#tour-mission-text,
+		#tour-mission-text * {
+			min-width: 0 !important;
+			max-width: 100% !important;
+			overflow-wrap: anywhere !important;
+			word-break: break-word !important;
+			white-space: normal !important;
+			box-sizing: border-box !important;
 		}
 		.ts-step-dot {
 			width: 8px;
@@ -679,9 +706,9 @@
 				const esMovil = window.innerWidth < 768;
 				if (esMovil) {
 					el.style.scrollMarginTop = '68px';
-					el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
 				} else {
-					el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
 				}
 			}
 		}
@@ -791,7 +818,7 @@
 
 			if (estActual && estActual.id === idEstacion && missionBox && missionTitle && missionText) {
 				cancelarAutoAvance();
-				if (tourVisible) {
+				if (tourVisible && window.innerWidth >= 768) {
 					expandirAsistente();
 				}
 				const esUltimoPaso = pasoActual === ESTACIONES_TOUR.length - 1;
@@ -938,20 +965,31 @@
 
 		// 2. Cuando cambia el cultivo actual
 		document.getElementById('select-cultivo')?.addEventListener('change', (e) => {
-			const textoOpcion = (e.target.options[e.target.selectedIndex]?.text || '').trim();
+			const textoOpcion = (e.target.options[e.target.selectedIndex]?.text || '')
+				.split('—')[0]
+				.split('(')[0]
+				.trim();
+			const en = window.getTerraSoftLang?.() === 'en';
 			marcarMisionCompletada(
 				'cultivo',
-				`✅ Elegiste "${textoOpcion}". Las tarjetas ahora buscan otra familia botánica para proteger tu suelo.`
+				en
+					? `✅ You selected "${textoOpcion}". The cards now look for another botanical family to protect your soil.`
+					: `✅ Elegiste "${textoOpcion}". Las tarjetas ahora buscan otra familia botánica para proteger tu suelo.`
 			);
 		});
 
 		// 3. Cuando cambia el área o unidad del lote (con pequeño debounce al escribir para que termine de digitar el número)
 		const handlerArea = () => {
 			const val = document.getElementById('input-area-lote')?.value || '1200';
-			const uni = document.getElementById('select-unidad-area')?.selectedOptions?.[0]?.text || 'm²';
+			const uni = (document.getElementById('select-unidad-area')?.selectedOptions?.[0]?.text || 'm²')
+				.split('(')[0]
+				.trim();
+			const en = window.getTerraSoftLang?.() === 'en';
 			marcarMisionCompletada(
 				'area',
-				`✅ Ajustaste tu lote a ${val} ${uni}. ¡Mira cómo cambiaron los presupuestos en pesos colombianos!`
+				en
+					? `✅ You set your lot to ${val} ${uni}. Watch how the budgets updated in Colombian Pesos!`
+					: `✅ Ajustaste tu lote a ${val} ${uni}. ¡Mira cómo cambiaron los presupuestos en pesos colombianos!`
 			);
 		};
 		document.getElementById('input-area-lote')?.addEventListener('input', () => {
@@ -963,9 +1001,12 @@
 		// 4. Cuando hace clic en una prioridad
 		document.querySelectorAll('[data-priority-val]').forEach((b) => {
 			b.addEventListener('click', () => {
+				const en = window.getTerraSoftLang?.() === 'en';
 				marcarMisionCompletada(
 					'prioridad',
-					`✅ Cambiaste la prioridad a "${b.textContent.trim()}". El ranking se acaba de actualizar frente a ti.`
+					en
+						? `✅ You switched priority to "${b.textContent.trim()}". The ranking just updated in front of you.`
+						: `✅ Cambiaste la prioridad a "${b.textContent.trim()}". El ranking se acaba de actualizar frente a ti.`
 				);
 			});
 		});

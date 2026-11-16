@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Sustentación Académica — TerraSoft (5 Diapositivas)</title>
+		<style>
+			:root {
+				--bg-deep: #061224;
+				--bg-card: rgba(13, 38, 71, 0.88);
+				--cyan: #38bdf8;
+				--gold: #f5b041;
+				--green: #10b981;
+				--text-light: #f8fafc;
+				--text-muted: #94a3b8;
+			}
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+				background: radial-gradient(circle at 18% 20%, #0f2c56 0%, #061224 70%);
+				color: var(--text-light);
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+				overflow-x: hidden;
+			}
+			.deck-topbar {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 12px 28px;
+				background: rgba(6, 18, 36, 0.92);
+				border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+				backdrop-filter: blur(8px);
+			}
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				font-weight: 800;
+				font-size: 1.15rem;
+				color: var(--gold);
+			}
+			.brand span {
+				font-size: 0.8rem;
+				color: var(--cyan);
+				font-weight: 600;
+				padding: 2px 10px;
+				border-radius: 99px;
+				border: 1px solid rgba(56, 189, 248, 0.35);
+			}
+			.top-actions {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+			.btn-deck {
+				background: rgba(255, 255, 255, 0.08);
+				color: #fff;
+				border: 1px solid rgba(56, 189, 248, 0.35);
+				padding: 6px 14px;
+				border-radius: 99px;
+				font-size: 0.82rem;
+				font-weight: 600;
+				cursor: pointer;
+				text-decoration: none;
+				transition: all 0.2s;
+			}
+			.btn-deck:hover {
+				background: rgba(56, 189, 248, 0.2);
+			}
+			.btn-deck.gold {
+				background: var(--gold);
+				color: #061224;
+				border-color: var(--gold);
+				font-weight: 700;
+			}
+			.slides-wrapper {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px 36px;
+			}
+			.slide {
+				display: none;
+				width: 100%;
+				max-width: 1120px;
+				background: var(--bg-card);
+				border: 1px solid rgba(56, 189, 248, 0.3);
+				border-radius: 20px;
+				padding: 36px 44px;
+				box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+				animation: fadeIn 0.32s ease-out;
+			}
+			.slide.active {
+				display: block;
+			}
+			@keyframes fadeIn {
+				from {
+					opacity: 0;
+					transform: translateY(10px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+			.slide-kicker {
+				display: inline-block;
+				font-size: 0.78rem;
+				text-transform: uppercase;
+				letter-spacing: 1.2px;
+				color: var(--cyan);
+				background: rgba(56, 189, 248, 0.12);
+				border: 1px solid rgba(56, 189, 248, 0.3);
+				padding: 4px 12px;
+				border-radius: 99px;
+				margin-bottom: 12px;
+				font-weight: 700;
+			}
+			.slide h1 {
+				font-size: 2rem;
+				line-height: 1.22;
+				margin-bottom: 18px;
+				color: #ffffff;
+			}
+			.slide h1 strong {
+				color: var(--gold);
+			}
+			.grid-2 {
+				display: grid;
+				grid-template-columns: 1.2fr 1fr;
+				gap: 24px;
+				align-items: center;
+			}
+			.grid-3 {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 16px;
+				margin-top: 14px;
+			}
+			.card-box {
+				background: rgba(6, 18, 36, 0.65);
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				border-radius: 14px;
+				padding: 18px;
+			}
+			.card-box h3 {
+				font-size: 1.02rem;
+				color: var(--gold);
+				margin-bottom: 8px;
+			}
+			.card-box p,
+			.card-box li {
+				font-size: 0.92rem;
+				line-height: 1.5;
+				color: #e2e8f0;
+			}
+			ul.clean-list {
+				list-style: none;
+			}
+			ul.clean-list li {
+				margin-bottom: 10px;
+				padding-left: 6px;
+			}
+			.formula-box {
+				background: rgba(2, 132, 199, 0.16);
+				border: 1px solid rgba(56, 189, 248, 0.45);
+				border-radius: 12px;
+				padding: 14px 18px;
+				text-align: center;
+				font-family: 'Cambria Math', Georgia, serif;
+				font-size: 1.15rem;
+				color: var(--gold);
+				margin: 14px 0 18px;
+			}
+			.speaker-notes {
+				margin-top: 22px;
+				padding: 14px 18px;
+				background: rgba(245, 176, 65, 0.12);
+				border-left: 4px solid var(--gold);
+				border-radius: 8px;
+				font-size: 0.88rem;
+				line-height: 1.48;
+				color: #fef3c7;
+			}
+			.speaker-notes.hidden {
+				display: none;
+			}
+			.slide-img {
+				width: 100%;
+				max-height: 270px;
+				object-fit: cover;
+				border-radius: 14px;
+				border: 2px solid rgba(56, 189, 248, 0.35);
+			}
+			.deck-footer {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 12px 36px 20px;
+			}
+			.dots {
+				display: flex;
+				gap: 8px;
+			}
+			.dot {
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				background: rgba(255, 255, 255, 0.25);
+				cursor: pointer;
+				border: none;
+			}
+			.dot.active {
+				background: var(--gold);
+				transform: scale(1.2);
+			}
+			@media (max-width: 860px) {
+				.grid-2,
+				.grid-3 {
+					grid-template-columns: 1fr;
+				}
+				.slide {
+					padding: 22px;
+				}
+				.slide h1 {
+					font-size: 1.45rem;
+				}
+			}
+			@media print {
+				.deck-topbar,
+				.deck-footer {
+					display: none !important;
+				}
+				.slide {
+					display: block !important;
+					page-break-after: always;
+					margin-bottom: 24px;
+					box-shadow: none;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header class="deck-topbar">
+			<div class="brand">
+				🌱 TerraSoft <span>Sustentación Académica • 5 Diapositivas</span>
+			</div>
+			<div class="top-actions">
+				<button class="btn-deck" id="btn-toggle-notes">🎙️ Ocultar/Ver Guion del Orador</button>
+				<button class="btn-deck" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+				<a href="/" class="btn-deck gold">🚀 Ir al Simulador en Vivo</a>
+			</div>
+		</header>
+
+		<main class="slides-wrapper">
+			<!-- SLIDE 1 -->
+			<section class="slide active" data-index="0">
+				<span class="slide-kicker">Diapositiva 1 de 5 • Planteamiento del Problema y Brecha Científica</span>
+				<h1>🌍 ¿Por qué los datos satelitales de la <strong>NASA y la FAO</strong> aún no llegan a quien decide qué sembrar?</h1>
+				<div class="grid-2">
+					<div class="card-box">
+						<h3>⚠️ La Paradoja de la Agricultura en Colombia</h3>
+						<ul class="clean-list">
+							<li>🔹 <strong>Degradación por Monocultivo:</strong> Sembrar reiteradamente la misma familia botánica agota el nitrógeno edáfico y eleva entre un <strong>35% y 40%</strong> el gasto en fertilizantes sintéticos y pesticidas.</li>
+							<li>🔹 <strong>Ciencia Inaccesible:</strong> Los repositorios satelitales de <strong>NASA POWER</strong> y <strong>FAO GAEZ v4</strong> existen, pero están en formatos complejos (<em>GeoTIFF, NetCDF</em>) fuera del alcance del agricultor.</li>
+							<li>🔹 <strong>Objetivo de TerraSoft:</strong> Transformar telemetría espacial y edafológica en un <strong>Sistema de Soporte a la Decisión (DSS)</strong> financiero y agronómico en menos de 3 segundos.</li>
+						</ul>
+					</div>
+					<div>
+						<img src="/images/hero-space-agro.jpg" alt="TerraSoft Space Agro" class="slide-img" />
+					</div>
+				</div>
+				<div class="speaker-notes">
+					<strong>🎙️ Guion sugerido ante el jurado (45 s):</strong> "Estimados jurados: hoy la NASA y la FAO poseen radiografías completas del clima y del suelo de cada rincón de Colombia, pero esa ciencia se queda en archivos GeoTIFF que ningún agricultor puede abrir en el campo. Mientras tanto, el productor sigue sembrando por tradición, repitiendo monocultivos que agotan el suelo y arriesgando su patrimonio. TerraSoft nace para cerrar esa brecha: traduce ciencia espacial en decisiones agronómicas y financieras en menos de tres segundos."
+				</div>
+			</section>
+
+			<!-- SLIDE 2 -->
+			<section class="slide" data-index="1">
+				<span class="slide-kicker">Diapositiva 2 de 5 • Arquitectura de Ingeniería y Fusión Geoespacial</span>
+				<h1>🛰️ Triangulación Científica en Tiempo Real: <strong>Clima + Edafología + Visión Óptica</strong></h1>
+				<div class="grid-3">
+					<div class="card-box">
+						<h3>1. NASA POWER API</h3>
+						<p>Consulta satelital agroclimática (comunidad <code>AG</code>) de series de temperatura máxima diaria (<code>T2M_MAX</code>) y precipitación efectiva (<code>PRECTOTCORR</code>) para determinar piso térmico y oferta hídrica mensual.</p>
+					</div>
+					<div class="card-box">
+						<h3>2. FAO GAEZ v4 (15 Capas)</h3>
+						<p>Extracción local de <strong>15 rasters GeoTIFF</strong> para Colombia (malla <code>162×216</code> a 5 arc-min): altitud (m s.n.m.), pendiente, áreas protegidas, días de crecimiento (<strong>LGP</strong>), proyección a <strong>2050</strong> y las <strong>7 Calidades del Suelo (SQ1–SQ7)</strong>.</p>
+					</div>
+					<div class="card-box">
+						<h3>3. Escáner Óptico + OSM</h3>
+						<p>Resuelve la escala de sub-píxel: analiza reflectancia RGB en <em>HTML5 Canvas</em> y vectores de OpenStreetMap para bloquear siembras sobre vías, techos, agua, roca o nieve (reduciendo las barras <code>SQ1–SQ7</code> a 0%).</p>
+					</div>
+				</div>
+				<div class="speaker-notes">
+					<strong>🎙️ Guion sugerido ante el jurado (50 s):</strong> "Desde la ingeniería de software, el reto fue combinar escalas distintas. Cuando el usuario selecciona una coordenada, nuestro backend consulta NASA POWER y cruza una matriz local extraída de 15 capas GeoTIFF oficiales de FAO GAEZ v4 para Colombia. Pero como una celda de la FAO mide 9 km, agregamos una tercera capa: telemetría de OpenStreetMap y análisis espectral sobre el mosaico satelital. Si el puntero cae sobre una carretera, un río o un glaciar, las 7 barras de aptitud del suelo caen automáticamente a Clase N (0%), garantizando coherencia física."
+				</div>
+			</section>
+
+			<!-- SLIDE 3 -->
+			<section class="slide" data-index="2">
+				<span class="slide-kicker">Diapositiva 3 de 5 • Modelo Multicriterio y Balance de Nitrógeno</span>
+				<h1>🧮 Algoritmo Heurístico de <strong>Rotación Agronómica y Viabilidad</strong></h1>
+				<div class="formula-box">
+					Puntaje(Cultivo) = S<sub>base</sub> + Δ<sub>Familia</sub> + Δ<sub>Prioridad</sub> + Δ<sub>Clima NASA</sub> + Δ<sub>LGP FAO</sub> + Δ<sub>Calendario</sub> + Δ<sub>Vocación Regional</sub>
+				</div>
+				<div class="grid-3">
+					<div class="card-box">
+						<h3>🧬 Ruptura Fitosanitaria</h3>
+						<p>Penaliza el monocultivo consecutivo (<code>-35 pts</code>) y familias con plagas cruzadas; bonifica (<code>+14 pts</code>) la alternancia botánica que corta ciclos biológicos de patógenos.</p>
+					</div>
+					<div class="card-box">
+						<h3>🌱 Fijación de Nitrógeno</h3>
+						<p>Prioriza leguminosas (<em>Fabaceae</em>: frijol, arveja, soya, haba) que restauran el nitrógeno edáfico y descuentan automáticamente un <strong>18% en fertilizantes</strong> en la cosecha sucesora.</p>
+					</div>
+					<div class="card-box">
+						<h3>⏱️ Ventana LGP y Calendario</h3>
+						<p>Evalúa 24 cultivos de las 6 macroregiones de Colombia verificando que su ciclo vegetativo quepa dentro de los días de humedad natural (<strong>LGP FAO</strong>) y del mes actual.</p>
+					</div>
+				</div>
+				<div class="speaker-notes">
+					<strong>🎙️ Guion sugerido ante el jurado (45 s):</strong> "El corazón de TerraSoft es un algoritmo multicriterio sobre 24 cultivos de las 6 macroregiones de Colombia. El modelo penaliza el monocultivo, premia la ruptura de ciclos de plagas entre familias botánicas, comprueba que los días de humedad del suelo (LGP de la FAO) cubran el ciclo del cultivo y cuantifica en pesos colombianos el ahorro en fertilizantes nitrogenados cuando se rota tras una leguminosa."
+				</div>
+			</section>
+
+			<!-- SLIDE 4 -->
+			<section class="slide" data-index="3">
+				<span class="slide-kicker">Diapositiva 4 de 5 • Apropiación Social, Inclusión Digital y Bilingüismo</span>
+				<h1>👨‍🌾 Ciencia Usable desde el <strong>Potrero Rural hasta la Academia Internacional</strong></h1>
+				<div class="grid-2">
+					<div class="card-box">
+						<h3>💡 4 Pilares de Experiencia de Usuario</h3>
+						<ul class="clean-list">
+							<li>💵 <strong>Presupuesto Real en $ COP:</strong> Conversión instantánea entre <strong>m², Fanegadas (6.400 m²) y Hectáreas</strong> con desglose en semilla, jornales, fertilizantes y fitosanitarios.</li>
+							<li>🤖 <strong>Asistente Pedagógico "Don Terra":</strong> Guía paso a paso con auto-avance contextual y modo <em>Mini-Dock</em> para pantallas móviles.</li>
+							<li>🌐 <strong>Arquitectura Bilingüe Reactiva (🇨🇴 ES | 🇺🇸 EN):</strong> Traducción instantánea sin perder el estado ni recargar la simulación.</li>
+							<li>📄 <strong>Exportación Técnica:</strong> Informes listos en <strong>PDF</strong> y <strong>CSV (Excel)</strong> para sustentar proyectos o créditos agrícolas.</li>
+						</ul>
+					</div>
+					<div>
+						<img src="/images/card-rotacion.jpg" alt="Rotación y Rentabilidad" class="slide-img" />
+					</div>
+				</div>
+				<div class="speaker-notes">
+					<strong>🎙️ Guion sugerido ante el jurado (40 s):</strong> "Un sistema de soporte a la decisión fracasa si el usuario no lo comprende. Por eso incorporamos unidades reales del campo colombiano como la fanegada, un asistente interactivo llamado Don Terra que acompaña al productor según el diagnóstico del lote, soporte bilingüe español-inglés instantáneo y exportación directa a PDF y Excel."
+				</div>
+			</section>
+
+			<!-- SLIDE 5 -->
+			<section class="slide" data-index="4">
+				<span class="slide-kicker">Diapositiva 5 de 5 • Validación Experimental y Demostración en Vivo</span>
+				<h1>🎯 Pongamos a Prueba a <strong>TerraSoft</strong> con Cualquier Coordenada Ahora Mismo</h1>
+				<div class="grid-3">
+					<div class="card-box">
+						<h3>❄️ Prueba 1: Terreno No Apto</h3>
+						<p>Coloquemos el marcador sobre un <strong>nevado, un río o una carretera pavimentada</strong> y observemos cómo el escáner óptico bloquea la siembra y lleva las 7 barras FAO a <code>0% (Clase N)</code>.</p>
+					</div>
+					<div class="card-box">
+						<h3>🌾 Prueba 2: Finca Productiva</h3>
+						<p>Seleccionemos un lote en <strong>Boyacá, Meta, Cauca o Antioquia</strong> para ver las 7 propiedades del suelo (<code>SQ1–SQ7</code>), el ahorro por nitrógeno y el presupuesto en <code>$ COP</code>.</p>
+					</div>
+					<div class="card-box">
+						<h3>🌐 Prueba 3: Bilingüe + PDF</h3>
+						<p>Cambiemos en vivo entre <strong>Español e Inglés (ES | EN)</strong> y generemos el <strong>Informe Técnico Agronómico en PDF</strong> listo para imprimir.</p>
+					</div>
+				</div>
+				<div style="text-align: center; margin-top: 24px;">
+					<a href="/" class="btn-deck gold" style="font-size: 1.05rem; padding: 12px 28px; display: inline-block;">
+						🛰️ Abrir Simulador TerraSoft en Vivo Ahora
+					</a>
+				</div>
+				<div class="speaker-notes">
+					<strong>🎙️ Guion de cierre ante el jurado (35 s):</strong> "La mejor forma de validar un sistema científico es poniéndolo a prueba sin filtros. Invitamos al jurado a elegir cualquier coordenada en el mapa —ya sea una finca productiva, una carretera o una cumbre nevada— para comprobar en vivo cómo responden los motores de la NASA y la FAO en TerraSoft. Muchas gracias."
+				</div>
+			</section>
+		</main>
+
+		<footer class="deck-footer">
+			<button class="btn-deck" id="btn-prev">⬅️ Anterior</button>
+			<div class="dots" id="dots-container">
+				<button class="dot active" data-slide="0"></button>
+				<button class="dot" data-slide="1"></button>
+				<button class="dot" data-slide="2"></button>
+				<button class="dot" data-slide="3"></button>
+				<button class="dot" data-slide="4"></button>
+			</div>
+			<button class="btn-deck gold" id="btn-next">Siguiente ➡️</button>
+		</footer>
+
+		<script>
+			const slides = document.querySelectorAll('.slide');
+			const dots = document.querySelectorAll('.dot');
+			let current = 0;
+
+			function showSlide(idx) {
+				current = (idx + slides.length) % slides.length;
+				slides.forEach((s, i) => s.classList.toggle('active', i === current));
+				dots.forEach((d, i) => d.classList.toggle('active', i === current));
+			}
+
+			document.getElementById('btn-prev').addEventListener('click', () => showSlide(current - 1));
+			document.getElementById('btn-next').addEventListener('click', () => showSlide(current + 1));
+			dots.forEach((d) =>
+				d.addEventListener('click', () => showSlide(Number(d.getAttribute('data-slide'))))
+			);
+
+			document.getElementById('btn-toggle-notes').addEventListener('click', () => {
+				document.querySelectorAll('.speaker-notes').forEach((n) => n.classList.toggle('hidden'));
+			});
+
+			window.addEventListener('keydown', (e) => {
+				if (e.key === 'ArrowRight' || e.key === ' ') showSlide(current + 1);
+				if (e.key === 'ArrowLeft') showSlide(current - 1);
+			});
+		</script>
+	</body>
+</html>
