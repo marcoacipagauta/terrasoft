@@ -979,6 +979,9 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				badgeEstadoRotacion.className = 'badge bg-danger text-white';
 				badgeEstadoRotacion.textContent = `${iconoPrincipal} ${en ? 'Planting Not Viable' : 'Siembra No Viable'}`;
 
+				const etiquetaTerreno = en && terreno.etiquetaEn ? terreno.etiquetaEn : terreno.etiqueta;
+				const motivoTerreno = en && terreno.motivoEn ? terreno.motivoEn : terreno.motivo;
+
 				const htmlBloqueo = `
 					<div class="col-12 ts-animate-in">
 						<div class="card border-danger border-2 shadow-sm">
@@ -987,14 +990,14 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 									<span class="fs-2 me-3">${iconoPrincipal}</span>
 									<div>
 										<h3 class="h6 fw-bold text-danger mb-1">
-											${en ? 'Cannot plant here:' : 'No es posible sembrar aquí:'} ${terreno.etiqueta}
+											${en ? 'Cannot plant here:' : 'No es posible sembrar aquí:'} ${etiquetaTerreno}
 										</h3>
 										<p class="text-muted small mb-0">
 											<strong>${en ? 'Location:' : 'Ubicación:'}</strong> ${terreno.ubicacionNombre}
 										</p>
 									</div>
 								</div>
-								<p class="mb-3 small text-dark">${terreno.motivo}</p>
+								<p class="mb-3 small text-dark">${motivoTerreno}</p>
 								<div class="p-2 px-3 bg-light rounded border small text-secondary d-flex flex-wrap justify-content-between align-items-center gap-2">
 									<span><strong>💡 ${en ? 'Suggestion:' : 'Sugerencia:'}</strong> ${consejoAccion}</span>
 									<button type="button" class="btn btn-outline-success btn-sm fw-semibold btn-forzar-lote-action">
@@ -1012,12 +1015,8 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					btn.addEventListener('click', () => {
 						if (ultimoClima && ultimoClima.terreno) {
 							ultimoClima.terreno.aptoParaSiembra = true;
-							if (bannerTerreno) {
-								bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
-								bannerTerreno.innerHTML = esIngles()
-									? '<strong>✅ Simulation manually enabled:</strong> Showing recommendations for this coordinate.'
-									: '<strong>✅ Simulación habilitada manualmente:</strong> Mostrando recomendaciones para esta coordenada.';
-							}
+							ultimoClima.terreno._forzadoManualmente = true;
+							renderizarBannerTerrenoYEspectral(ultimoClima, ultimoEspectral);
 							renderizarPanelFaoGaez(ultimoClima);
 							calcularYRenderizarRotacion(ultimoClima);
 						}
@@ -1053,11 +1052,15 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				const contenedorSqEl = document.getElementById('contenedor-barras-sq');
 				const imgMapaFao = document.getElementById('img-mapa-fao');
 
+				const en = esIngles();
 				if (faoZonaEl) {
-					faoZonaEl.innerHTML = `<strong>AEZ:</strong> <span class="text-info">${data.faoGaez.zonaAgroecologica}</span>`;
+					const zonaTxt =
+						en && data.faoGaez.zonaAgroecologicaEn
+							? data.faoGaez.zonaAgroecologicaEn
+							: data.faoGaez.zonaAgroecologica;
+					faoZonaEl.innerHTML = `<strong>AEZ:</strong> <span class="text-info">${zonaTxt}</span>`;
 				}
 				if (faoLgpEl) {
-					const en = esIngles();
 					faoLgpEl.textContent = esApto
 						? en
 							? `🌱 LGP: ${data.faoGaez._lgpBase ?? data.faoGaez.lgpDias} days/yr`
@@ -1067,14 +1070,16 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						: `🚫 LGP Efectivo: 0 días (No cultivable)`;
 				}
 				if (faoSueloEl) {
-					const en = esIngles();
 					if (esApto) {
 						const clsRestaurada = data.faoGaez._claseBase || 'S1';
 						data.faoGaez.claseSueloFao = clsRestaurada;
 						faoSueloEl.style.background = '#f5b041';
 						faoSueloEl.style.color = '#071428';
 						faoSueloEl.textContent = en ? `FAO Soil: Class ${clsRestaurada}` : `Suelo FAO: Clase ${clsRestaurada}`;
-						faoSueloEl.title = data.faoGaez.etiquetaSueloFao;
+						faoSueloEl.title =
+							en && data.faoGaez.etiquetaSueloFaoEn
+								? data.faoGaez.etiquetaSueloFaoEn
+								: data.faoGaez.etiquetaSueloFao;
 					} else {
 						data.faoGaez.claseSueloFao = 'N';
 						faoSueloEl.style.background = '#dc2626';
@@ -1088,21 +1093,31 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				if (faoAltitudEl) {
 					faoAltitudEl.textContent =
 						typeof data.faoGaez.altitudMsnm === 'number'
-							? `⛰️ ${data.faoGaez.altitudMsnm.toLocaleString('es-CO')} m ${esIngles() ? 'a.s.l.' : 's.n.m.'}`
-							: esIngles()
+							? `⛰️ ${data.faoGaez.altitudMsnm.toLocaleString('es-CO')} m ${en ? 'a.s.l.' : 's.n.m.'}`
+							: en
 							? '⛰️ Evaluated altitude'
 							: '⛰️ Altitud evaluada';
 				}
 				if (faoPendienteEl && data.faoGaez.pendienteTexto) {
-					faoPendienteEl.innerHTML = `📐 ${esIngles() ? 'Slope' : 'Pendiente'}: <strong class="text-white">${data.faoGaez.pendienteTexto}</strong>`;
+					const pendTxt =
+						en && data.faoGaez.pendienteTextoEn ? data.faoGaez.pendienteTextoEn : data.faoGaez.pendienteTexto;
+					faoPendienteEl.innerHTML = `📐 ${en ? 'Slope' : 'Pendiente'}: <strong class="text-white">${pendTxt}</strong>`;
 				}
 				if (faoAreaProtEl && data.faoGaez.areaProtegidaTexto) {
 					const colorProt = data.faoGaez.enAreaProtegida ? 'text-warning' : 'text-info';
 					const iconoProt = data.faoGaez.enAreaProtegida ? '⚠️' : '✅';
-					faoAreaProtEl.innerHTML = `🌳 ${iconoProt} <strong class="${colorProt}">${data.faoGaez.areaProtegidaTexto}</strong>`;
+					const protTxt =
+						en && data.faoGaez.areaProtegidaTextoEn
+							? data.faoGaez.areaProtegidaTextoEn
+							: data.faoGaez.areaProtegidaTexto;
+					faoAreaProtEl.innerHTML = `🌳 ${iconoProt} <strong class="${colorProt}">${protTxt}</strong>`;
 				}
 				if (faoProy2050El && data.faoGaez.proyeccionClimatica2050) {
-					faoProy2050El.innerHTML = `🔮 <strong>${esIngles() ? '2050 Climate (RCP 4.5):' : 'Clima 2050 (RCP 4.5):'}</strong> ${data.faoGaez.proyeccionClimatica2050}`;
+					const proyTxt =
+						en && data.faoGaez.proyeccionClimatica2050En
+							? data.faoGaez.proyeccionClimatica2050En
+							: data.faoGaez.proyeccionClimatica2050;
+					faoProy2050El.innerHTML = `🔮 <strong>${en ? '2050 Climate (RCP 4.5):' : 'Clima 2050 (RCP 4.5):'}</strong> ${proyTxt}`;
 				}
 
 				if (contenedorSqEl && Array.isArray(data.faoGaez._propiedadesBase)) {
@@ -1724,6 +1739,93 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					.join('');
 			}
 
+			function renderizarBannerTerrenoYEspectral(data, analisisSatelital) {
+				const en = esIngles();
+
+				if (analisisSatelital?.disponible && detalleEspectral) {
+					const { pctVeg, pctTierra, pctHielo, pctAsfalto, esHieloONieve } = analisisSatelital;
+					const tempMaxAnual = data?.promedios?.tempMax ?? 20;
+					const tieneInfra = Boolean(data?.terreno?.tieneInfraestructuraCercana);
+					const esClimaFrioExtremo =
+						tempMaxAnual < 7 || data?.terreno?.clasificacion === 'hielo_glaciar';
+
+					if (esClimaFrioExtremo || esHieloONieve) {
+						const pctCoberturaNival = Math.min(100, pctHielo + pctAsfalto);
+						detalleEspectral.innerHTML = en
+							? `❄️ Ice/Snow: <strong>${pctCoberturaNival}%</strong> | 🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Soil: <strong>${pctTierra}%</strong>`
+							: `❄️ Hielo/Nieve: <strong>${pctCoberturaNival}%</strong> | 🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Suelo: <strong>${pctTierra}%</strong>`;
+					} else if (tieneInfra) {
+						detalleEspectral.innerHTML = en
+							? `🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Soil: <strong>${pctTierra}%</strong> | 🛣️ Pavement/Roof: <strong>${pctAsfalto + pctHielo}%</strong>`
+							: `🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Tierra: <strong>${pctTierra}%</strong> | 🛣️ Pavimento/Techo: <strong>${pctAsfalto + pctHielo}%</strong>`;
+					} else {
+						detalleEspectral.innerHTML = en
+							? `🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Soil: <strong>${pctTierra}%</strong> | 🪨 Rock: <strong>${pctAsfalto + pctHielo}%</strong>`
+							: `🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Tierra: <strong>${pctTierra}%</strong> | 🪨 Roca: <strong>${pctAsfalto + pctHielo}%</strong>`;
+					}
+				}
+
+				if (bannerTerreno && data?.terreno) {
+					if (data.terreno._forzadoManualmente) {
+						bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
+						bannerTerreno.innerHTML = en
+							? '<strong>✅ Simulation manually enabled:</strong> Showing recommendations for this coordinate.'
+							: '<strong>✅ Simulación habilitada manualmente:</strong> Mostrando recomendaciones para esta coordenada.';
+						return;
+					}
+					const etiquetaTerreno =
+						en && data.terreno.etiquetaEn ? data.terreno.etiquetaEn : data.terreno.etiqueta;
+					const motivoTerreno =
+						en && data.terreno.motivoEn ? data.terreno.motivoEn : data.terreno.motivo;
+					if (data.terreno.aptoParaSiembra) {
+						bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
+						bannerTerreno.innerHTML = `<strong>✅ ${etiquetaTerreno}:</strong> ${motivoTerreno}`;
+					} else {
+						bannerTerreno.className = 'alert alert-danger small mb-2 py-2 px-3';
+						bannerTerreno.innerHTML = `<strong>🚫 ${etiquetaTerreno}:</strong> ${motivoTerreno}`;
+					}
+				}
+			}
+
+			function renderizarKpisClimaticos(data) {
+				if (!data?.promedios) return;
+				const en = esIngles();
+				const temp = data.promedios.tempMax;
+				const lluvia = data.promedios.lluviaTotalAnual;
+
+				if (climaCoordsLabel && data.coordenadas) {
+					climaCoordsLabel.textContent = `${data.coordenadas.lat}, ${data.coordenadas.lon}`;
+				}
+				if (kpiTempMax) kpiTempMax.textContent = `${temp} °C`;
+				if (kpiLluviaAnual) kpiLluviaAnual.textContent = `${lluvia} mm`;
+				if (kpiLluviaDiaria) kpiLluviaDiaria.textContent = `${data.promedios.lluviaDiaria} mm/d`;
+
+				if (kpiPisoTermico) {
+					let piso = en ? 'Temperate' : 'Templado';
+					if (temp <= 5) piso = 'Polar / Nival';
+					else if (temp < 12) piso = en ? 'Paramo' : 'Páramo';
+					else if (temp <= 22) piso = en ? 'Andean Cold' : 'Frío Andino';
+					else if (temp <= 28) piso = en ? 'Temperate' : 'Templado';
+					else piso = en ? 'Warm' : 'Cálido';
+					kpiPisoTermico.textContent = piso;
+				}
+
+				if (kpiRegimenLluvia) {
+					let reg = en ? 'Subhumid' : 'Subhúmedo';
+					if (lluvia < 120) reg = en ? 'Hyperarid' : 'Hiperárido';
+					else if (lluvia < 650) reg = en ? 'Dry' : 'Seco';
+					else if (lluvia <= 1400) reg = en ? 'Moderate' : 'Moderado';
+					else reg = en ? 'Humid' : 'Húmedo';
+					kpiRegimenLluvia.textContent = reg;
+				}
+
+				if (diagnosticoClimatico) {
+					diagnosticoClimatico.textContent = en
+						? `${temp} °C avg max | ${lluvia} mm/yr`
+						: `${temp} °C máx. prom | ${lluvia} mm/año`;
+				}
+			}
+
 			async function consultarParcela(lat, lon) {
 				if (isNaN(lat) || isNaN(lon)) return;
 
@@ -1752,7 +1854,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						throw new Error(data.error || 'Error al obtener datos de NASA POWER');
 					}
 
-					if (analisisSatelital?.disponible && detalleEspectral && tituloEspectral) {
+					if (analisisSatelital?.disponible) {
 						ultimoEspectral = analisisSatelital;
 						const { pctVeg, pctTierra, pctHielo, pctAsfalto, esHieloONieve, esSuperficieGrisSinSuelo } =
 							analisisSatelital;
@@ -1761,33 +1863,34 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						const esClimaFrioExtremo =
 							tempMaxAnual < 7 || data?.terreno?.clasificacion === 'hielo_glaciar';
 
-						if (esClimaFrioExtremo || esHieloONieve) {
-							const pctCoberturaNival = Math.min(100, pctHielo + pctAsfalto);
-							detalleEspectral.innerHTML = `❄️ Hielo/Nieve: <strong>${pctCoberturaNival}%</strong> | 🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Suelo: <strong>${pctTierra}%</strong>`;
-						} else if (tieneInfra) {
-							detalleEspectral.innerHTML = `🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Tierra: <strong>${pctTierra}%</strong> | 🛣️ Pavimento/Techo: <strong>${pctAsfalto + pctHielo}%</strong>`;
-						} else {
-							detalleEspectral.innerHTML = `🌿 Veg: <strong>${pctVeg}%</strong> | 🟤 Tierra: <strong>${pctTierra}%</strong> | 🪨 Roca: <strong>${pctAsfalto + pctHielo}%</strong>`;
-						}
-
 						if (esSuperficieGrisSinSuelo && data.terreno?.aptoParaSiembra) {
 							data.terreno.aptoParaSiembra = false;
 							if (esClimaFrioExtremo || (esHieloONieve && tempMaxAnual < 12)) {
 								data.terreno.clasificacion = 'hielo_glaciar';
 								data.terreno.etiqueta = `❄️ Superficie Cubierta de Nieve / Hielo (${pctHielo + pctAsfalto}%)`;
+								data.terreno.etiquetaEn = `❄️ Snow / Ice Covered Surface (${pctHielo + pctAsfalto}%)`;
 								data.terreno.motivo = `La imagen satelital y el registro térmico (${tempMaxAnual} °C máx.) indican cobertura de nieve, hielo glaciar o suelo congelado.`;
+								data.terreno.motivoEn = `Satellite imagery and thermal records (${tempMaxAnual} °C max) indicate snow cover, glacial ice, or frozen ground.`;
 							} else if (tieneInfra) {
 								data.terreno.clasificacion = 'asfalto_via';
 								data.terreno.etiqueta = `🛣️ Pavimento / Concreto o Techo (${pctAsfalto + pctHielo}% Superficie Artificial)`;
+								data.terreno.etiquetaEn = `🛣️ Pavement / Concrete or Roof (${pctAsfalto + pctHielo}% Artificial Surface)`;
 								data.terreno.motivo = `El análisis óptico satelital detecta un ${
 									pctAsfalto + pctHielo
 								}% de superficie pavimentada o techo construido y solo ${pctVeg + pctTierra}% de suelo vegetal.`;
+								data.terreno.motivoEn = `Optical satellite analysis detects ${
+									pctAsfalto + pctHielo
+								}% paved or roof surface and only ${pctVeg + pctTierra}% topsoil.`;
 							} else {
 								data.terreno.clasificacion = 'no_cultivable';
 								data.terreno.etiqueta = `🪨 Suelo Rocoso / Afloramiento Mineral Estéril (${pctAsfalto + pctHielo}%)`;
+								data.terreno.etiquetaEn = `🪨 Rocky Soil / Barren Mineral Outcrop (${pctAsfalto + pctHielo}%)`;
 								data.terreno.motivo = `El análisis satelital muestra un ${
 									pctAsfalto + pctHielo
 								}% de roca desnuda o terreno sin suelo agrícola fértil.`;
+								data.terreno.motivoEn = `Satellite analysis shows ${
+									pctAsfalto + pctHielo
+								}% bare rock or terrain without fertile agricultural soil.`;
 							}
 						}
 					}
@@ -1800,48 +1903,8 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						})
 					);
 
-					if (bannerTerreno && data.terreno) {
-						if (data.terreno.aptoParaSiembra) {
-							bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
-							bannerTerreno.innerHTML = `<strong>✅ ${data.terreno.etiqueta}:</strong> ${data.terreno.motivo}`;
-						} else {
-							bannerTerreno.className = 'alert alert-danger small mb-2 py-2 px-3';
-							bannerTerreno.innerHTML = `<strong>🚫 ${data.terreno.etiqueta}:</strong> ${data.terreno.motivo}`;
-						}
-					}
-
-					const temp = data.promedios.tempMax;
-					const lluvia = data.promedios.lluviaTotalAnual;
-
-					if (climaCoordsLabel) {
-						climaCoordsLabel.textContent = `${data.coordenadas.lat}, ${data.coordenadas.lon}`;
-					}
-					if (kpiTempMax) kpiTempMax.textContent = `${temp} °C`;
-					if (kpiLluviaAnual) kpiLluviaAnual.textContent = `${lluvia} mm`;
-					if (kpiLluviaDiaria) kpiLluviaDiaria.textContent = `${data.promedios.lluviaDiaria} mm/d`;
-
-					if (kpiPisoTermico) {
-						let piso = 'Templado';
-						if (temp <= 5) piso = 'Polar / Nival';
-						else if (temp < 12) piso = 'Páramo';
-						else if (temp <= 22) piso = 'Frío Andino';
-						else if (temp <= 28) piso = 'Templado';
-						else piso = 'Cálido';
-						kpiPisoTermico.textContent = piso;
-					}
-
-					if (kpiRegimenLluvia) {
-						let reg = 'Subhúmedo';
-						if (lluvia < 120) reg = 'Hiperárido';
-						else if (lluvia < 650) reg = 'Seco';
-						else if (lluvia <= 1400) reg = 'Moderado';
-						else reg = 'Húmedo';
-						kpiRegimenLluvia.textContent = reg;
-					}
-
-					if (diagnosticoClimatico) {
-						diagnosticoClimatico.textContent = `${temp} °C máx. prom | ${lluvia} mm/año`;
-					}
+					renderizarBannerTerrenoYEspectral(data, analisisSatelital);
+					renderizarKpisClimaticos(data);
 
 					// Actualizar Panel de Zonificación Agroecológica, Topografía y las 7 Propiedades del Suelo de FAO GAEZ v4
 					renderizarPanelFaoGaez(data);
@@ -1997,32 +2060,10 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					});
 				}
 
-				// Traducir KPIs climáticos y gráficos si ya hay datos
-				if (ultimoClima?.promedios) {
-					const temp = ultimoClima.promedios.tempMax;
-					const lluvia = ultimoClima.promedios.lluviaTotalAnual;
-					if (kpiPisoTermico) {
-						let piso = en ? 'Temperate' : 'Templado';
-						if (temp <= 5) piso = en ? 'Polar / Nival' : 'Polar / Nival';
-						else if (temp < 12) piso = en ? 'Paramo' : 'Páramo';
-						else if (temp <= 22) piso = en ? 'Andean Cold' : 'Frío Andino';
-						else if (temp <= 28) piso = en ? 'Temperate' : 'Templado';
-						else piso = en ? 'Warm' : 'Cálido';
-						kpiPisoTermico.textContent = piso;
-					}
-					if (kpiRegimenLluvia) {
-						let reg = en ? 'Subhumid' : 'Subhúmedo';
-						if (lluvia < 120) reg = en ? 'Hyperarid' : 'Hiperárido';
-						else if (lluvia < 650) reg = en ? 'Dry' : 'Seco';
-						else if (lluvia <= 1400) reg = en ? 'Moderate' : 'Moderado';
-						else reg = en ? 'Humid' : 'Húmedo';
-						kpiRegimenLluvia.textContent = reg;
-					}
-					if (diagnosticoClimatico) {
-						diagnosticoClimatico.textContent = en
-							? `${temp} °C avg max | ${lluvia} mm/yr`
-							: `${temp} °C máx. prom | ${lluvia} mm/año`;
-					}
+				// Traducir banner del terreno, escáner óptico, KPIs climáticos y gráficos si ya hay datos
+				if (ultimoClima) {
+					renderizarBannerTerrenoYEspectral(ultimoClima, ultimoEspectral);
+					renderizarKpisClimaticos(ultimoClima);
 				}
 
 				if (ultimoClima?.mensual) {

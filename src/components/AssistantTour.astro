@@ -957,9 +957,15 @@
 				return;
 			}
 			const { terreno, promedios } = e.detail || {};
+			const en = window.getTerraSoftLang?.() === 'en';
+			const etiquetaTrad = en && terreno?.etiquetaEn ? terreno.etiquetaEn : terreno?.etiqueta;
 			const estadoTxt = terreno?.aptoParaSiembra
-				? `✅ ¡Muy bien! Seleccionaste un terreno apto (${promedios?.lluviaTotalAnual} mm/año, ${promedios?.tempMax} °C).`
-				: `🚫 ¡Buen experimento! Detectamos que ese punto no es cultivable (${terreno?.etiqueta}).`;
+				? en
+					? `✅ Great! You selected suitable land (${promedios?.lluviaTotalAnual} mm/yr, ${promedios?.tempMax} °C).`
+					: `✅ ¡Muy bien! Seleccionaste un terreno apto (${promedios?.lluviaTotalAnual} mm/año, ${promedios?.tempMax} °C).`
+				: en
+				? `🚫 Good test! We detected that this point is not cultivable (${etiquetaTrad}).`
+				: `🚫 ¡Buen experimento! Detectamos que ese punto no es cultivable (${etiquetaTrad}).`;
 			marcarMisionCompletada('mapa', estadoTxt);
 		});
 

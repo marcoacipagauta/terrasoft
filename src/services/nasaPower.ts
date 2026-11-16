@@ -26,8 +26,10 @@ export interface EvaluacionTerreno {
 		| 'desierto_arido'
 		| 'no_cultivable';
 	etiqueta: string;
+	etiquetaEn: string;
 	ubicacionNombre: string;
 	motivo: string;
+	motivoEn: string;
 	categoriaOsm: string;
 	distanciaViaMetros?: number;
 	geometriaDetectada?: Array<{ lat: number; lon: number }>;
@@ -36,9 +38,11 @@ export interface EvaluacionTerreno {
 
 export interface EvaluacionFaoGaez {
 	zonaAgroecologica: string;
+	zonaAgroecologicaEn: string;
 	lgpDias: number; // Length of Growing Period (0 - 365 días/año)
 	claseSueloFao: 'S1' | 'S2' | 'S3' | 'N';
 	etiquetaSueloFao: string;
+	etiquetaSueloFaoEn: string;
 	regimenHumedadFao: string;
 	factorRendimientoFao: number; // 0.75 a 1.15
 	fuenteServicio: string;
@@ -48,12 +52,15 @@ export interface EvaluacionFaoGaez {
 	// Datos locales extraídos de C:\Users\anthony\Downloads\LR (FAO GAEZ v4 Theme 1 LR)
 	altitudMsnm: number | null;
 	pendienteTexto: string;
+	pendienteTextoEn: string;
 	enAreaProtegida: boolean;
 	areaProtegidaTexto: string;
+	areaProtegidaTextoEn: string;
 	escasezAguaTexto: string;
 	aez2020sTexto: string;
 	aez2050sTexto: string;
 	proyeccionClimatica2050: string;
+	proyeccionClimatica2050En: string;
 	propiedadesSuelo: PropiedadSueloFao[];
 }
 
@@ -196,8 +203,10 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 				aptoParaSiembra: true,
 				clasificacion: 'agricola_rural',
 				etiqueta: 'Lote / Terreno Evaluado',
+				etiquetaEn: 'Evaluated Lot / Terrain',
 				ubicacionNombre: `Lat ${lat}, Lon ${lon}`,
 				motivo: 'Parcela evaluada por coordenadas geográficas.',
+				motivoEn: 'Parcel evaluated by geographic coordinates.',
 				categoriaOsm: 'fallback',
 				tieneInfraestructuraCercana: false,
 			};
@@ -210,8 +219,10 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 				aptoParaSiembra: false,
 				clasificacion: 'cuerpo_agua',
 				etiqueta: 'Océano / Cuerpo de Agua o Zona Remota Inaccesible',
+				etiquetaEn: 'Ocean / Water Body or Remote Inaccessible Area',
 				ubicacionNombre: `Coordenada (${lat}, ${lon})`,
 				motivo: 'El punto seleccionado se encuentra en el océano o en una región polar/remota sin suelo agrícola.',
+				motivoEn: 'The selected point is in the ocean or in a remote/polar region without agricultural soil.',
 				categoriaOsm: 'ocean',
 				tieneInfraestructuraCercana: false,
 			};
@@ -232,6 +243,7 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 			addr.state ||
 			addr.country ||
 			'Terreno seleccionado';
+		const lugarCortoEn = lugarCorto === 'Terreno seleccionado' ? 'Selected terrain' : lugarCorto;
 
 		const tieneInfraestructuraCercana = Boolean(
 			addr.road ||
@@ -276,8 +288,10 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 				aptoParaSiembra: false,
 				clasificacion: 'hielo_glaciar',
 				etiqueta: `Glaciar / Hielo Perpetuo (${lugarCorto})`,
+				etiquetaEn: `Glacier / Perpetual Ice (${lugarCortoEn})`,
 				ubicacionNombre,
-				motivo: `La ubicación corresponde a una masa glaciar o suelo congelado en ${lugarCorto}. No existe suelo agrícola descubierta para sembrar.`,
+				motivo: `La ubicación corresponde a una masa glaciar o suelo congelado en ${lugarCorto}. No existe suelo agrícola descubierto para sembrar.`,
+				motivoEn: `This location corresponds to a glacier mass or frozen ground in ${lugarCortoEn}. There is no exposed agricultural soil for planting.`,
 				categoriaOsm: `${category}:${type}`,
 				tieneInfraestructuraCercana: false,
 			};
@@ -289,8 +303,10 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 				aptoParaSiembra: false,
 				clasificacion: 'no_cultivable',
 				etiqueta: `Superficie Natural No Cultivable (${type === 'sand' || type === 'dune' ? 'Arena / Dunas' : 'Roca Desnuda'})`,
+				etiquetaEn: `Uncultivable Natural Surface (${type === 'sand' || type === 'dune' ? 'Sand / Dunes' : 'Bare Rock'})`,
 				ubicacionNombre,
 				motivo: `El punto presenta suelo estéril (${type}) en ${lugarCorto}, sin capa vegetal arable.`,
+				motivoEn: `The point shows barren ground (${type}) in ${lugarCortoEn}, without arable topsoil.`,
 				categoriaOsm: `${category}:${type}`,
 				tieneInfraestructuraCercana: false,
 			};
@@ -304,8 +320,10 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 					aptoParaSiembra: false,
 					clasificacion: 'cuerpo_agua',
 					etiqueta: `Cuerpo de Agua (${nomData.name || type})`,
+					etiquetaEn: `Water Body (${nomData.name || type})`,
 					ubicacionNombre,
 					motivo: `El punto cae sobre un cuerpo de agua o cauce hídrico (${nomData.name || type}).`,
+					motivoEn: `The point falls on a water body or river channel (${nomData.name || type}).`,
 					categoriaOsm: `${category}:${type}`,
 					geometriaDetectada: anilloPrincipal,
 					tieneInfraestructuraCercana,
@@ -318,12 +336,15 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 		if (categoriasConstruidas.includes(category)) {
 			if (dentroPoligono || distMinMetros <= 10) {
 				const nombreLugar = nomData.name || addr.amenity || addr.building || `Infraestructura (${type})`;
+				const nombreLugarEn = nomData.name || addr.amenity || addr.building || `Infrastructure (${type})`;
 				return {
 					aptoParaSiembra: false,
 					clasificacion: 'urbano_edificado',
 					etiqueta: `Infraestructura / Edificación (${nombreLugar})`,
+					etiquetaEn: `Infrastructure / Building (${nombreLugarEn})`,
 					ubicacionNombre,
 					motivo: `El punto seleccionado cae sobre infraestructura construida o pavimentada (${nombreLugar}). Selecciona un lote con suelo descubierto.`,
+					motivoEn: `The selected point falls on built or paved infrastructure (${nombreLugarEn}). Select a lot with exposed soil.`,
 					categoriaOsm: `${category}:${type}`,
 					distanciaViaMetros: Number(distMinMetros.toFixed(1)),
 					geometriaDetectada: anilloPrincipal,
@@ -356,17 +377,29 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 					(esGlorieta
 						? 'Glorieta / Intersección Vial'
 						: `Malla Vial (${type === 'unclassified' ? 'Vía municipal' : type})`);
+				const nombreViaEn =
+					nomData.name ||
+					addr.road ||
+					(esGlorieta
+						? 'Roundabout / Road Intersection'
+						: `Road Network (${type === 'unclassified' ? 'Municipal road' : type})`);
 
 				return {
 					aptoParaSiembra: false,
 					clasificacion: 'asfalto_via',
 					etiqueta: esGlorieta ? `Glorieta / Intersección (${nombreVia})` : `Malla Vial / Carretera (${nombreVia})`,
+					etiquetaEn: esGlorieta ? `Roundabout / Intersection (${nombreViaEn})` : `Roadway / Highway (${nombreViaEn})`,
 					ubicacionNombre,
 					motivo: esGlorieta && dentroPoligono
 						? `El punto cae dentro de una glorieta o intersección vial (${nombreVia}). No es terreno apto para siembra agrícola.`
 						: `El marcador está sobre la calzada o berma de "${nombreVia}" (a ${distMinMetros.toFixed(
 								1
 						  )} m del eje vial). Mueve el marcador fuera de la carretera hacia el interior del lote.`,
+					motivoEn: esGlorieta && dentroPoligono
+						? `The point falls inside a roundabout or road intersection (${nombreViaEn}). It is not suitable for farming.`
+						: `The marker is on the roadway or shoulder of "${nombreViaEn}" (${distMinMetros.toFixed(
+								1
+						  )} m from the road axis). Move the marker off the road into the interior of the lot.`,
 					categoriaOsm: `highway:${type}`,
 					distanciaViaMetros: Number(distMinMetros.toFixed(1)),
 					geometriaDetectada: anilloPrincipal,
@@ -379,13 +412,19 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 			distMinMetros < 150
 				? ` (A ${distMinMetros.toFixed(1)} m del eje de la vía/estructura más cercana, fuera de la calzada).`
 				: '.';
+		const notaDistanciaEn =
+			distMinMetros < 150
+				? ` (${distMinMetros.toFixed(1)} m from the nearest road/structure axis, off the roadway).`
+				: '.';
 
 		return {
 			aptoParaSiembra: true,
 			clasificacion: 'agricola_rural',
 			etiqueta: `Lote / Terreno Apto (${lugarCorto})`,
+			etiquetaEn: `Suitable Lot / Terrain (${lugarCortoEn})`,
 			ubicacionNombre,
 			motivo: `Terreno fuera de la malla vial y edificaciones en ${lugarCorto}${notaDistancia}`,
+			motivoEn: `Terrain outside the road network and buildings in ${lugarCortoEn}${notaDistanciaEn}`,
 			categoriaOsm: `${category || 'land'}:${type || 'cultivable'}`,
 			distanciaViaMetros: distMinMetros < 200 ? Number(distMinMetros.toFixed(1)) : undefined,
 			tieneInfraestructuraCercana,
@@ -395,8 +434,10 @@ async function evaluarTerrenoPreciso(lat: number, lon: number): Promise<Evaluaci
 			aptoParaSiembra: true,
 			clasificacion: 'agricola_rural',
 			etiqueta: 'Lote / Terreno Evaluado',
+			etiquetaEn: 'Evaluated Lot / Terrain',
 			ubicacionNombre: `Lat ${lat}, Lon ${lon}`,
 			motivo: 'Parcela evaluada por coordenadas geográficas.',
+			motivoEn: 'Parcel evaluated by geographic coordinates.',
 			categoriaOsm: 'fallback',
 			tieneInfraestructuraCercana: false,
 		};
@@ -491,12 +532,15 @@ export async function consultarNasaPower(lat: number, lon: number): Promise<Resu
 	const mesesSobreDiezGrados = mensual.filter((m) => m.tempMaxPromedio >= 10).length;
 
 	if (promedioTempMax <= 5 || (Math.abs(lat) >= 60 && mesesSobreDiezGrados < 3)) {
+		const locName = terrenoBase.ubicacionNombre.split(',')[0];
 		terreno = {
 			aptoParaSiembra: false,
 			clasificacion: 'hielo_glaciar',
-			etiqueta: `❄️ Zona Polar / Glaciar o Permafrost (${terrenoBase.ubicacionNombre.split(',')[0]})`,
+			etiqueta: `❄️ Zona Polar / Glaciar o Permafrost (${locName})`,
+			etiquetaEn: `❄️ Polar / Glacier or Permafrost Zone (${locName})`,
 			ubicacionNombre: terrenoBase.ubicacionNombre,
 			motivo: `No es posible sembrar: la ubicación presenta condiciones de hielo perpetuo, nieve o permafrost con una temperatura máxima media anual de ${promedioTempMax} °C (${mesesSobreDiezGrados} meses ≥ 10 °C). El suelo permanece congelado e inapto para agricultura a campo abierto.`,
+			motivoEn: `Planting is not viable: this location presents perpetual ice, snow, or permafrost conditions with an annual average max temperature of ${promedioTempMax} °C (${mesesSobreDiezGrados} months ≥ 10 °C). The soil remains frozen and unsuitable for open-field agriculture.`,
 			categoriaOsm: 'climate:polar_glacier',
 			tieneInfraestructuraCercana: false,
 		};
@@ -505,8 +549,10 @@ export async function consultarNasaPower(lat: number, lon: number): Promise<Resu
 			aptoParaSiembra: false,
 			clasificacion: 'hielo_glaciar',
 			etiqueta: `🏔️ Páramo Alto / Zona Nival de Congelamiento`,
+			etiquetaEn: `🏔️ High Paramo / Nival Freezing Zone`,
 			ubicacionNombre: terrenoBase.ubicacionNombre,
 			motivo: `Temperatura demasiado baja para el desarrollo fisiológico de cultivos (${promedioTempMax} °C máx. promedio anual). Zona de páramo alto o nieve perpetua.`,
+			motivoEn: `Temperature is too low for physiological crop development (${promedioTempMax} °C annual avg. max). High paramo or perpetual snow zone.`,
 			categoriaOsm: 'climate:alpine_nival',
 			tieneInfraestructuraCercana: false,
 		};
@@ -515,8 +561,10 @@ export async function consultarNasaPower(lat: number, lon: number): Promise<Resu
 			aptoParaSiembra: false,
 			clasificacion: 'desierto_arido',
 			etiqueta: `🏜️ Desierto Hiperárido (${lluviaTotalAnual} mm/año)`,
+			etiquetaEn: `🏜️ Hyperarid Desert (${lluviaTotalAnual} mm/yr)`,
 			ubicacionNombre: terrenoBase.ubicacionNombre,
 			motivo: `Precipitación anual extremadamente baja (${lluviaTotalAnual} mm/año) y alta evaporación (${promedioTempMax} °C). Terreno desértico no cultivable en secano.`,
+			motivoEn: `Extremely low annual precipitation (${lluviaTotalAnual} mm/yr) and high evaporation (${promedioTempMax} °C). Desert terrain unsuitable for rainfed farming.`,
 			categoriaOsm: 'climate:hyperarid_desert',
 			tieneInfraestructuraCercana: false,
 		};
@@ -558,6 +606,36 @@ const MAPA_AEZ_CLASES: Record<number, string> = {
 	33: 'Cuerpo de Agua Continental / Marino',
 };
 
+const MAPA_AEZ_CLASES_EN: Record<number, string> = {
+	1: 'Lowland Tropics · Semi-arid',
+	2: 'Lowland Tropics · Sub-humid',
+	3: 'Lowland Tropics · Humid',
+	4: 'Andean Highland Tropics · Semi-arid',
+	5: 'Andean Highland Tropics · Sub-humid',
+	6: 'Andean Highland Tropics · Humid',
+	7: 'Warm Subtropics · Semi-arid',
+	8: 'Warm Subtropics · Sub-humid',
+	9: 'Warm Subtropics · Humid',
+	10: 'Temperate Subtropics · Semi-arid',
+	11: 'Temperate Subtropics · Sub-humid',
+	12: 'Temperate Subtropics · Humid',
+	13: 'Cool Subtropics · Semi-arid',
+	14: 'Cool Subtropics · Sub-humid',
+	15: 'Cool Subtropics · Humid',
+	22: 'Cold High Mountain · Dry',
+	23: 'Cold High Mountain · Humid',
+	24: 'Cold High Mountain · Very Humid',
+	25: 'Very Steep Relief (>30%)',
+	26: 'Lands with Severe Soil Limitations',
+	27: 'Lands with Irrigation Potential',
+	28: 'Hydromorphic Soils (Floodplains / Wetlands)',
+	29: 'Desert / Arid Climate',
+	30: 'Boreal / Cold Paramo Climate',
+	31: 'Nival / Glacier Climate',
+	32: 'Predominantly Urban Area',
+	33: 'Inland / Marine Water Body',
+};
+
 const MAPA_PENDIENTE_FAO: Record<number, string> = {
 	1: 'Plano (0 – 0.5%) · Mecanización total',
 	2: 'Casi plano (0.5 – 2%) · Mecanización fácil',
@@ -568,6 +646,18 @@ const MAPA_PENDIENTE_FAO: Record<number, string> = {
 	7: 'Escarpado (30 – 45%) · Agroforestería / Conservación',
 	8: 'Muy escarpado (> 45%) · Protección forestal',
 	9: 'Cuerpo de agua',
+};
+
+const MAPA_PENDIENTE_FAO_EN: Record<number, string> = {
+	1: 'Flat (0 – 0.5%) · Full mechanization',
+	2: 'Nearly flat (0.5 – 2%) · Easy mechanization',
+	3: 'Gently sloping (2 – 5%) · Mechanizable',
+	4: 'Undulating (5 – 8%) · Contour tillage',
+	5: 'Strongly undulating (8 – 16%) · Erosion risk',
+	6: 'Hilly slope (16 – 30%) · Contour farming',
+	7: 'Steep (30 – 45%) · Agroforestry / Conservation',
+	8: 'Very steep (> 45%) · Forest protection',
+	9: 'Water body',
 };
 
 const MAPA_AREA_PROTEGIDA_FAO: Record<number, string> = {
@@ -584,6 +674,22 @@ const MAPA_AREA_PROTEGIDA_FAO: Record<number, string> = {
 	10: 'Reserva de la Biósfera UNESCO-MAB',
 	14: 'Área Protegida Nacional (No Forestal)',
 	15: 'Reserva Forestal Nacional Protegida',
+};
+
+const MAPA_AREA_PROTEGIDA_FAO_EN: Record<number, string> = {
+	0: 'Outside Reserves / Permitted Agricultural Frontier',
+	1: 'Strict Nature Reserve (IUCN Ia)',
+	2: 'Wilderness Area (IUCN Ib)',
+	3: 'National Natural Park (IUCN II)',
+	4: 'Protected Natural Monument (IUCN III)',
+	5: 'Habitat Management Area (IUCN IV)',
+	6: 'Protected Landscape (IUCN V)',
+	7: 'Managed Resource Reserve (IUCN VI)',
+	8: 'Ramsar Protected Wetland',
+	9: 'UNESCO World Natural Heritage',
+	10: 'UNESCO-MAB Biosphere Reserve',
+	14: 'National Protected Area (Non-Forest)',
+	15: 'Protected National Forest Reserve',
 };
 
 const MAPA_ESCASEZ_AGUA_FAO: Record<number, string> = {
@@ -677,41 +783,81 @@ async function evaluarFaoGaez(
 
 	// Zonificación Térmica y de Humedad según matriz FAO GAEZ v4 + Raster Local AEZ
 	let pisoAez = 'Trópico Templado / Subtrópico';
-	if (promedioTempMax <= 6) pisoAez = 'Zona Polar / Nival (AEZ Criogénica)';
-	else if (promedioTempMax < 13) pisoAez = 'Alta Montaña / Tierra Fría Andina';
-	else if (promedioTempMax <= 21) pisoAez = 'Trópico de Altura (Fresco - Templado)';
-	else if (promedioTempMax <= 27) pisoAez = 'Trópico Subcálido Premontano';
-	else pisoAez = 'Trópico Cálido de Tierras Bajas';
+	let pisoAezEn = 'Temperate Tropics / Subtropics';
+	if (promedioTempMax <= 6) {
+		pisoAez = 'Zona Polar / Nival (AEZ Criogénica)';
+		pisoAezEn = 'Polar / Nival Zone (Cryogenic AEZ)';
+	} else if (promedioTempMax < 13) {
+		pisoAez = 'Alta Montaña / Tierra Fría Andina';
+		pisoAezEn = 'High Mountain / Andean Cold Land';
+	} else if (promedioTempMax <= 21) {
+		pisoAez = 'Trópico de Altura (Fresco - Templado)';
+		pisoAezEn = 'Highland Tropics (Cool - Temperate)';
+	} else if (promedioTempMax <= 27) {
+		pisoAez = 'Trópico Subcálido Premontano';
+		pisoAezEn = 'Premontane Sub-warm Tropics';
+	} else {
+		pisoAez = 'Trópico Cálido de Tierras Bajas';
+		pisoAezEn = 'Warm Lowland Tropics';
+	}
 
 	let regimenHumedadFao = 'Subhúmedo (LGP 180–269 d)';
-	if (lgpDias < 60 || lluviaTotalAnual < 250) regimenHumedadFao = 'Árido / Semiárido (LGP < 60 d)';
-	else if (lgpDias < 120) regimenHumedadFao = 'Seco Estacional (LGP 60–119 d)';
-	else if (lgpDias < 180) regimenHumedadFao = 'Subhúmedo Seco (LGP 120–179 d)';
-	else if (lgpDias <= 270) regimenHumedadFao = 'Subhúmedo Húmedo (LGP 180–270 d)';
-	else regimenHumedadFao = 'Húmedo Continuo (LGP > 270 d)';
+	let regimenHumedadFaoEn = 'Sub-humid (LGP 180–269 d)';
+	if (lgpDias < 60 || lluviaTotalAnual < 250) {
+		regimenHumedadFao = 'Árido / Semiárido (LGP < 60 d)';
+		regimenHumedadFaoEn = 'Arid / Semi-arid (LGP < 60 d)';
+	} else if (lgpDias < 120) {
+		regimenHumedadFao = 'Seco Estacional (LGP 60–119 d)';
+		regimenHumedadFaoEn = 'Seasonal Dry (LGP 60–119 d)';
+	} else if (lgpDias < 180) {
+		regimenHumedadFao = 'Subhúmedo Seco (LGP 120–179 d)';
+		regimenHumedadFaoEn = 'Dry Sub-humid (LGP 120–179 d)';
+	} else if (lgpDias <= 270) {
+		regimenHumedadFao = 'Subhúmedo Húmedo (LGP 180–270 d)';
+		regimenHumedadFaoEn = 'Moist Sub-humid (LGP 180–270 d)';
+	} else {
+		regimenHumedadFao = 'Húmedo Continuo (LGP > 270 d)';
+		regimenHumedadFaoEn = 'Per-humid (LGP > 270 d)';
+	}
 
 	const aez2020sTexto =
 		(celdaLocal && MAPA_AEZ_CLASES[celdaLocal.aez2020s]) ||
 		(celdaLocal && MAPA_AEZ_CLASES[celdaLocal.aezHist]) ||
 		`${pisoAez} · ${regimenHumedadFao.split('(')[0].trim()}`;
+	const aez2020sTextoEn =
+		(celdaLocal && MAPA_AEZ_CLASES_EN[celdaLocal.aez2020s]) ||
+		(celdaLocal && MAPA_AEZ_CLASES_EN[celdaLocal.aezHist]) ||
+		`${pisoAezEn} · ${regimenHumedadFaoEn.split('(')[0].trim()}`;
 
 	const aez2050sTexto =
 		(celdaLocal && MAPA_AEZ_CLASES[celdaLocal.aez2050s]) || aez2020sTexto;
+	const aez2050sTextoEn =
+		(celdaLocal && MAPA_AEZ_CLASES_EN[celdaLocal.aez2050s]) || aez2020sTextoEn;
 
 	const proyeccionClimatica2050 =
 		aez2020sTexto === aez2050sTexto
 			? `Estable hacia 2050 (${aez2050sTexto})`
 			: `Cambio proyectado 2050: ${aez2020sTexto} ➔ ${aez2050sTexto}`;
+	const proyeccionClimatica2050En =
+		aez2020sTextoEn === aez2050sTextoEn
+			? `Stable toward 2050 (${aez2050sTextoEn})`
+			: `Projected 2050 shift: ${aez2020sTextoEn} ➔ ${aez2050sTextoEn}`;
 
 	const zonaAgroecologica = aez2020sTexto;
+	const zonaAgroecologicaEn = aez2020sTextoEn;
 
 	const altitudMsnm = celdaLocal ? celdaLocal.altitudMsnm : null;
 	const pendienteTexto =
 		(celdaLocal && MAPA_PENDIENTE_FAO[celdaLocal.pendienteCls]) || 'Suavemente inclinado (2 – 5%)';
+	const pendienteTextoEn =
+		(celdaLocal && MAPA_PENDIENTE_FAO_EN[celdaLocal.pendienteCls]) || 'Gently sloping (2 – 5%)';
 	const enAreaProtegida = Boolean(celdaLocal && celdaLocal.areaProtegidaCls > 0);
 	const areaProtegidaTexto =
 		(celdaLocal && MAPA_AREA_PROTEGIDA_FAO[celdaLocal.areaProtegidaCls]) ||
 		'Fuera de Reservas / Frontera Agrícola Permitida';
+	const areaProtegidaTextoEn =
+		(celdaLocal && MAPA_AREA_PROTEGIDA_FAO_EN[celdaLocal.areaProtegidaCls]) ||
+		'Outside Reserves / Permitted Agricultural Frontier';
 	const escasezAguaTexto =
 		(celdaLocal && MAPA_ESCASEZ_AGUA_FAO[celdaLocal.escasezAguaCls]) ||
 		'Baja (Buena disponibilidad hídrica)';
@@ -745,31 +891,38 @@ async function evaluarFaoGaez(
 	// Clase de Aptitud Edáfica FAO (S1: Muy Apta, S2: Moderadamente Apta, S3: Marginalmente Apta, N: No Apta)
 	let claseSueloFao: 'S1' | 'S2' | 'S3' | 'N' = 'S1';
 	let etiquetaSueloFao = `Clase S1 — Alta Aptitud Edáfica FAO (Índice SQ promedio: ${promedioSq}%)`;
+	let etiquetaSueloFaoEn = `Class S1 — High FAO Soil Suitability (Avg. SQ Index: ${promedioSq}%)`;
 	let factorRendimientoFao = 1.08;
 
 	if (!terreno.aptoParaSiembra) {
 		claseSueloFao = 'N';
 		etiquetaSueloFao = 'Clase N — No Apto para Agricultura (Restricción Física/Superficial)';
+		etiquetaSueloFaoEn = 'Class N — Unsuitable for Agriculture (Physical/Surface Restriction)';
 		factorRendimientoFao = 0;
 	} else if (lgpDias < 75 || lluviaTotalAnual < 380 || promedioTempMax < 9 || promedioSq < 48) {
 		claseSueloFao = 'S3';
 		etiquetaSueloFao = `Clase S3 — Aptitud Marginal (Índice SQ: ${promedioSq}%)`;
+		etiquetaSueloFaoEn = `Class S3 — Marginal Suitability (SQ Index: ${promedioSq}%)`;
 		factorRendimientoFao = 0.82;
 	} else if (promedioSq >= 72 && lgpDias >= 150) {
 		claseSueloFao = 'S1';
 		etiquetaSueloFao = `Clase S1 — Alta Aptitud Agroecológica FAO (Salud de Suelo: ${promedioSq}%)`;
+		etiquetaSueloFaoEn = `Class S1 — High FAO Agro-ecological Suitability (Soil Health: ${promedioSq}%)`;
 		factorRendimientoFao = 1.08;
 	} else {
 		claseSueloFao = 'S2';
 		etiquetaSueloFao = `Clase S2 — Aptitud Moderada FAO (Salud de Suelo: ${promedioSq}%)`;
+		etiquetaSueloFaoEn = `Class S2 — Moderate FAO Suitability (Soil Health: ${promedioSq}%)`;
 		factorRendimientoFao = 0.96;
 	}
 
 	return {
 		zonaAgroecologica,
+		zonaAgroecologicaEn,
 		lgpDias,
 		claseSueloFao,
 		etiquetaSueloFao,
+		etiquetaSueloFaoEn,
 		regimenHumedadFao,
 		factorRendimientoFao,
 		fuenteServicio: celdaLocal
@@ -780,12 +933,15 @@ async function evaluarFaoGaez(
 		wmsLgpUrl,
 		altitudMsnm,
 		pendienteTexto,
+		pendienteTextoEn,
 		enAreaProtegida,
 		areaProtegidaTexto,
+		areaProtegidaTextoEn,
 		escasezAguaTexto,
 		aez2020sTexto,
 		aez2050sTexto,
 		proyeccionClimatica2050,
+		proyeccionClimatica2050En,
 		propiedadesSuelo,
 	};
 }
