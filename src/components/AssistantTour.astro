@@ -173,11 +173,13 @@
 		display: none !important;
 	}
 
-	/* OPTIMIZACIÓN COMPACTA PARA MÓVIL (<= 767.98px: Mini-Dock Inferior ~20% de pantalla) */
+	/* OPTIMIZACIÓN COMPACTA PARA MÓVIL (<= 767.98px: Mini-Dock Inferior sin desborde horizontal en iPhone 16 / SE) */
 	@media (max-width: 767.98px) {
 		.ts-assistant-fab {
 			bottom: 10px;
 			right: 10px;
+			max-width: calc(100vw - 20px);
+			box-sizing: border-box;
 			padding: 7px 12px;
 			font-size: 0.78rem;
 			gap: 6px;
@@ -186,40 +188,63 @@
 			width: 26px;
 			height: 26px;
 			font-size: 0.95rem;
+			flex-shrink: 0;
 		}
 		.ts-assistant-card {
 			bottom: 8px;
 			left: 8px;
 			right: 8px;
-			width: auto;
-			max-width: none;
+			width: calc(100vw - 16px) !important;
+			max-width: calc(100% - 16px) !important;
+			box-sizing: border-box !important;
 			border-radius: 0.85rem;
 			box-shadow: 0 10px 28px rgba(7, 20, 40, 0.42);
 		}
 		.ts-assistant-header {
-			padding: 7px 10px;
+			padding: 6px 10px;
+			max-width: 100%;
 		}
 		.ts-assistant-header .ts-assistant-avatar {
-			width: 26px;
-			height: 26px;
-			font-size: 0.95rem;
+			width: 24px;
+			height: 24px;
+			font-size: 0.9rem;
+		}
+		#asistente-titulo-header {
+			font-size: 0.8rem !important;
 		}
 		#asistente-subtitulo {
 			display: none !important;
 		}
 		#asistente-subbarra {
-			padding: 4px 10px !important;
+			padding: 4px 8px !important;
+			max-width: 100%;
+		}
+		#asistente-subbarra .btn-group {
+			width: 100%;
+			display: flex;
 		}
 		#asistente-subbarra .btn {
-			font-size: 0.72rem !important;
-			padding: 2px 7px !important;
+			flex: 1 1 0%;
+			min-width: 0;
+			font-size: 0.71rem !important;
+			padding: 3px 6px !important;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 		#vista-tour {
 			padding: 8px 10px !important;
+			max-width: 100%;
+			box-sizing: border-box;
 		}
 		#tour-step-title {
-			font-size: 0.84rem !important;
+			font-size: 0.81rem !important;
+			line-height: 1.25 !important;
 			margin-bottom: 0 !important;
+			min-width: 0;
+			flex: 1 1 0%;
+			overflow-wrap: anywhere;
+			word-break: break-word;
 		}
 		/* En móvil ocultamos el párrafo largo por defecto y se muestra solo al tocar "ℹ️ ¿Por qué?" */
 		#tour-step-desc {
@@ -227,19 +252,39 @@
 			font-size: 0.74rem !important;
 			margin-top: 4px;
 			margin-bottom: 6px !important;
+			overflow-wrap: anywhere;
+			word-break: break-word;
 		}
 		#tour-step-desc.ts-desc-expanded {
 			display: block !important;
 		}
 		.ts-mission-box {
 			padding: 6px 9px;
-			font-size: 0.75rem;
+			font-size: 0.74rem;
 			margin-bottom: 6px !important;
+			max-width: 100%;
+			overflow-wrap: anywhere;
+			word-break: break-word;
+		}
+		.ts-step-dot {
+			width: 8px;
+			height: 8px;
+		}
+		.ts-step-dot.active {
+			width: 18px;
 		}
 		#vista-capsulas {
 			padding: 8px 10px !important;
 			max-height: 35vh;
 			overflow-y: auto;
+			max-width: 100%;
+			box-sizing: border-box;
+		}
+		.ts-faq-btn {
+			white-space: normal !important;
+			overflow-wrap: anywhere;
+			word-break: break-word;
+			font-size: 0.75rem;
 		}
 	}
 	@media (min-width: 768px) {
@@ -265,19 +310,19 @@
 <div id="panel-asistente" class="ts-assistant-card d-none" role="dialog" aria-label="Asistente Don Terra">
 	<!-- Encabezado del Asistente con botón de Plegar/Minimizar y Cerrar -->
 	<div class="ts-assistant-header d-flex justify-content-between align-items-center gap-2">
-		<div class="d-flex align-items-center gap-2" style="min-width: 0;">
+		<div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1 1 0%; overflow: hidden;">
 			<span class="ts-assistant-avatar flex-shrink-0">🧑‍🌾</span>
-			<div class="text-truncate">
+			<div style="min-width: 0; flex: 1 1 0%; overflow: hidden;">
 				<div class="fw-bold text-truncate" style="font-size: 0.88rem; line-height: 1.15;" id="asistente-titulo-header">
 					Don Terra — Tu Agrónomo Guía
 				</div>
-				<small class="text-white-50" style="font-size: 0.72rem;" id="asistente-subtitulo">
+				<small class="text-white-50 text-truncate d-block" style="font-size: 0.72rem;" id="asistente-subtitulo">
 					Aprende a planificar tu siembra paso a paso
 				</small>
 			</div>
 		</div>
 		<div class="d-flex align-items-center gap-1 flex-shrink-0">
-			<span class="badge border d-md-none" style="background: rgba(245,176,65,0.2); color: #f5b041; border-color: rgba(245,176,65,0.5) !important; font-size: 0.68rem;" id="badge-progreso-movil">
+			<span class="badge border d-md-none" style="background: rgba(245,176,65,0.2); color: #f5b041; border-color: rgba(245,176,65,0.5) !important; font-size: 0.66rem;" id="badge-progreso-movil">
 				1/6
 			</span>
 			<button
@@ -299,7 +344,7 @@
 	</div>
 
 	<!-- Pestañas internas del Asistente: [1] Tour Paso a Paso | [2] Cápsulas Didácticas -->
-	<div id="asistente-subbarra" class="bg-light border-bottom px-3 py-1 d-flex justify-content-between align-items-center">
+	<div id="asistente-subbarra" class="bg-light border-bottom px-3 py-1 d-flex justify-content-between align-items-center gap-2">
 		<div class="btn-group btn-group-sm" role="group">
 			<button type="button" id="btn-modo-tour" class="btn ts-btn-space btn-sm fw-semibold py-1">
 				🎯 Tour Paso a Paso (6)
@@ -308,14 +353,14 @@
 				💡 Cápsulas Agronómicas
 			</button>
 		</div>
-		<span class="badge border d-none d-md-inline-block" style="background: #eef4fb; color: #0d2647; border-color: #93c5fd !important;" id="badge-progreso-tour">
+		<span class="badge border d-none d-md-inline-block flex-shrink-0" style="background: #eef4fb; color: #0d2647; border-color: #93c5fd !important;" id="badge-progreso-tour">
 			Paso 1 / 6
 		</span>
 	</div>
 
 	<!-- CONTENIDO MODO 1: TOUR GUIADO INTERACTIVO -->
 	<div id="vista-tour" class="p-3">
-		<div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+		<div class="d-flex justify-content-between align-items-start gap-2 mb-1">
 			<h3 class="h6 fw-bold mb-0" style="color: #0d2647;" id="tour-step-title">
 				📍 Paso 1: Elige tu Lote en el Mapa Satelital
 			</h3>
@@ -337,15 +382,15 @@
 		</div>
 
 		<!-- Indicador de progreso y controles de navegación (avance automático por misión) -->
-		<div class="d-flex justify-content-between align-items-center pt-2 border-top">
-			<button type="button" id="btn-tour-prev" class="btn btn-outline-secondary btn-sm fw-semibold" disabled>
+		<div class="d-flex flex-wrap justify-content-between align-items-center gap-1 pt-2 border-top">
+			<button type="button" id="btn-tour-prev" class="btn btn-outline-secondary btn-sm fw-semibold py-0 px-2" style="font-size: 0.74rem;" disabled>
 				⬅ Anterior
 			</button>
 
 			<div class="d-flex gap-1 align-items-center" id="tour-dots-container"></div>
 
-			<span class="badge bg-light text-secondary border" style="font-size: 0.7rem;">
-				⚡ Avance automático
+			<span class="badge bg-light text-secondary border" style="font-size: 0.68rem;">
+				⚡ <span class="d-none d-sm-inline">Avance automático</span><span class="d-inline d-sm-none">Auto</span>
 			</span>
 		</div>
 	</div>

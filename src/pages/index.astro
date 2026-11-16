@@ -21,21 +21,26 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 			<div class="card-body py-2 px-3">
 				<form id="form-terrasync" class="row g-2 align-items-center">
 					<!-- Botón Volver a Portada + Selector de Cultivo Actual -->
-					<div class="col-xl-4 col-lg-4 col-md-6">
-						<div class="d-flex align-items-center gap-2">
+					<div class="col-xl-4 col-lg-4 col-md-6 col-12 position-relative">
+						<div class="d-flex align-items-center gap-2 w-100" style="min-width: 0;">
 							<button
 								type="button"
 								id="btn-volver-portada-top"
 								class="btn btn-outline-light btn-sm rounded-pill fw-semibold px-2 flex-shrink-0"
 								title="Regresar a la página principal"
 							>
-								🏠 Portada
+								🏠 <span class="d-none d-sm-inline">Portada</span>
 							</button>
-							<div class="input-group input-group-sm">
-								<label class="input-group-text border-0 fw-bold" for="select-cultivo" style="background: #f5b041; color: #071428;">
-									🌾 Cultivo Actual
+							<div class="input-group input-group-sm position-relative" id="grupo-selector-cultivo" style="min-width: 0; flex: 1 1 0%;">
+								<label class="input-group-text border-0 fw-bold" for="select-cultivo" style="background: #f5b041; color: #071428; cursor: pointer;">
+									🌾 <span class="d-none d-sm-inline ms-1">Cultivo Actual</span><span class="d-inline d-sm-none ms-1">Cultivo</span>
 								</label>
-								<select id="select-cultivo" class="form-select form-select-sm fw-semibold" required>
+								<select
+									id="select-cultivo"
+									class="form-select form-select-sm fw-semibold"
+									style="min-width: 0;"
+									required
+								>
 									{
 										macroregiones.map((macro) => (
 											<optgroup label={`🇨🇴 ${macro}`}>
@@ -50,6 +55,43 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 										))
 									}
 								</select>
+							</div>
+						</div>
+
+						<!-- Menú Desplegable Táctil para Móvil / Emulador (< 992px) -->
+						<div
+							id="menu-cultivos-movil"
+							class="d-none shadow-lg rounded-3 border bg-white text-dark position-absolute start-0 end-0 mt-1 mx-2"
+							style="z-index: 1085; max-height: 310px; overflow-y: auto; border-color: #0d2647 !important;"
+						>
+							<div class="d-flex justify-content-between align-items-center px-3 py-2 sticky-top" style="background: #0d2647; color: #fff;">
+								<span class="fw-bold small">🌾 Selecciona tu Cultivo Actual</span>
+								<button type="button" id="btn-cerrar-menu-cultivos" class="btn-close btn-close-white" style="font-size: 0.7rem;" aria-label="Cerrar"></button>
+							</div>
+							<div class="p-2">
+								{
+									macroregiones.map((macro) => (
+										<div class="mb-2">
+											<div class="px-2 py-1 rounded fw-bold small" style="background: #eef4fb; color: #0d2647; font-size: 0.74rem;">
+												🇨🇴 {macro}
+											</div>
+											<div class="d-grid gap-1 mt-1">
+												{cultivos
+													.filter((c) => (c.macroregion || 'General') === macro)
+													.map((c) => (
+														<button
+															type="button"
+															class="btn btn-sm text-start py-1 px-2 border-0 rounded ts-item-cultivo-movil"
+															data-crop-select-id={c.id}
+															style="font-size: 0.78rem; color: #0f172a;"
+														>
+															<strong>{c.nombre}</strong> <span class="text-muted" style="font-size: 0.7rem;">({c.familia})</span>
+														</button>
+													))}
+											</div>
+										</div>
+									))
+								}
 							</div>
 						</div>
 					</div>
@@ -101,6 +143,26 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						</button>
 					</div>
 				</form>
+
+				<!-- Cinta de Retroalimentación Instantánea en Móvil (< 992px) cuando se cambia el Cultivo, Área o Prioridad -->
+				<div
+					id="topbar-resumen-movil"
+					class="d-lg-none mt-2 pt-2 border-top border-info border-opacity-25 d-flex justify-content-between align-items-center gap-2 small"
+				>
+					<div class="text-truncate" style="font-size: 0.76rem;">
+						<span class="text-info fw-semibold">Rotación:</span>
+						<span class="text-white fw-bold ms-1" id="movil-chip-origen">Papa</span>
+						<span class="text-warning mx-1">➔</span>
+						<span class="badge text-dark fw-bold" style="background: #f5b041;" id="movil-chip-destino">Calculando...</span>
+					</div>
+					<a
+						href="#calendario-costos"
+						class="btn btn-outline-info btn-sm py-0 px-2 rounded-pill flex-shrink-0 text-white"
+						style="font-size: 0.72rem;"
+					>
+						Ver Top 3 ⬇
+					</a>
+				</div>
 			</div>
 		</div>
 
@@ -919,16 +981,27 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				const topRecomendados = evaluados.slice(0, 3);
 				ultimasRecomendaciones = topRecomendados;
 
+				const movilChipOrigen = document.getElementById('movil-chip-origen');
+				const movilChipDestino = document.getElementById('movil-chip-destino');
+				if (movilChipOrigen && objCultivoActual) {
+					movilChipOrigen.textContent = objCultivoActual.nombre.split('(')[0].trim();
+				}
+
 				if (chipCultivoDestino && topRecomendados[0]) {
 					chipCultivoDestino.className = 'badge fw-bold text-wrap';
 					chipCultivoDestino.style.background = '#f5b041';
 					chipCultivoDestino.style.color = '#071428';
 					chipCultivoDestino.textContent = `${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
 				}
+				if (movilChipDestino && topRecomendados[0]) {
+					movilChipDestino.textContent = `#1 ${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
+				}
 
-				if (clima?.coordenadas) {
-					subtituloRotacion.textContent = `${lluviaTotalAnual} mm/año | ${tempMaxPromedio} °C`;
+				if (badgeEstadoRotacion && topRecomendados[0]) {
 					badgeEstadoRotacion.textContent = `Top #1: ${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
+				}
+				if (clima?.coordenadas && subtituloRotacion) {
+					subtituloRotacion.textContent = `${lluviaTotalAnual} mm/año | ${tempMaxPromedio} °C`;
 				}
 
 				// RENDERIZAR TARJETAS UNIFICADAS EN EL DASHBOARD PRINCIPAL (AFINIDAD + CALENDARIO 12 MESES + COSTOS $ COP)
@@ -1233,7 +1306,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					if (selectPrioridad) {
 						selectPrioridad.value = btn.getAttribute('data-priority-val') || 'suelo';
 					}
-					if (ultimoClima) calcularYRenderizarRotacion(ultimoClima);
+					calcularYRenderizarRotacion(ultimoClima);
 				});
 			});
 
@@ -1242,16 +1315,71 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				consultarParcela(lat, lon);
 			});
 
-			// Recalcular costos y recomendaciones al cambiar el cultivo actual o el área/unidad del lote
-			selectCultivo?.addEventListener('change', () => {
-				if (ultimoClima) calcularYRenderizarRotacion(ultimoClima);
+			// Recalcular costos y recomendaciones al cambiar el cultivo actual o el área/unidad del lote (incluso antes de que responda NASA)
+			const menuCultivosMovil = document.getElementById('menu-cultivos-movil');
+			const btnCerrarMenuCultivos = document.getElementById('btn-cerrar-menu-cultivos');
+			const grupoSelectorCultivo = document.getElementById('grupo-selector-cultivo');
+			const itemsCultivoMovil = document.querySelectorAll('.ts-item-cultivo-movil');
+
+			const actualizarResaltadoMenuMovil = () => {
+				const actual = selectCultivo?.value || 'papa';
+				itemsCultivoMovil.forEach((btn) => {
+					const activo = btn.getAttribute('data-crop-select-id') === actual;
+					btn.style.background = activo ? '#fef3c7' : 'transparent';
+					btn.style.borderLeft = activo ? '3px solid #f5b041' : 'none';
+				});
+			};
+
+			const recalcularAlInstante = () => {
+				actualizarResaltadoMenuMovil();
+				calcularYRenderizarRotacion(ultimoClima);
+			};
+			selectCultivo?.addEventListener('change', recalcularAlInstante);
+			selectCultivo?.addEventListener('input', recalcularAlInstante);
+			inputAreaLote?.addEventListener('input', recalcularAlInstante);
+			selectUnidadArea?.addEventListener('change', recalcularAlInstante);
+
+			// En pantallas móviles / emulador táctil (< 992px), abrir el selector táctil personalizado para evitar el bloqueo del <select> nativo
+			grupoSelectorCultivo?.addEventListener('mousedown', (e) => {
+				if (window.innerWidth < 992 && menuCultivosMovil) {
+					e.preventDefault();
+					actualizarResaltadoMenuMovil();
+					menuCultivosMovil.classList.toggle('d-none');
+				}
 			});
-			inputAreaLote?.addEventListener('input', () => {
-				if (ultimoClima) calcularYRenderizarRotacion(ultimoClima);
+			grupoSelectorCultivo?.addEventListener('click', (e) => {
+				if (window.innerWidth < 992 && menuCultivosMovil) {
+					e.preventDefault();
+					actualizarResaltadoMenuMovil();
+					menuCultivosMovil.classList.remove('d-none');
+				}
 			});
-			selectUnidadArea?.addEventListener('change', () => {
-				if (ultimoClima) calcularYRenderizarRotacion(ultimoClima);
+			btnCerrarMenuCultivos?.addEventListener('click', () => {
+				menuCultivosMovil?.classList.add('d-none');
 			});
+			itemsCultivoMovil.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const cropId = btn.getAttribute('data-crop-select-id');
+					if (cropId && selectCultivo) {
+						selectCultivo.value = cropId;
+						selectCultivo.dispatchEvent(new Event('change', { bubbles: true }));
+						menuCultivosMovil?.classList.add('d-none');
+					}
+				});
+			});
+			document.addEventListener('click', (e) => {
+				if (
+					menuCultivosMovil &&
+					!menuCultivosMovil.classList.contains('d-none') &&
+					!e.target.closest('#grupo-selector-cultivo') &&
+					!e.target.closest('#menu-cultivos-movil')
+				) {
+					menuCultivosMovil.classList.add('d-none');
+				}
+			});
+
+			// Renderizado inicial inmediato con el cultivo seleccionado por defecto
+			calcularYRenderizarRotacion(null);
 
 			/**
 			 * Genera y abre un Informe Técnico Agronómico completo listo para guardar en PDF o imprimir.
