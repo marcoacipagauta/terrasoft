@@ -29,11 +29,11 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 								class="btn btn-outline-light btn-sm rounded-pill fw-semibold px-2 flex-shrink-0"
 								title="Regresar a la página principal"
 							>
-								🏠 <span class="d-none d-sm-inline">Portada</span>
+								<span data-i18n="navBackShort">🏠 Portada</span>
 							</button>
 							<div class="input-group input-group-sm position-relative" id="grupo-selector-cultivo" style="min-width: 0; flex: 1 1 0%;">
 								<label class="input-group-text border-0 fw-bold" for="select-cultivo" style="background: #f5b041; color: #071428; cursor: pointer;">
-									🌾 <span class="d-none d-sm-inline ms-1">Cultivo Actual</span><span class="d-inline d-sm-none ms-1">Cultivo</span>
+									🌾 <span class="d-none d-sm-inline ms-1" data-i18n="lblCurrentCrop">Cultivo Actual</span><span class="d-inline d-sm-none ms-1" data-i18n="lblCurrentCropShort">Cultivo</span>
 								</label>
 								<select
 									id="select-cultivo"
@@ -43,11 +43,11 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 								>
 									{
 										macroregiones.map((macro) => (
-											<optgroup label={`🇨🇴 ${macro}`}>
+											<optgroup label={`🇨🇴 ${macro}`} data-macro-es={macro}>
 												{cultivos
 													.filter((c) => (c.macroregion || 'General') === macro)
 													.map((c) => (
-														<option value={c.id}>{c.nombre}</option>
+														<option value={c.id} data-nombre-es={c.nombre}>{c.nombre}</option>
 													))}
 											</optgroup>
 										))
@@ -63,14 +63,14 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 							style="z-index: 1085; max-height: 290px; max-width: calc(100vw - 24px); overflow-y: auto; overflow-x: hidden; box-sizing: border-box; border-color: #0d2647 !important;"
 						>
 							<div class="d-flex justify-content-between align-items-center px-3 py-2 sticky-top" style="background: #0d2647; color: #fff;">
-								<span class="fw-bold small text-truncate">🌾 Selecciona tu Cultivo Actual</span>
+								<span class="fw-bold small text-truncate" data-i18n="lblMobileCropTitle">🌾 Selecciona tu Cultivo Actual</span>
 								<button type="button" id="btn-cerrar-menu-cultivos" class="btn-close btn-close-white flex-shrink-0" style="font-size: 0.7rem;" aria-label="Cerrar"></button>
 							</div>
 							<div class="p-2" style="max-width: 100%; overflow-x: hidden;">
 								{
 									macroregiones.map((macro) => (
 										<div class="mb-2">
-											<div class="px-2 py-1 rounded fw-bold small text-truncate" style="background: #eef4fb; color: #0d2647; font-size: 0.74rem;">
+											<div class="px-2 py-1 rounded fw-bold small text-truncate ts-macro-header-movil" data-macro-es={macro} style="background: #eef4fb; color: #0d2647; font-size: 0.74rem;">
 												🇨🇴 {macro}
 											</div>
 											<div class="d-flex flex-column gap-1 mt-1">
@@ -81,6 +81,8 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 															type="button"
 															class="btn btn-sm text-start py-1 px-2 border-0 rounded ts-item-cultivo-movil w-100"
 															data-crop-select-id={c.id}
+															data-nombre-es={c.nombre}
+															data-familia-es={c.familia}
 															style="font-size: 0.77rem; color: #0f172a; white-space: normal !important; word-break: break-word; line-height: 1.25;"
 														>
 															<strong>{c.nombre}</strong> <span class="text-muted" style="font-size: 0.69rem;">({c.familia})</span>
@@ -97,7 +99,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					<!-- Selector de Área del Lote para Cálculo de Costos -->
 					<div class="col-xl-3 col-lg-3 col-md-6 col-12">
 						<div class="input-group input-group-sm" id="grupo-area-lote">
-							<span class="input-group-text fw-bold" style="background: #163a66; color: #38bdf8; border-color: rgba(56,189,248,0.35);">📐 Lote</span>
+							<span class="input-group-text fw-bold" style="background: #163a66; color: #38bdf8; border-color: rgba(56,189,248,0.35);" data-i18n="lblLotSize">📐 Lote</span>
 							<input
 								type="number"
 								id="input-area-lote"
@@ -108,9 +110,9 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 								title="Tamaño de tu lote o parcela"
 							/>
 							<select id="select-unidad-area" class="form-select form-select-sm bg-light fw-semibold" style="max-width: 112px; flex: 0 0 auto !important; width: auto !important;">
-								<option value="m2" selected>m² (Metros²)</option>
-								<option value="fanegada">Fanegadas</option>
-								<option value="ha">Hectáreas</option>
+								<option value="m2" data-i18n="unitM2" selected>m² (Metros²)</option>
+								<option value="fanegada" data-i18n="unitFanegada">Fanegadas</option>
+								<option value="ha" data-i18n="unitHa">Hectáreas</option>
 							</select>
 						</div>
 					</div>
@@ -119,13 +121,13 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					<div class="col-xl-4 col-lg-3 col-md-8">
 						<input type="hidden" id="select-prioridad" value="suelo" />
 						<div class="btn-group w-100" role="group" aria-label="Prioridad del próximo ciclo">
-							<button type="button" class="btn ts-priority-btn active" data-priority-val="suelo">
+							<button type="button" class="btn ts-priority-btn active" data-priority-val="suelo" data-i18n="prioSoil">
 								🌱 Suelo
 							</button>
-							<button type="button" class="btn ts-priority-btn" data-priority-val="agua">
+							<button type="button" class="btn ts-priority-btn" data-priority-val="agua" data-i18n="prioWater">
 								💧 Agua
 							</button>
-							<button type="button" class="btn ts-priority-btn" data-priority-val="rentabilidad">
+							<button type="button" class="btn ts-priority-btn" data-priority-val="rentabilidad" data-i18n="prioProfit">
 								💰 Rentabilidad
 							</button>
 						</div>
@@ -149,7 +151,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					style="max-width: 100%; overflow: hidden;"
 				>
 					<div class="text-truncate" style="font-size: 0.75rem; min-width: 0; flex: 1 1 0%;">
-						<span class="text-info fw-semibold">Rotación:</span>
+						<span class="text-info fw-semibold" data-i18n="lblMobileRot">Rotación:</span>
 						<span class="text-white fw-bold ms-1" id="movil-chip-origen">Papa</span>
 						<span class="text-warning mx-1">➔</span>
 						<span class="badge text-dark fw-bold" style="background: #f5b041; white-space: nowrap;" id="movil-chip-destino">Calculando...</span>
@@ -158,6 +160,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						href="#calendario-costos"
 						class="btn btn-outline-info btn-sm py-0 px-2 rounded-pill flex-shrink-0 text-white"
 						style="font-size: 0.71rem;"
+						data-i18n="btnMobileSeeTop3"
 					>
 						Ver Top 3 ⬇
 					</a>
@@ -184,21 +187,21 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						<div class="row g-2 text-center mb-2">
 							<div class="col-4">
 								<div class="ts-kpi-box">
-									<div class="text-white-50" style="font-size: 0.7rem;">🌡️ Temp. Máx</div>
+									<div class="text-white-50" style="font-size: 0.7rem;" data-i18n="kpiTempLabel">🌡️ Temp. Máx</div>
 									<div class="fw-bold fs-6" style="color: #fbbf24;" id="kpi-temp-max">-- °C</div>
 									<div class="text-white-50" style="font-size: 0.68rem;" id="kpi-piso-termico">Piso térmico</div>
 								</div>
 							</div>
 							<div class="col-4">
 								<div class="ts-kpi-box">
-									<div class="text-white-50" style="font-size: 0.7rem;">🌧️ Lluvia Anual</div>
+									<div class="text-white-50" style="font-size: 0.7rem;" data-i18n="kpiLluviaLabel">🌧️ Lluvia Anual</div>
 									<div class="fw-bold fs-6" style="color: #38bdf8;" id="kpi-lluvia-anual">-- mm</div>
 									<div class="text-white-50" style="font-size: 0.68rem;" id="kpi-regimen-lluvia">Régimen</div>
 								</div>
 							</div>
 							<div class="col-4">
 								<div class="ts-kpi-box">
-									<div class="text-white-50" style="font-size: 0.7rem;">💧 Prom. Diario</div>
+									<div class="text-white-50" style="font-size: 0.7rem;" data-i18n="kpiDiariaLabel">💧 Prom. Diario</div>
 									<div class="fw-bold fs-6" style="color: #7dd3fc;" id="kpi-lluvia-diaria">-- mm/d</div>
 									<div class="text-white-50" style="font-size: 0.68rem;" id="clima-coords-label">NASA 2023</div>
 								</div>
@@ -206,7 +209,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						</div>
 
 						<!-- Escáner Óptico Satelital Integrado -->
-						<div class="d-flex align-items-center gap-2 p-2 rounded" style="background: #0b213f; border: 1px solid rgba(56,189,248,0.3); color: #e2e8f0;">
+						<div class="d-flex align-items-center gap-2 p-2 rounded mb-2" style="background: #0b213f; border: 1px solid rgba(56,189,248,0.3); color: #e2e8f0;">
 							<canvas
 								id="canvas-muestra-satelital"
 								width="46"
@@ -215,10 +218,84 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 								style="border: 1.5px solid #38bdf8;"
 								title="Muestra satelital 6m x 6m bajo el marcador"
 							></canvas>
-							<div class="flex-grow-1" style="font-size: 0.75rem;">
-								<div class="fw-bold" style="color: #38bdf8;" id="titulo-espectral">🔬 Escáner Óptico Satelital (Radio 4m)</div>
+							<div class="flex-grow-1" style="font-size: 0.75rem; min-width: 0;">
+								<div class="fw-bold" style="color: #38bdf8;" id="titulo-espectral" data-i18n="scannerTitle">🔬 Escáner Óptico Satelital (Radio 4m)</div>
 								<div class="text-white-50" id="detalle-espectral">Muestreando reflectancia RGB...</div>
 							</div>
+						</div>
+
+						<!-- Panel de Zonificación Agroecológica, Topografía y Futuro Climático FAO GAEZ v4 (Datos Locales LR) -->
+						<div class="p-2 rounded" style="background: linear-gradient(135deg, #071428 0%, #102a4c 100%); border: 1px solid rgba(245,176,65,0.45); color: #ffffff;" id="panel-fao-gaez">
+							<div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+								<span class="fw-bold" style="font-size: 0.75rem; color: #f5b041;" data-i18n="faoPanelTitle">
+									🌍 Zonificación y Topografía FAO GAEZ v4 (LR)
+								</span>
+								<a
+									href="https://gaez.fao.org/pages/data-access-download"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="badge text-decoration-none"
+									style="background: rgba(56,189,248,0.2); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.4); font-size: 0.65rem;"
+									title="Fuente oficial FAO Global Agro-Ecological Zones v4"
+								>
+									FAO LR Local + WMS ↗
+								</a>
+							</div>
+
+							<div class="d-flex align-items-center gap-2 mb-2">
+								<img
+									id="img-mapa-fao"
+									src="https://gaez-services.fao.org/server/rest/services/LR/ImageServer/exportImage?bbox=-73.2467,5.5448,-72.7467,6.0448&bboxSR=4326&size=160,160&imageSR=4326&format=png&transparent=true&f=image"
+									alt="Mapa Raster FAO GAEZ LR"
+									width="46"
+									height="46"
+									class="rounded flex-shrink-0"
+									style="border: 1.5px solid #f5b041; background: #0d2647; object-fit: cover;"
+									title="Raster regional extraído vía FAO GAEZ LR/ImageServer/exportImage"
+								/>
+								<div class="flex-grow-1" style="font-size: 0.73rem; min-width: 0; line-height: 1.35;">
+									<div class="text-truncate" id="fao-zona-aez">
+										<strong>AEZ:</strong> <span class="text-info">Consultando FAO GAEZ...</span>
+									</div>
+									<div class="d-flex flex-wrap gap-1 mt-1">
+										<span class="badge" style="background: #163a66; color: #38bdf8; font-size: 0.67rem;" id="fao-lgp-dias">
+											🌱 LGP: -- días/año
+										</span>
+										<span class="badge" style="background: #f5b041; color: #071428; font-size: 0.67rem;" id="fao-clase-suelo">
+											Suelo FAO: --
+										</span>
+										<span class="badge" style="background: #1e293b; color: #fde68a; border: 1px solid rgba(253,230,138,0.4); font-size: 0.67rem;" id="fao-altitud">
+											⛰️ -- m s.n.m.
+										</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Cinta de Topografía (Pendiente), Reserva Protegida y Proyección Climática 2050 -->
+							<div class="pt-1 border-top border-info border-opacity-25" style="font-size: 0.71rem; line-height: 1.38;">
+								<div class="d-flex flex-wrap justify-content-between gap-1 text-white-50">
+									<span id="fao-pendiente">📐 Pendiente: <strong class="text-white">--</strong></span>
+									<span id="fao-area-protegida">🌳 Reserva: <strong class="text-success">Frontera agrícola</strong></span>
+								</div>
+								<div class="mt-1 px-2 py-1 rounded" style="background: rgba(56,189,248,0.12); color: #bae6fd;" id="fao-proyeccion-2050">
+									🔮 <strong> Escenario 2050 (RCP 4.5):</strong> Evaluando transición agroecológica...
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- NUEVA TARJETA VISUAL: Radiografía de las 7 Propiedades del Suelo FAO GAEZ (SQ1 a SQ7 de Downloads\LR\soi1) -->
+				<div class="card ts-card shadow-sm border-0 mt-3" id="card-propiedades-suelo-fao">
+					<div class="card-header ts-card-header-space py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+						<span class="fw-bold text-warning small" data-i18n="faoSoilCardTitle">🧪 7 Propiedades del Suelo (FAO GAEZ SQ1–SQ7)</span>
+						<span class="badge border" style="background: rgba(245,176,65,0.18); color: #f5b041; border-color: rgba(245,176,65,0.4) !important; font-size: 0.68rem;" data-i18n="faoSoilCardBadge">
+							Rasters Locales LR/soi1
+						</span>
+					</div>
+					<div class="card-body p-3">
+						<div class="row g-2" id="contenedor-barras-sq">
+							<div class="col-12 text-muted small">Cargando perfil físico-químico del suelo FAO...</div>
 						</div>
 					</div>
 				</div>
@@ -226,7 +303,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				<!-- Tarjeta de Gráficos Climáticos NASA POWER (Siempre visible debajo del Escáner Óptico Satelital) -->
 				<div class="card ts-card shadow-sm border-0 mt-3" id="card-graficos-nasa">
 					<div class="card-header ts-card-header-space py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-						<span class="fw-bold text-info small">📊 Gráficos Climáticos (NASA POWER)</span>
+						<span class="fw-bold text-info small" data-i18n="chartsCardTitle">📊 Gráficos Climáticos (NASA POWER)</span>
 						<span class="badge border" style="background: rgba(56,189,248,0.18); color: #7dd3fc; border-color: rgba(56,189,248,0.4) !important; font-size: 0.7rem;" id="diagnostico-climatico">
 							Histórico Mensual 2023
 						</span>
@@ -235,7 +312,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						<div class="row g-3">
 							<div class="col-12">
 								<div class="p-2 px-3 rounded bg-light border">
-									<h3 class="h6 fw-bold mb-1" style="color: #0d2647; font-size: 0.8rem;">
+									<h3 class="h6 fw-bold mb-1" style="color: #0d2647; font-size: 0.8rem;" data-i18n="chartRainTitle">
 										🌧️ Precipitación Mensual Acumulada (mm)
 									</h3>
 									<div style="height: 175px;">
@@ -245,7 +322,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 							</div>
 							<div class="col-12">
 								<div class="p-2 px-3 rounded bg-light border">
-									<h3 class="h6 fw-bold text-danger mb-1" style="font-size: 0.8rem;">
+									<h3 class="h6 fw-bold text-danger mb-1" style="font-size: 0.8rem;" data-i18n="chartTempTitle">
 										🌡️ Temperatura Máxima Promedio Mensual (°C)
 									</h3>
 									<div style="height: 175px;">
@@ -263,7 +340,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				<div class="card ts-card shadow-sm border-0">
 					<div class="card-header ts-card-header-space py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
 						<div class="d-flex align-items-center gap-2">
-							<span class="fw-bold text-warning small">🌾 Top 3 Rotaciones, Calendario y Costos ($ COP)</span>
+							<span class="fw-bold text-warning small" data-i18n="rightHeaderTitle">🌾 Top 3 Rotaciones, Calendario y Costos ($ COP)</span>
 						</div>
 
 						<!-- Botones de Exportación EXCLUSIVOS del Dashboard de Control -->
@@ -277,6 +354,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 									id="btn-exportar-pdf"
 									class="btn ts-btn-amber btn-sm fw-bold"
 									title="Generar informe técnico completo en PDF / Vista de impresión"
+									data-i18n="btnExportPdf"
 								>
 									📄 Informe PDF
 								</button>
@@ -285,6 +363,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 									id="btn-exportar-csv"
 									class="btn btn-outline-info btn-sm fw-semibold text-white"
 									title="Descargar tabla detallada para Excel (.csv)"
+									data-i18n="btnExportCsv"
 								>
 									📥 Excel (.CSV)
 								</button>
@@ -406,11 +485,86 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 
 			const fechaHoy = new Date();
 			const mesActualNum = fechaHoy.getMonth() + 1; // 1..12
-			const nombreMesActual = NOMBRES_MESES_LARGO[mesActualNum - 1];
 
-			if (chipFechaActual) {
-				chipFechaActual.textContent = `📅 Hoy: ${fechaHoy.getDate()} de ${nombreMesActual}`;
+			function esIngles() {
+				return window.getTerraSoftLang?.() === 'en';
 			}
+
+			function obtenerMesesCortos() {
+				return esIngles()
+					? window.TERRASOFT_I18N?.en?.monthsShort || NOMBRES_MESES_CORTO
+					: NOMBRES_MESES_CORTO;
+			}
+
+			function obtenerMesesLargos() {
+				return esIngles()
+					? window.TERRASOFT_I18N?.en?.monthsLong || NOMBRES_MESES_LARGO
+					: NOMBRES_MESES_LARGO;
+			}
+
+			function obtenerNombreCultivo(cultivo) {
+				if (!cultivo) return '';
+				if (esIngles()) {
+					const tr = window.TERRASOFT_I18N?.en?.crops?.[cultivo.id];
+					if (tr?.nombre) return tr.nombre;
+				}
+				return cultivo.nombre;
+			}
+
+			function obtenerCicloCultivo(cultivo) {
+				if (!cultivo) return '';
+				if (esIngles()) {
+					const tr = window.TERRASOFT_I18N?.en?.crops?.[cultivo.id];
+					if (tr?.cicloDias) return tr.cicloDias;
+					return String(cultivo.cicloDias || '').replace('días', 'days');
+				}
+				return cultivo.cicloDias;
+			}
+
+			function obtenerNotaCalendarioCultivo(cultivo) {
+				if (!cultivo) return '';
+				if (esIngles()) {
+					const tr = window.TERRASOFT_I18N?.en?.crops?.[cultivo.id];
+					if (tr?.notaCalendario) return tr.notaCalendario;
+				}
+				return cultivo.notaCalendario || '';
+			}
+
+			function obtenerFamiliaCultivo(familia) {
+				if (!familia) return '';
+				if (esIngles()) {
+					return window.TERRASOFT_I18N?.en?.families?.[familia] || familia;
+				}
+				return familia;
+			}
+
+			function obtenerMacroregion(macro) {
+				if (!macro) return '';
+				if (esIngles()) {
+					return window.TERRASOFT_I18N?.en?.macroregions?.[macro] || macro;
+				}
+				return macro;
+			}
+
+			function obtenerNombreSq(sq) {
+				if (!sq) return '';
+				if (esIngles()) {
+					return window.TERRASOFT_I18N?.en?.sqNames?.[sq.codigo] || sq.nombre;
+				}
+				return sq.nombre;
+			}
+
+			function actualizarChipFechaHoy() {
+				const mesesLargos = obtenerMesesLargos();
+				const nomMes = mesesLargos[mesActualNum - 1];
+				if (chipFechaActual) {
+					chipFechaActual.textContent = esIngles()
+						? `📅 Today: ${nomMes} ${fechaHoy.getDate()}`
+						: `📅 Hoy: ${fechaHoy.getDate()} de ${nomMes}`;
+				}
+			}
+
+			actualizarChipFechaHoy();
 
 			const formatoCOP = new Intl.NumberFormat('es-CO', {
 				style: 'currency',
@@ -444,6 +598,9 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 			 * Evalúa si el mes actual es ideal para sembrar el cultivo y genera el consejo para el campesino.
 			 */
 			function evaluarCalendarioSiembra(cultivo, mensualNasa) {
+				const en = esIngles();
+				const mesesLargos = obtenerMesesLargos();
+				const nomMesActual = mesesLargos[mesActualNum - 1];
 				const mesesOptimos = Array.isArray(cultivo.mesesSiembra) ? cultivo.mesesSiembra : [3, 4, 5, 9, 10];
 				const mesSiguiente = (mesActualNum % 12) + 1;
 				const lluviaMesActual = Array.isArray(mensualNasa) && mensualNasa[mesActualNum - 1]
@@ -452,8 +609,12 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 
 				const textoLluviaMes =
 					typeof lluviaMesActual === 'number'
-						? ` (Histórico NASA en ${nombreMesActual}: ${lluviaMesActual} mm)`
+						? en
+							? ` (NASA historical in ${nomMesActual}: ${lluviaMesActual} mm)`
+							: ` (Histórico NASA en ${nomMesActual}: ${lluviaMesActual} mm)`
 						: '';
+
+				const notaCal = obtenerNotaCalendarioCultivo(cultivo);
 
 				if (mesesOptimos.includes(mesActualNum)) {
 					return {
@@ -461,20 +622,28 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						bonoPuntaje: 10,
 						badgeClase: 'bg-success text-white',
 						icono: '🟢',
-						titulo: `¡Fecha Ideal! ${nombreMesActual} está en ventana óptima de siembra`,
-						consejo: `Puedes iniciar la siembra ahora en ${nombreMesActual}${textoLluviaMes}. ${cultivo.notaCalendario || ''}`,
+						titulo: en
+							? `Ideal Date! ${nomMesActual} is in the optimal planting window`
+							: `¡Fecha Ideal! ${nomMesActual} está en ventana óptima de siembra`,
+						consejo: en
+							? `You can start planting now in ${nomMesActual}${textoLluviaMes}. ${notaCal}`
+							: `Puedes iniciar la siembra ahora en ${nomMesActual}${textoLluviaMes}. ${notaCal}`,
 					};
 				}
 
 				if (mesesOptimos.includes(mesSiguiente)) {
-					const nombreSig = NOMBRES_MESES_LARGO[mesSiguiente - 1];
+					const nombreSig = mesesLargos[mesSiguiente - 1];
 					return {
 						estado: 'preparacion',
 						bonoPuntaje: 4,
 						badgeClase: 'bg-warning text-dark',
 						icono: '🟡',
-						titulo: `Etapa de Preparación: Siembra óptima inicia el próximo mes (${nombreSig})`,
-						consejo: `Aprovecha ${nombreMesActual} para preparar el suelo, aplicar correctivos y conseguir semilla certificada para sembrar en ${nombreSig}.`,
+						titulo: en
+							? `Preparation Stage: Optimal planting starts next month (${nombreSig})`
+							: `Etapa de Preparación: Siembra óptima inicia el próximo mes (${nombreSig})`,
+						consejo: en
+							? `Use ${nomMesActual} to prepare the soil, apply amendments, and get certified seed to plant in ${nombreSig}.`
+							: `Aprovecha ${nomMesActual} para preparar el suelo, aplicar correctivos y conseguir semilla certificada para sembrar en ${nombreSig}.`,
 					};
 				}
 
@@ -487,23 +656,39 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						break;
 					}
 				}
-				const nombreProx = NOMBRES_MESES_LARGO[proximoMes - 1];
+				const nombreProx = mesesLargos[proximoMes - 1];
 
 				return {
 					estado: 'espera',
 					bonoPuntaje: -6,
 					badgeClase: 'bg-secondary-subtle text-secondary-emphasis border',
 					icono: '⏳',
-					titulo: `Fuera de temporada hoy (${nombreMesActual}) — Próxima ventana: ${nombreProx}`,
-					consejo: `No se aconseja sembrar en ${nombreMesActual} a secano${textoLluviaMes}. Programa la siembra para ${nombreProx} o asegura riego suplementario.`,
+					titulo: en
+						? `Off-season today (${nomMesActual}) — Next window: ${nombreProx}`
+						: `Fuera de temporada hoy (${nomMesActual}) — Próxima ventana: ${nombreProx}`,
+					consejo: en
+						? `Rainfed planting is not advised in ${nomMesActual}${textoLluviaMes}. Schedule planting for ${nombreProx} or ensure supplemental irrigation.`
+						: `No se aconseja sembrar en ${nomMesActual} a secano${textoLluviaMes}. Programa la siembra para ${nombreProx} o asegura riego suplementario.`,
 				};
 			}
 
 			/**
-			 * Calcula el presupuesto estimado del cultivo para el área del lote ingresada,
-			 * aplicando descuento en fertilizantes si se rota después de una leguminosa.
+			 * Extrae la duración media en días del ciclo del cultivo (ej. "90 - 120 días" -> 105).
 			 */
-			function calcularPresupuestoLote(cultivo, objCultivoActual) {
+			function extraerDiasCiclo(cicloTexto) {
+				const nums = String(cicloTexto || '')
+					.match(/\d+/g)
+					?.map(Number);
+				if (!nums || !nums.length) return 110;
+				if (nums.length >= 2) return Math.round((nums[0] + nums[1]) / 2);
+				return nums[0];
+			}
+
+			/**
+			 * Calcula el presupuesto estimado del cultivo para el área del lote ingresada,
+			 * aplicando descuento en fertilizantes si se rota después de una leguminosa y ajustando rendimiento por FAO GAEZ.
+			 */
+			function calcularPresupuestoLote(cultivo, objCultivoActual, clima) {
 				const { areaHa, etiquetaArea } = obtenerAreaEnHectareas();
 				const costoBaseHa = cultivo.costoTotalHaCOP || 10000000;
 				const pcts = cultivo.desgloseCostosPct || {
@@ -532,7 +717,8 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				}
 
 				const costoTotalNeto = rubSemilla + rubManoObra + rubFertilizantes + rubFitosanitarios;
-				const rendimientoTonLote = Number(((cultivo.rendimientoTonHa || 5) * areaHa).toFixed(2));
+				const factorFao = clima?.faoGaez?.factorRendimientoFao ?? 1;
+				const rendimientoTonLote = Number(((cultivo.rendimientoTonHa || 5) * areaHa * factorFao).toFixed(2));
 				const rendimientoTexto =
 					rendimientoTonLote >= 1
 						? `${rendimientoTonLote} ton`
@@ -732,15 +918,18 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 
 			function actualizarGraficos(mensual) {
 				if (!chartLluvia || !chartTemp || !Array.isArray(mensual)) return;
-				const labels = mensual.map((m) => m.mes);
+				const en = esIngles();
+				const labels = obtenerMesesCortos();
 				const lluvias = mensual.map((m) => m.lluviaTotal);
 				const temps = mensual.map((m) => m.tempMaxPromedio);
 
 				chartLluvia.data.labels = labels;
+				chartLluvia.data.datasets[0].label = en ? 'Monthly rainfall (mm)' : 'Lluvia mensual (mm)';
 				chartLluvia.data.datasets[0].data = lluvias;
 				chartLluvia.update();
 
 				chartTemp.data.labels = labels;
+				chartTemp.data.datasets[0].label = en ? 'Avg. max temp (°C)' : 'Temp. máx promedio (°C)';
 				chartTemp.data.datasets[0].data = temps;
 				chartTemp.update();
 			}
@@ -748,6 +937,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 			function renderizarTerrenoNoApto(clima) {
 				if (!rotationContainer || !clima?.terreno) return;
 				const { terreno, coordenadas } = clima;
+				const en = esIngles();
 
 				const iconosPorTipo = {
 					hielo_glaciar: '❄️',
@@ -759,29 +949,34 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				};
 				const iconoPrincipal = iconosPorTipo[terreno.clasificacion] || '🚫';
 
-				let consejoAccion =
-					'Haz clic sobre los lotes verdes o de tierra arada alrededor de la vía, o confirma manualmente si estás en tierra cultivable.';
+				let consejoAccion = en
+					? 'Click on the green or plowed fields next to the road, or manually confirm if you are on cultivable land.'
+					: 'Haz clic sobre los lotes verdes o de tierra arada alrededor de la vía, o confirma manualmente si estás en tierra cultivable.';
 				if (terreno.clasificacion === 'hielo_glaciar') {
-					consejoAccion =
-						'Esta coordenada se encuentra en una región polar, glaciar o de congelamiento permanente (permafrost/nieve). Selecciona una región templada o tropical con suelo agrícola descubierto.';
+					consejoAccion = en
+						? 'This coordinate is in a polar, glacial, or permafrost region. Select a temperate or tropical region with exposed agricultural soil.'
+						: 'Esta coordenada se encuentra en una región polar, glaciar o de congelamiento permanente (permafrost/nieve). Selecciona una región templada o tropical con suelo agrícola descubierto.';
 				} else if (terreno.clasificacion === 'desierto_arido') {
-					consejoAccion =
-						'Esta coordenada presenta aridez extrema sin lluvias suficientes para agricultura de secano.';
+					consejoAccion = en
+						? 'This coordinate has extreme aridity without enough rainfall for rainfed farming.'
+						: 'Esta coordenada presenta aridez extrema sin lluvias suficientes para agricultura de secano.';
 				} else if (terreno.clasificacion === 'cuerpo_agua') {
-					consejoAccion =
-						'El marcador está sobre el océano, un lago o un río. Selecciona una parcela en tierra firme.';
+					consejoAccion = en
+						? 'The marker is over an ocean, lake, or river. Select a plot on solid ground.'
+						: 'El marcador está sobre el océano, un lago o un río. Selecciona una parcela en tierra firme.';
 				} else if (terreno.clasificacion === 'no_cultivable') {
-					consejoAccion =
-						'El punto presenta roca desnuda o suelo estéril sin cobertura vegetal. Desplaza el marcador hacia una zona con suelo fértil.';
+					consejoAccion = en
+						? 'This point shows bare rock or barren soil without vegetation cover. Move the marker toward an area with fertile soil.'
+						: 'El punto presenta roca desnuda o suelo estéril sin cobertura vegetal. Desplaza el marcador hacia una zona con suelo fértil.';
 				}
 
 				if (chipCultivoDestino) {
 					chipCultivoDestino.className = 'badge bg-danger text-white';
-					chipCultivoDestino.textContent = 'No Cultivable';
+					chipCultivoDestino.textContent = en ? 'Not Cultivable' : 'No Cultivable';
 				}
 				subtituloRotacion.textContent = `Lat ${coordenadas.lat}, Lon ${coordenadas.lon}`;
 				badgeEstadoRotacion.className = 'badge bg-danger text-white';
-				badgeEstadoRotacion.textContent = `${iconoPrincipal} Siembra No Viable`;
+				badgeEstadoRotacion.textContent = `${iconoPrincipal} ${en ? 'Planting Not Viable' : 'Siembra No Viable'}`;
 
 				const htmlBloqueo = `
 					<div class="col-12 ts-animate-in">
@@ -791,18 +986,18 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 									<span class="fs-2 me-3">${iconoPrincipal}</span>
 									<div>
 										<h3 class="h6 fw-bold text-danger mb-1">
-											No es posible sembrar aquí: ${terreno.etiqueta}
+											${en ? 'Cannot plant here:' : 'No es posible sembrar aquí:'} ${terreno.etiqueta}
 										</h3>
 										<p class="text-muted small mb-0">
-											<strong>Ubicación:</strong> ${terreno.ubicacionNombre}
+											<strong>${en ? 'Location:' : 'Ubicación:'}</strong> ${terreno.ubicacionNombre}
 										</p>
 									</div>
 								</div>
 								<p class="mb-3 small text-dark">${terreno.motivo}</p>
 								<div class="p-2 px-3 bg-light rounded border small text-secondary d-flex flex-wrap justify-content-between align-items-center gap-2">
-									<span><strong>💡 Sugerencia:</strong> ${consejoAccion}</span>
+									<span><strong>💡 ${en ? 'Suggestion:' : 'Sugerencia:'}</strong> ${consejoAccion}</span>
 									<button type="button" class="btn btn-outline-success btn-sm fw-semibold btn-forzar-lote-action">
-										✅ Forzar simulación aquí
+										${en ? '✅ Force simulation here' : '✅ Forzar simulación aquí'}
 									</button>
 								</div>
 							</div>
@@ -818,13 +1013,222 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 							ultimoClima.terreno.aptoParaSiembra = true;
 							if (bannerTerreno) {
 								bannerTerreno.className = 'alert alert-success small mb-2 py-2 px-3';
-								bannerTerreno.innerHTML =
-									'<strong>✅ Simulación habilitada manualmente:</strong> Mostrando recomendaciones para esta coordenada.';
+								bannerTerreno.innerHTML = esIngles()
+									? '<strong>✅ Simulation manually enabled:</strong> Showing recommendations for this coordinate.'
+									: '<strong>✅ Simulación habilitada manualmente:</strong> Mostrando recomendaciones para esta coordenada.';
 							}
+							renderizarPanelFaoGaez(ultimoClima);
 							calcularYRenderizarRotacion(ultimoClima);
 						}
 					});
 				});
+			}
+
+			/**
+			 * Renderiza el panel de Zonificación FAO GAEZ v4 y las 7 barras de Propiedades del Suelo (SQ1–SQ7),
+			 * reduciendo las barras a 0% (Clase N - Bloqueado) cuando el marcador cae sobre vías, edificios, agua, roca o hielo,
+			 * y modulándolas con la reflectancia óptica del píxel cuando el terreno sí es cultivable.
+			 */
+			function renderizarPanelFaoGaez(data) {
+				if (!data?.faoGaez) return;
+
+				// Conservar copia base de las propiedades regionales FAO para restaurarlas si el usuario fuerza la simulación
+				if (!data.faoGaez._propiedadesBase && Array.isArray(data.faoGaez.propiedadesSuelo)) {
+					data.faoGaez._propiedadesBase = data.faoGaez.propiedadesSuelo.map((p) => ({ ...p }));
+					data.faoGaez._claseBase = data.faoGaez.claseSueloFao !== 'N' ? data.faoGaez.claseSueloFao : 'S1';
+					data.faoGaez._lgpBase = data.faoGaez.lgpDias;
+				}
+
+				const esApto = Boolean(data.terreno?.aptoParaSiembra);
+				const clasif = data.terreno?.clasificacion || 'agricola_rural';
+
+				const faoZonaEl = document.getElementById('fao-zona-aez');
+				const faoLgpEl = document.getElementById('fao-lgp-dias');
+				const faoSueloEl = document.getElementById('fao-clase-suelo');
+				const faoAltitudEl = document.getElementById('fao-altitud');
+				const faoPendienteEl = document.getElementById('fao-pendiente');
+				const faoAreaProtEl = document.getElementById('fao-area-protegida');
+				const faoProy2050El = document.getElementById('fao-proyeccion-2050');
+				const contenedorSqEl = document.getElementById('contenedor-barras-sq');
+				const imgMapaFao = document.getElementById('img-mapa-fao');
+
+				if (faoZonaEl) {
+					faoZonaEl.innerHTML = `<strong>AEZ:</strong> <span class="text-info">${data.faoGaez.zonaAgroecologica}</span>`;
+				}
+				if (faoLgpEl) {
+					const en = esIngles();
+					faoLgpEl.textContent = esApto
+						? en
+							? `🌱 LGP: ${data.faoGaez._lgpBase ?? data.faoGaez.lgpDias} days/yr`
+							: `🌱 LGP: ${data.faoGaez._lgpBase ?? data.faoGaez.lgpDias} días/año`
+						: en
+						? `🚫 Effective LGP: 0 days (Not cultivable)`
+						: `🚫 LGP Efectivo: 0 días (No cultivable)`;
+				}
+				if (faoSueloEl) {
+					const en = esIngles();
+					if (esApto) {
+						const clsRestaurada = data.faoGaez._claseBase || 'S1';
+						data.faoGaez.claseSueloFao = clsRestaurada;
+						faoSueloEl.style.background = '#f5b041';
+						faoSueloEl.style.color = '#071428';
+						faoSueloEl.textContent = en ? `FAO Soil: Class ${clsRestaurada}` : `Suelo FAO: Clase ${clsRestaurada}`;
+						faoSueloEl.title = data.faoGaez.etiquetaSueloFao;
+					} else {
+						data.faoGaez.claseSueloFao = 'N';
+						faoSueloEl.style.background = '#dc2626';
+						faoSueloEl.style.color = '#ffffff';
+						faoSueloEl.textContent = en ? '🚫 FAO Soil: Class N (Unsuitable)' : '🚫 Suelo FAO: Clase N (No Apto)';
+						faoSueloEl.title = en
+							? 'Class N — Surface without usable agricultural soil'
+							: 'Clase N — Superficie sin suelo agrícola aprovechable';
+					}
+				}
+				if (faoAltitudEl) {
+					faoAltitudEl.textContent =
+						typeof data.faoGaez.altitudMsnm === 'number'
+							? `⛰️ ${data.faoGaez.altitudMsnm.toLocaleString('es-CO')} m ${esIngles() ? 'a.s.l.' : 's.n.m.'}`
+							: esIngles()
+							? '⛰️ Evaluated altitude'
+							: '⛰️ Altitud evaluada';
+				}
+				if (faoPendienteEl && data.faoGaez.pendienteTexto) {
+					faoPendienteEl.innerHTML = `📐 ${esIngles() ? 'Slope' : 'Pendiente'}: <strong class="text-white">${data.faoGaez.pendienteTexto}</strong>`;
+				}
+				if (faoAreaProtEl && data.faoGaez.areaProtegidaTexto) {
+					const colorProt = data.faoGaez.enAreaProtegida ? 'text-warning' : 'text-info';
+					const iconoProt = data.faoGaez.enAreaProtegida ? '⚠️' : '✅';
+					faoAreaProtEl.innerHTML = `🌳 ${iconoProt} <strong class="${colorProt}">${data.faoGaez.areaProtegidaTexto}</strong>`;
+				}
+				if (faoProy2050El && data.faoGaez.proyeccionClimatica2050) {
+					faoProy2050El.innerHTML = `🔮 <strong>${esIngles() ? '2050 Climate (RCP 4.5):' : 'Clima 2050 (RCP 4.5):'}</strong> ${data.faoGaez.proyeccionClimatica2050}`;
+				}
+
+				if (contenedorSqEl && Array.isArray(data.faoGaez._propiedadesBase)) {
+					const en = esIngles();
+					if (!esApto) {
+						// Cuando el puntero cae en carretera, edificio, agua, glaciar o roca estéril, las barras bajan a 0% - 8% en rojo
+						const motivosCortos = en
+							? {
+									asfalto_via: 'Sealed by Road/Asphalt',
+									urbano_edificado: 'Building/Concrete',
+									cuerpo_agua: 'Water Body',
+									hielo_glaciar: 'Frozen/Glacier',
+									desierto_arido: 'Extreme Aridity',
+									no_cultivable: 'Barren Rock',
+							  }
+							: {
+									asfalto_via: 'Sellado por Asfalto/Vía',
+									urbano_edificado: 'Construcción/Concreto',
+									cuerpo_agua: 'Cuerpo de Agua',
+									hielo_glaciar: 'Congelado/Glaciar',
+									desierto_arido: 'Aridez Extrema',
+									no_cultivable: 'Roca Estéril',
+							  };
+						const etiquetaBloqueo = motivosCortos[clasif] || (en ? 'Not Cultivable' : 'No Cultivable');
+
+						const htmlAlertaSq = `
+							<div class="col-12">
+								<div class="alert alert-danger py-1 px-2 mb-1 small" style="font-size: 0.72rem;">
+									🚫 <strong>${en ? `Blocked Soil (${etiquetaBloqueo}):` : `Suelo Bloqueado (${etiquetaBloqueo}):`}</strong> ${
+							en
+								? 'At this exact point there is no arable topsoil; move the marker to a green or plowed lot.'
+								: 'En este punto exacto no hay capa vegetal arable; mueve el marcador hacia un lote verde o de tierra arada.'
+						}
+								</div>
+							</div>
+						`;
+
+						contenedorSqEl.innerHTML =
+							htmlAlertaSq +
+							data.faoGaez._propiedadesBase
+								.map((sq) => {
+									const pctResidual =
+										clasif === 'cuerpo_agua' || clasif === 'hielo_glaciar' || clasif === 'asfalto_via' || clasif === 'urbano_edificado'
+											? 0
+											: Math.min(12, Math.round((ultimoEspectral?.pctVeg || 0) + (ultimoEspectral?.pctTierra || 0)) / 3);
+									const pctRedondeado = Math.round(pctResidual);
+									return `
+										<div class="col-sm-6 col-12">
+											<div class="p-2 rounded bg-danger-subtle border border-danger-subtle h-100">
+												<div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.74rem;">
+													<span class="fw-bold text-danger-emphasis">
+														${sq.icono} ${sq.codigo}: ${obtenerNombreSq(sq)}
+													</span>
+													<span class="badge bg-danger text-white" style="font-size: 0.66rem;">
+														${pctRedondeado}% (${etiquetaBloqueo})
+													</span>
+												</div>
+												<div class="progress" style="height: 6px; background: #fecaca;">
+													<div class="progress-bar bg-danger" role="progressbar" style="width: ${pctRedondeado}%;"></div>
+												</div>
+											</div>
+										</div>
+									`;
+								})
+								.join('');
+					} else {
+						// Terreno cultivable: combina la celda FAO LR con la micro-cobertura óptica bajo el marcador
+						const pctSueloVivo = ultimoEspectral?.disponible
+							? (ultimoEspectral.pctVeg || 0) + (ultimoEspectral.pctTierra || 0)
+							: 80;
+						const ajusteMicro = Math.round((pctSueloVivo - 75) * 0.14);
+
+						contenedorSqEl.innerHTML = data.faoGaez._propiedadesBase
+							.map((sq, idx) => {
+								// Pequeña variación específica por propiedad según cobertura vegetal/tierra local
+								const modProp = idx === 0 || idx === 1 ? ajusteMicro : idx === 6 ? Math.round(ajusteMicro * 0.7) : Math.round(ajusteMicro * 0.5);
+								const pctFinal = Math.min(98, Math.max(25, sq.porcentaje + modProp));
+								const estadoFinal =
+									pctFinal >= 75
+										? en
+											? 'Optimal'
+											: 'Óptimo'
+										: pctFinal >= 50
+										? en
+											? 'Moderate'
+											: 'Moderado'
+										: en
+										? 'Limited'
+										: 'Limitado';
+
+								const barColor =
+									pctFinal >= 75
+										? 'linear-gradient(90deg, #059669, #10b981)'
+										: pctFinal >= 50
+										? 'linear-gradient(90deg, #0284c7, #38bdf8)'
+										: 'linear-gradient(90deg, #d97706, #f5b041)';
+								const badgeColor =
+									pctFinal >= 75
+										? 'bg-success-subtle text-success-emphasis'
+										: pctFinal >= 50
+										? 'bg-info-subtle text-info-emphasis'
+										: 'bg-warning-subtle text-warning-emphasis';
+								return `
+									<div class="col-sm-6 col-12">
+										<div class="p-2 rounded bg-light border h-100">
+											<div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.74rem;">
+												<span class="fw-bold" style="color: #071428;">
+													${sq.icono} ${sq.codigo}: ${obtenerNombreSq(sq)}
+												</span>
+												<span class="badge ${badgeColor}" style="font-size: 0.67rem;">
+													${pctFinal}% (${estadoFinal})
+												</span>
+											</div>
+											<div class="progress" style="height: 6px; background: #e2e8f0;">
+												<div class="progress-bar" role="progressbar" style="width: ${pctFinal}%; background: ${barColor};"></div>
+											</div>
+										</div>
+									</div>
+								`;
+							})
+							.join('');
+					}
+				}
+
+				if (imgMapaFao && data.faoGaez.exportImageUrl) {
+					imgMapaFao.src = data.faoGaez.exportImageUrl;
+				}
 			}
 
 			function calcularYRenderizarRotacion(clima) {
@@ -849,6 +1253,8 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				const tempMaxPromedio = clima?.promedios?.tempMax;
 				const ubicacionTexto = (clima?.terreno?.ubicacionNombre || '').toLowerCase();
 
+				const en = esIngles();
+
 				const evaluados = catalogoCultivos.map((cultivo) => {
 					let puntaje = 52;
 					const razones = [];
@@ -858,8 +1264,12 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					const evalCal = evaluarCalendarioSiembra(cultivo, clima?.mensual);
 					puntaje += evalCal.bonoPuntaje;
 
-					// Cálculo de costos para el área del lote ingresada
-					const presupuesto = calcularPresupuestoLote(cultivo, objCultivoActual);
+					// Cálculo de costos para el área del lote ingresada (ajustado con aptitud FAO GAEZ)
+					const presupuesto = calcularPresupuestoLote(cultivo, objCultivoActual, clima);
+					const macroTrad = obtenerMacroregion(cultivo.macroregion);
+					const famTrad = obtenerFamiliaCultivo(cultivo.familia);
+					const famOrigTrad = objCultivoActual ? obtenerFamiliaCultivo(objCultivoActual.familia) : '';
+					const cicloTrad = obtenerCicloCultivo(cultivo);
 
 					// 0. Vocación Regional por Departamento en Colombia
 					if (Array.isArray(cultivo.departamentos) && ubicacionTexto) {
@@ -868,8 +1278,15 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						);
 						if (deptoCoincidente) {
 							puntaje += 14;
-							chips.push({ texto: `🇨🇴 Vocación en ${deptoCoincidente}`, clase: 'bg-success-subtle text-success-emphasis' });
-							razones.push(`Vocación productiva comprobada en ${deptoCoincidente} (${cultivo.macroregion}).`);
+							chips.push({
+								texto: en ? `🇨🇴 Vocation in ${deptoCoincidente}` : `🇨🇴 Vocación en ${deptoCoincidente}`,
+								clase: 'bg-success-subtle text-success-emphasis',
+							});
+							razones.push(
+								en
+									? `Proven agricultural vocation in ${deptoCoincidente} (${macroTrad}).`
+									: `Vocación productiva comprobada en ${deptoCoincidente} (${cultivo.macroregion}).`
+							);
 						}
 					}
 
@@ -877,8 +1294,15 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					if (prioridad === 'agua') {
 						if (cultivo.agua === 'baja') {
 							puntaje += 20;
-							chips.push({ texto: '💧 Ahorro Hídrico', clase: 'bg-info-subtle text-info-emphasis' });
-							razones.push('Baja demanda de agua, ideal para tu prioridad de ahorro hídrico.');
+							chips.push({
+								texto: en ? '💧 Water Saving' : '💧 Ahorro Hídrico',
+								clase: 'bg-info-subtle text-info-emphasis',
+							});
+							razones.push(
+								en
+									? 'Low water demand, ideal for your water-saving priority.'
+									: 'Baja demanda de agua, ideal para tu prioridad de ahorro hídrico.'
+							);
 						} else if (cultivo.agua === 'media') {
 							puntaje += 8;
 						} else {
@@ -887,38 +1311,78 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					} else if (prioridad === 'suelo') {
 						if (cultivo.beneficio === 'mejora_suelo_nitrogeno') {
 							puntaje += 24;
-							chips.push({ texto: '🌱 Fija Nitrógeno', clase: 'bg-success-subtle text-success-emphasis' });
-							razones.push(`Leguminosa fijadora de nitrógeno que restaura el suelo.`);
+							chips.push({
+								texto: en ? '🌱 Fixes Nitrogen' : '🌱 Fija Nitrógeno',
+								clase: 'bg-success-subtle text-success-emphasis',
+							});
+							razones.push(
+								en
+									? 'Nitrogen-fixing legume that restores soil fertility.'
+									: 'Leguminosa fijadora de nitrógeno que restaura el suelo.'
+							);
 						} else if (cultivo.id === 'avena_forrajera' || cultivo.id === 'cebada') {
 							puntaje += 12;
-							chips.push({ texto: '🌾 Abono Verde', clase: 'bg-success-subtle text-success-emphasis' });
-							razones.push('Aporta materia orgánica y descompacta el suelo.');
+							chips.push({
+								texto: en ? '🌾 Green Manure' : '🌾 Abono Verde',
+								clase: 'bg-success-subtle text-success-emphasis',
+							});
+							razones.push(
+								en
+									? 'Adds organic matter and decompacts the soil.'
+									: 'Aporta materia orgánica y descompacta el suelo.'
+							);
 						}
 					} else if (prioridad === 'rentabilidad') {
 						if (cultivo.beneficio === 'rentabilidad') {
 							puntaje += 22;
-							chips.push({ texto: '💰 Alta Rentabilidad', clase: 'bg-warning-subtle text-warning-emphasis' });
-							razones.push('Excelente retorno comercial en mercados regionales.');
+							chips.push({
+								texto: en ? '💰 High Profitability' : '💰 Alta Rentabilidad',
+								clase: 'bg-warning-subtle text-warning-emphasis',
+							});
+							razones.push(
+								en
+									? 'Excellent commercial return in regional markets.'
+									: 'Excelente retorno comercial en mercados regionales.'
+							);
 						} else if (cultivo.beneficio === 'mejora_suelo_nitrogeno') {
 							puntaje += 10;
-							razones.push('Ahorra fertilizantes nitrogenados en la cosecha posterior.');
+							razones.push(
+								en
+									? 'Saves nitrogen fertilizers in the subsequent harvest.'
+									: 'Ahorra fertilizantes nitrogenados en la cosecha posterior.'
+							);
 						}
 					}
 
 					// 2. Rotación de Familias Botánicas
 					if (cultivoActualId === cultivo.id) {
 						puntaje -= 35;
-						razones.push(`⚠️ Monocultivo: evita repetir el mismo cultivo consecutivo.`);
+						razones.push(
+							en
+								? '⚠️ Monoculture: avoid repeating the exact same crop consecutively.'
+								: '⚠️ Monocultivo: evita repetir el mismo cultivo consecutivo.'
+						);
 					} else if (
 						Array.isArray(cultivo.evitarDespuesDe) &&
 						cultivo.evitarDespuesDe.includes(cultivoActualId)
 					) {
 						puntaje -= 20;
-						razones.push(`⚠️ Comparte ciclo sanitario (${cultivo.familia}) con tu cultivo actual.`);
+						razones.push(
+							en
+								? `⚠️ Shares sanitary pest cycle (${famTrad}) with your current crop.`
+								: `⚠️ Comparte ciclo sanitario (${cultivo.familia}) con tu cultivo actual.`
+						);
 					} else if (objCultivoActual && objCultivoActual.familia !== cultivo.familia) {
 						puntaje += 14;
-						chips.push({ texto: '🧬 Corta Plagas', clase: 'bg-secondary-subtle text-secondary-emphasis' });
-						razones.push(`Alterna de ${objCultivoActual.familia} a ${cultivo.familia}, rompiendo plagas.`);
+						chips.push({
+							texto: en ? '🧬 Breaks Pests' : '🧬 Corta Plagas',
+							clase: 'bg-secondary-subtle text-secondary-emphasis',
+						});
+						razones.push(
+							en
+								? `Rotates from ${famOrigTrad} to ${famTrad}, breaking pest cycles.`
+								: `Alterna de ${objCultivoActual.familia} a ${cultivo.familia}, rompiendo plagas.`
+						);
 					}
 
 					// 3. Compatibilidad con Rango Térmico (NASA POWER)
@@ -926,16 +1390,31 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						const [tMin, tMax] = cultivo.tempOptima;
 						if (tempMaxPromedio >= tMin && tempMaxPromedio <= tMax) {
 							puntaje += 20;
-							chips.push({ texto: `🌡️ Clima Ideal (${tMin}–${tMax}°C)`, clase: 'bg-danger-subtle text-danger-emphasis' });
-							razones.push(`La temperatura de la parcela (${tempMaxPromedio} °C) encaja en su óptimo (${tMin}–${tMax} °C).`);
+							chips.push({
+								texto: en ? `🌡️ Ideal Climate (${tMin}–${tMax}°C)` : `🌡️ Clima Ideal (${tMin}–${tMax}°C)`,
+								clase: 'bg-danger-subtle text-danger-emphasis',
+							});
+							razones.push(
+								en
+									? `Plot temperature (${tempMaxPromedio} °C) fits its optimal range (${tMin}–${tMax} °C).`
+									: `La temperatura de la parcela (${tempMaxPromedio} °C) encaja en su óptimo (${tMin}–${tMax} °C).`
+							);
 						} else {
 							const desviacion = tempMaxPromedio < tMin ? tMin - tempMaxPromedio : tempMaxPromedio - tMax;
 							if (desviacion <= 2.5) {
 								puntaje += 4;
-								razones.push(`Temperatura cercana a su rango óptimo (${tMin}–${tMax} °C).`);
+								razones.push(
+									en
+										? `Temperature close to its optimal range (${tMin}–${tMax} °C).`
+										: `Temperatura cercana a su rango óptimo (${tMin}–${tMax} °C).`
+								);
 							} else {
 								puntaje -= Math.min(35, Math.round(desviacion * 4));
-								razones.push(`Fuera de su piso térmico ideal (${tMin}–${tMax} °C vs ${tempMaxPromedio} °C local).`);
+								razones.push(
+									en
+										? `Outside its ideal thermal zone (${tMin}–${tMax} °C vs ${tempMaxPromedio} °C local).`
+										: `Fuera de su piso térmico ideal (${tMin}–${tMax} °C vs ${tempMaxPromedio} °C local).`
+								);
 							}
 						}
 					}
@@ -945,23 +1424,76 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						const [lMin, lMax] = cultivo.lluviaOptima;
 						if (lluviaTotalAnual >= lMin && lluviaTotalAnual <= lMax) {
 							puntaje += 16;
-							razones.push(`Lluvia local (${lluviaTotalAnual} mm/año) óptima para su rango (${lMin}–${lMax} mm).`);
+							razones.push(
+								en
+									? `Local rainfall (${lluviaTotalAnual} mm/yr) is optimal for its range (${lMin}–${lMax} mm).`
+									: `Lluvia local (${lluviaTotalAnual} mm/año) óptima para su rango (${lMin}–${lMax} mm).`
+							);
 						} else if (lluviaTotalAnual < lMin) {
 							if (cultivo.agua === 'baja') {
 								puntaje += 6;
-								razones.push(`Tolera bien lluvias moderadas/bajas (${lluviaTotalAnual} mm/año).`);
+								razones.push(
+									en
+										? `Tolerates moderate/low rainfall well (${lluviaTotalAnual} mm/yr).`
+										: `Tolera bien lluvias moderadas/bajas (${lluviaTotalAnual} mm/año).`
+								);
 							} else {
 								puntaje -= 16;
-								razones.push(`Lluvia insuficiente (${lluviaTotalAnual} mm vs ${lMin} mm mín.): requiere riego.`);
+								razones.push(
+									en
+										? `Insufficient rainfall (${lluviaTotalAnual} mm vs ${lMin} mm min.): requires irrigation.`
+										: `Lluvia insuficiente (${lluviaTotalAnual} mm vs ${lMin} mm mín.): requiere riego.`
+								);
 							}
 						} else {
 							if (cultivo.agua === 'alta') {
 								puntaje += 6;
-								razones.push(`Buena oferta hídrica (${lluviaTotalAnual} mm/año); cuidar drenaje.`);
+								razones.push(
+									en
+										? `Good water supply (${lluviaTotalAnual} mm/yr); ensure proper drainage.`
+										: `Buena oferta hídrica (${lluviaTotalAnual} mm/año); cuidar drenaje.`
+								);
 							} else {
 								puntaje -= 12;
-								razones.push(`Exceso de lluvia (${lluviaTotalAnual} mm/año) frente a su óptimo (${lMax} mm).`);
+								razones.push(
+									en
+										? `Excess rainfall (${lluviaTotalAnual} mm/yr) compared to its optimum (${lMax} mm).`
+										: `Exceso de lluvia (${lluviaTotalAnual} mm/año) frente a su óptimo (${lMax} mm).`
+								);
 							}
+						}
+					}
+
+					// 5. Compatibilidad con Periodo de Crecimiento FAO GAEZ v4 (LGP en días/año vs Ciclo del Cultivo)
+					const lgpFao = clima?.faoGaez?.lgpDias;
+					const claseSueloFao = clima?.faoGaez?.claseSueloFao;
+					if (typeof lgpFao === 'number') {
+						const diasCicloMedio = extraerDiasCiclo(cultivo.cicloDias);
+						if (lgpFao >= diasCicloMedio) {
+							puntaje += 8;
+							chips.push({
+								texto: `🌍 FAO ${claseSueloFao || 'S1'} (LGP ${lgpFao}d)`,
+								clase: 'bg-primary-subtle text-primary-emphasis',
+							});
+							razones.push(
+								en
+									? `FAO GAEZ v4: Local growing period (${lgpFao} days/yr) covers the crop cycle (${cicloTrad}).`
+									: `FAO GAEZ v4: Periodo de crecimiento local (${lgpFao} días/año) cubre el ciclo del cultivo (${cultivo.cicloDias}).`
+							);
+						} else if (cultivo.agua === 'baja' && lgpFao >= diasCicloMedio * 0.65) {
+							puntaje += 3;
+							razones.push(
+								en
+									? `FAO GAEZ v4: Resilient to the local growing period (LGP ${lgpFao} days/yr).`
+									: `FAO GAEZ v4: Rústico ante el periodo de crecimiento local (LGP ${lgpFao} días/año).`
+							);
+						} else {
+							puntaje -= 10;
+							razones.push(
+								en
+									? `FAO GAEZ v4: Cycle (${cicloTrad}) exceeds natural moisture days LGP (${lgpFao} d/yr); requires irrigation.`
+									: `FAO GAEZ v4: Ciclo (${cultivo.cicloDias}) supera los días de humedad natural LGP (${lgpFao} d/año); requiere riego.`
+							);
 						}
 					}
 
@@ -980,36 +1512,55 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				const topRecomendados = evaluados.slice(0, 3);
 				ultimasRecomendaciones = topRecomendados;
 
+				const mesesCortos = obtenerMesesCortos();
+				const mesesLargos = obtenerMesesLargos();
+				const nomMesActual = mesesLargos[mesActualNum - 1];
+
 				const movilChipOrigen = document.getElementById('movil-chip-origen');
 				const movilChipDestino = document.getElementById('movil-chip-destino');
+				const nombreOrigenTrad = obtenerNombreCultivo(objCultivoActual).split('(')[0].trim();
+				const nombreTop1Trad = topRecomendados[0]
+					? obtenerNombreCultivo(topRecomendados[0]).split('(')[0].trim()
+					: '';
+
+				if (chipCultivoOrigen && objCultivoActual) {
+					chipCultivoOrigen.textContent = nombreOrigenTrad;
+				}
 				if (movilChipOrigen && objCultivoActual) {
-					movilChipOrigen.textContent = objCultivoActual.nombre.split('(')[0].trim();
+					movilChipOrigen.textContent = nombreOrigenTrad;
 				}
 
 				if (chipCultivoDestino && topRecomendados[0]) {
 					chipCultivoDestino.className = 'badge fw-bold text-wrap';
 					chipCultivoDestino.style.background = '#f5b041';
 					chipCultivoDestino.style.color = '#071428';
-					chipCultivoDestino.textContent = `${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
+					chipCultivoDestino.textContent = `${nombreTop1Trad} (${topRecomendados[0].score}%)`;
 				}
 				if (movilChipDestino && topRecomendados[0]) {
-					movilChipDestino.textContent = `#1 ${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
+					movilChipDestino.textContent = `#1 ${nombreTop1Trad} (${topRecomendados[0].score}%)`;
 				}
 
 				if (badgeEstadoRotacion && topRecomendados[0]) {
-					badgeEstadoRotacion.textContent = `Top #1: ${topRecomendados[0].nombre.split('(')[0].trim()} (${topRecomendados[0].score}%)`;
+					badgeEstadoRotacion.textContent = `Top #1: ${nombreTop1Trad} (${topRecomendados[0].score}%)`;
 				}
 				if (clima?.coordenadas && subtituloRotacion) {
-					subtituloRotacion.textContent = `${lluviaTotalAnual} mm/año | ${tempMaxPromedio} °C`;
+					subtituloRotacion.textContent = `${lluviaTotalAnual} ${en ? 'mm/yr' : 'mm/año'} | ${tempMaxPromedio} °C`;
 				}
 
 				// RENDERIZAR TARJETAS UNIFICADAS EN EL DASHBOARD PRINCIPAL (AFINIDAD + CALENDARIO 12 MESES + COSTOS $ COP)
 				rotationContainer.innerHTML = topRecomendados
 					.map((item, idx) => {
-						const infoAgua = etiquetasAgua[item.agua] || {
+						const infoAguaBase = etiquetasAgua[item.agua] || {
 							texto: `Agua: ${item.agua}`,
 							badge: 'bg-secondary',
 						};
+						const textoAguaTrad = en
+							? item.agua === 'alta'
+								? 'High Water'
+								: item.agua === 'media'
+								? 'Medium Water'
+								: 'Low Water'
+							: infoAguaBase.texto;
 						const infoBeneficio = etiquetasBeneficio[item.beneficio] || {
 							titulo: item.beneficio,
 							descripcion: '',
@@ -1020,18 +1571,30 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						const mesesOptimos = Array.isArray(item.mesesSiembra) ? item.mesesSiembra : [3, 4, 5, 9, 10];
 						const p = item.presupuesto;
 						const collapseId = `desglose-costos-${item.id}-${idx}`;
+						const nombreItemTrad = obtenerNombreCultivo(item);
+						const familiaItemTrad = obtenerFamiliaCultivo(item.familia);
+						const cicloItemTrad = obtenerCicloCultivo(item);
+						const macroItemTrad = obtenerMacroregion(item.macroregion || item.region);
 
-						const htmlMeses = NOMBRES_MESES_CORTO.map((nomMes, mIdx) => {
-							const numMes = mIdx + 1;
-							const esOptimo = mesesOptimos.includes(numMes);
-							const esActual = numMes === mesActualNum;
-							const tituloMes = `${NOMBRES_MESES_LARGO[mIdx]}${esActual ? ' (MES ACTUAL)' : ''}: ${
-								esOptimo ? '✅ Mes óptimo de siembra' : 'Fuera de ventana principal'
-							}`;
-							return `<div class="ts-cal-month ${esOptimo ? 'optimal' : ''} ${
-								esActual ? 'current' : ''
-							}" title="${tituloMes}">${nomMes}${esActual ? '📍' : ''}</div>`;
-						}).join('');
+						const htmlMeses = mesesCortos
+							.map((nomMes, mIdx) => {
+								const numMes = mIdx + 1;
+								const esOptimo = mesesOptimos.includes(numMes);
+								const esActual = numMes === mesActualNum;
+								const tituloMes = `${mesesLargos[mIdx]}${esActual ? (en ? ' (CURRENT MONTH)' : ' (MES ACTUAL)') : ''}: ${
+									esOptimo
+										? en
+											? '✅ Optimal planting month'
+											: '✅ Mes óptimo de siembra'
+										: en
+										? 'Outside main window'
+										: 'Fuera de ventana principal'
+								}`;
+								return `<div class="ts-cal-month ${esOptimo ? 'optimal' : ''} ${
+									esActual ? 'current' : ''
+								}" title="${tituloMes}">${nomMes}${esActual ? '📍' : ''}</div>`;
+							})
+							.join('');
 
 						return `
 						<div class="col-12 ts-animate-in" style="animation-delay: ${idx * 45}ms;">
@@ -1042,17 +1605,17 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 										<div class="d-flex align-items-center gap-2 flex-wrap">
 											<span class="badge fw-bold" style="${esMejor ? 'background: #f5b041; color: #071428;' : 'background: #0d2647; color: #38bdf8;'}">#${idx + 1}</span>
 											<span class="fs-5">${infoBeneficio.icono}</span>
-											<h3 class="h6 mb-0 fw-bold" style="color: #071428;">${item.nombre}</h3>
-											<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">${item.familia}</span>
-											<span class="badge ${infoAgua.badge}">${infoAgua.texto}</span>
-											<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">⏱️ ${item.cicloDias}</span>
+											<h3 class="h6 mb-0 fw-bold" style="color: #071428;">${nombreItemTrad}</h3>
+											<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">${familiaItemTrad}</span>
+											<span class="badge ${infoAguaBase.badge}">${textoAguaTrad}</span>
+											<span class="badge" style="background: #eef4fb; color: #0d2647; border: 1px solid #cbd5e1;">⏱️ ${cicloItemTrad}</span>
 											${item.chips
 												.map((ch) => `<span class="badge ${ch.clase}">${ch.texto}</span>`)
 												.join('')}
 										</div>
 										<div class="text-end">
 											<span class="fs-5 fw-bold" style="color: ${esMejor ? '#0284c7' : '#0d2647'};">${item.score}%</span>
-											<small class="text-muted d-block" style="font-size: 0.7rem;">Afinidad</small>
+											<small class="text-muted d-block" style="font-size: 0.7rem;">${en ? 'Affinity' : 'Afinidad'}</small>
 										</div>
 									</div>
 
@@ -1067,12 +1630,12 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 												${item.evalCal.icono} ${item.evalCal.titulo}
 											</span>
 											<span class="text-muted" style="font-size: 0.7rem; overflow-wrap: anywhere;">
-												🟦 = Meses óptimos &nbsp;|&nbsp; 📍 = ${nombreMesActual}
+												🟦 = ${en ? 'Optimal months' : 'Meses óptimos'} &nbsp;|&nbsp; 📍 = ${nomMesActual}
 											</span>
 										</div>
 										<div class="ts-cal-grid mb-1">${htmlMeses}</div>
 										<div class="text-secondary" style="font-size: 0.75rem; line-height: 1.38; overflow-wrap: anywhere; word-break: break-word;">
-											<strong>💡 Calendario:</strong> ${item.evalCal.consejo}
+											<strong>💡 ${en ? 'Calendar:' : 'Calendario:'}</strong> ${item.evalCal.consejo}
 										</div>
 									</div>
 
@@ -1081,13 +1644,13 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 										<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
 											<div>
 												<span class="fw-bold small" style="color: #0d2647;">
-													💵 Inversión Estimada (${p.etiquetaArea}):
+													💵 ${en ? `Estimated Investment (${p.etiquetaArea}):` : `Inversión Estimada (${p.etiquetaArea}):`}
 												</span>
 												<span class="fs-6 fw-bold ms-1" style="color: #0284c7;">
 													${formatoCOP.format(p.costoTotalNeto)}
 												</span>
 												<span class="text-muted ms-1" style="font-size: 0.72rem;">
-													• Producción est.: ~${p.rendimientoTexto}
+													• ${en ? 'Est. yield:' : 'Producción est.:'} ~${p.rendimientoTexto}
 												</span>
 											</div>
 											<button
@@ -1098,14 +1661,18 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 												data-bs-target="#${collapseId}"
 												aria-expanded="false"
 											>
-												📋 Ver desglose de costos ▾
+												${en ? '📋 View cost breakdown ▾' : '📋 Ver desglose de costos ▾'}
 											</button>
 										</div>
 
 										${
 											p.ahorroNitrogeno > 0
 												? `<div class="mt-1 p-1 px-2 rounded fw-semibold" style="font-size: 0.72rem; background: #fef3c7; color: #92400e; border: 1px solid #f5b041;">
-													🌱 ¡Ahorras <strong>${formatoCOP.format(p.ahorroNitrogeno)}</strong> en fertilizantes gracias al nitrógeno que dejó tu cultivo previo!
+													${
+														en
+															? `🌱 You save <strong>${formatoCOP.format(p.ahorroNitrogeno)}</strong> on fertilizers thanks to the nitrogen fixed by your previous legume crop!`
+															: `🌱 ¡Ahorras <strong>${formatoCOP.format(p.ahorroNitrogeno)}</strong> en fertilizantes gracias al nitrógeno que dejó tu cultivo previo!`
+													}
 												   </div>`
 												: ''
 										}
@@ -1114,25 +1681,25 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 											<div class="row g-1 text-center pt-1 border-top" style="font-size: 0.73rem;">
 												<div class="col-6 col-sm-3">
 													<div class="p-1 bg-white rounded border">
-														<div class="text-muted">🌱 Semilla/Colino</div>
+														<div class="text-muted">${en ? '🌱 Seed/Planting' : '🌱 Semilla/Colino'}</div>
 														<div class="fw-bold text-dark">${formatoCOP.format(p.rubSemilla)}</div>
 													</div>
 												</div>
 												<div class="col-6 col-sm-3">
 													<div class="p-1 bg-white rounded border">
-														<div class="text-muted">🚜 Mano de Obra</div>
+														<div class="text-muted">${en ? '🚜 Labor' : '🚜 Mano de Obra'}</div>
 														<div class="fw-bold text-dark">${formatoCOP.format(p.rubManoObra)}</div>
 													</div>
 												</div>
 												<div class="col-6 col-sm-3">
 													<div class="p-1 bg-white rounded border">
-														<div class="text-muted">🧪 Fertilizantes</div>
+														<div class="text-muted">${en ? '🧪 Fertilizers' : '🧪 Fertilizantes'}</div>
 														<div class="fw-bold" style="color: #0284c7;">${formatoCOP.format(p.rubFertilizantes)}</div>
 													</div>
 												</div>
 												<div class="col-6 col-sm-3">
 													<div class="p-1 bg-white rounded border">
-														<div class="text-muted">🛡️ Fitosanitarios</div>
+														<div class="text-muted">${en ? '🛡️ Crop Protection' : '🛡️ Fitosanitarios'}</div>
 														<div class="fw-bold text-dark">${formatoCOP.format(p.rubFitosanitarios)}</div>
 													</div>
 												</div>
@@ -1146,7 +1713,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 											${item.razones.map((r) => `<li>${r}</li>`).join('')}
 										</ul>
 										<span class="badge bg-light text-secondary border" style="font-size: 0.68rem;">
-											📍 ${item.macroregion || item.region}
+											📍 ${macroItemTrad}
 										</span>
 									</div>
 								</div>
@@ -1275,6 +1842,9 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 						diagnosticoClimatico.textContent = `${temp} °C máx. prom | ${lluvia} mm/año`;
 					}
 
+					// Actualizar Panel de Zonificación Agroecológica, Topografía y las 7 Propiedades del Suelo de FAO GAEZ v4
+					renderizarPanelFaoGaez(data);
+
 					actualizarGraficos(data.mensual);
 					calcularYRenderizarRotacion(data);
 				} catch (err) {
@@ -1377,8 +1947,107 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 				}
 			});
 
-			// Renderizado inicial inmediato con el cultivo seleccionado por defecto
-			calcularYRenderizarRotacion(null);
+			function aplicarTraduccionesSelectorYClima() {
+				const en = esIngles();
+				const mesesLargos = obtenerMesesLargos();
+				const nomMesActual = mesesLargos[mesActualNum - 1];
+				const anioActual = fechaHoy.getFullYear();
+
+				if (chipFechaActual) {
+					chipFechaActual.textContent = `📅 ${nomMesActual} ${anioActual}`;
+				}
+
+				// Traducir optgroups y opciones de #select-cultivo
+				if (selectCultivo) {
+					selectCultivo.querySelectorAll('optgroup').forEach((og) => {
+						const origLabel = og.getAttribute('data-orig-label') || og.label;
+						if (!og.hasAttribute('data-orig-label')) {
+							og.setAttribute('data-orig-label', origLabel);
+						}
+						const limpio = origLabel.replace('📍 ', '').trim();
+						og.label = `📍 ${obtenerMacroregion(limpio)}`;
+					});
+					selectCultivo.querySelectorAll('option').forEach((opt) => {
+						const cObj = catalogoCultivos.find((c) => c.id === opt.value);
+						if (cObj) {
+							opt.textContent = `${obtenerNombreCultivo(cObj)} — [${obtenerFamiliaCultivo(cObj.familia)}]`;
+						}
+					});
+				}
+
+				// Traducir menú móvil de cultivos
+				if (menuCultivosMovil) {
+					menuCultivosMovil.querySelectorAll('.px-3.py-1.small.fw-bold').forEach((hdr) => {
+						const orig = hdr.getAttribute('data-orig-macro') || hdr.textContent.trim();
+						if (!hdr.hasAttribute('data-orig-macro')) {
+							hdr.setAttribute('data-orig-macro', orig);
+						}
+						const limpio = orig.replace('📍 ', '').trim();
+						hdr.textContent = `📍 ${obtenerMacroregion(limpio)}`;
+					});
+					itemsCultivoMovil.forEach((btn) => {
+						const cId = btn.getAttribute('data-crop-select-id');
+						const cObj = catalogoCultivos.find((c) => c.id === cId);
+						if (cObj) {
+							const spans = btn.querySelectorAll('span');
+							if (spans[0]) spans[0].textContent = obtenerNombreCultivo(cObj);
+							if (spans[1]) spans[1].textContent = obtenerFamiliaCultivo(cObj.familia);
+						}
+					});
+				}
+
+				// Traducir KPIs climáticos y gráficos si ya hay datos
+				if (ultimoClima?.promedios) {
+					const temp = ultimoClima.promedios.tempMax;
+					const lluvia = ultimoClima.promedios.lluviaTotalAnual;
+					if (kpiPisoTermico) {
+						let piso = en ? 'Temperate' : 'Templado';
+						if (temp <= 5) piso = en ? 'Polar / Nival' : 'Polar / Nival';
+						else if (temp < 12) piso = en ? 'Paramo' : 'Páramo';
+						else if (temp <= 22) piso = en ? 'Andean Cold' : 'Frío Andino';
+						else if (temp <= 28) piso = en ? 'Temperate' : 'Templado';
+						else piso = en ? 'Warm' : 'Cálido';
+						kpiPisoTermico.textContent = piso;
+					}
+					if (kpiRegimenLluvia) {
+						let reg = en ? 'Subhumid' : 'Subhúmedo';
+						if (lluvia < 120) reg = en ? 'Hyperarid' : 'Hiperárido';
+						else if (lluvia < 650) reg = en ? 'Dry' : 'Seco';
+						else if (lluvia <= 1400) reg = en ? 'Moderate' : 'Moderado';
+						else reg = en ? 'Humid' : 'Húmedo';
+						kpiRegimenLluvia.textContent = reg;
+					}
+					if (diagnosticoClimatico) {
+						diagnosticoClimatico.textContent = en
+							? `${temp} °C avg max | ${lluvia} mm/yr`
+							: `${temp} °C máx. prom | ${lluvia} mm/año`;
+					}
+				}
+
+				if (ultimoClima?.mensual) {
+					actualizarGraficos(ultimoClima.mensual);
+				} else if (chartLluvia && chartTemp) {
+					const labels = obtenerMesesCortos();
+					chartLluvia.data.labels = labels;
+					chartLluvia.data.datasets[0].label = en ? 'Monthly rainfall (mm)' : 'Lluvia mensual (mm)';
+					chartLluvia.update();
+					chartTemp.data.labels = labels;
+					chartTemp.data.datasets[0].label = en ? 'Avg. max temp (°C)' : 'Temp. máx promedio (°C)';
+					chartTemp.update();
+				}
+
+				if (ultimoClima) {
+					renderizarPanelFaoGaez(ultimoClima);
+				}
+				calcularYRenderizarRotacion(ultimoClima);
+			}
+
+			window.addEventListener('terrasoft:lang-change', () => {
+				aplicarTraduccionesSelectorYClima();
+			});
+
+			// Renderizado inicial inmediato con el cultivo seleccionado por defecto y el idioma activo
+			aplicarTraduccionesSelectorYClima();
 
 			/**
 			 * Genera y abre un Informe Técnico Agronómico completo listo para guardar en PDF o imprimir.
@@ -1684,11 +2353,16 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 							</div>
 						</div>
 
-						<h2>1. Resumen Agroclimático de la Parcela (NASA POWER - Últimos 12 Meses)</h2>
+						<h2>1. Resumen Agroclimático y Agroecológico (NASA POWER + FAO GAEZ v4 LR)</h2>
 						<p style="font-size: 12.5px; margin: 4px 0 8px 0;">
-							<strong>Temperatura Máxima Promedio Anual:</strong> ${ultimoClima.promedios.tempMax} °C &nbsp;|&nbsp;
-							<strong>Precipitación Anual Acumulada:</strong> ${ultimoClima.promedios.lluviaTotalAnual} mm/año &nbsp;|&nbsp;
-							<strong>Promedio Diario de Lluvia:</strong> ${ultimoClima.promedios.lluviaDiaria} mm/día
+							<strong>Temperatura Máxima Promedio Anual (NASA):</strong> ${ultimoClima.promedios.tempMax} °C &nbsp;|&nbsp;
+							<strong>Precipitación Anual Acumulada (NASA):</strong> ${ultimoClima.promedios.lluviaTotalAnual} mm/año &nbsp;|&nbsp;
+							<strong>Altitud Media (FAO LR):</strong> ${ultimoClima.faoGaez?.altitudMsnm ?? '--'} m s.n.m.<br/>
+							<strong>Zona Agroecológica FAO GAEZ v4:</strong> ${ultimoClima.faoGaez?.zonaAgroecologica || 'Evaluada'} &nbsp;|&nbsp;
+							<strong>Periodo de Crecimiento (LGP FAO):</strong> ${ultimoClima.faoGaez?.lgpDias ?? '--'} días/año &nbsp;|&nbsp;
+							<strong>Pendiente (FAO LR):</strong> ${ultimoClima.faoGaez?.pendienteTexto || '--'}<br/>
+							<strong>Aptitud de Suelo FAO:</strong> ${ultimoClima.faoGaez?.etiquetaSueloFao || 'Clase S1'} &nbsp;|&nbsp;
+							<strong>Proyección 2050 (RCP 4.5):</strong> ${ultimoClima.faoGaez?.proyeccionClimatica2050 || 'Estable'}
 						</p>
 
 						<table class="climate-table">
@@ -1748,6 +2422,13 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					['Cultivo Actual', objCultivoActual?.nombre || cultivoActualId],
 					['Temp. Maxima Promedio Anual (C)', ultimoClima.promedios.tempMax],
 					['Lluvia Total Anual (mm)', ultimoClima.promedios.lluviaTotalAnual],
+					['Zona Agroecologica FAO GAEZ v4', ultimoClima.faoGaez?.zonaAgroecologica || ''],
+					['Altitud Media FAO LR (m s.n.m.)', ultimoClima.faoGaez?.altitudMsnm ?? ''],
+					['Pendiente del Terreno FAO LR', ultimoClima.faoGaez?.pendienteTexto || ''],
+					['Estado de Reserva / Area Protegida FAO', ultimoClima.faoGaez?.areaProtegidaTexto || ''],
+					['Proyeccion Climatica 2050 (RCP 4.5)', ultimoClima.faoGaez?.proyeccionClimatica2050 || ''],
+					['Periodo de Crecimiento Agricola FAO LGP (dias/ano)', ultimoClima.faoGaez?.lgpDias ?? ''],
+					['Aptitud Edafica FAO GAEZ', ultimoClima.faoGaez?.etiquetaSueloFao || ''],
 					[],
 					['1. RECOMENDACIONES DE ROTACION, CALENDARIO Y PRESUPUESTO (COP)'],
 					[

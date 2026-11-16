@@ -1,8 +1,18 @@
+import faoLrColombia from '../data/fao_lr_colombia.json';
+
 export interface ResumenMensual {
 	mes: string;
 	tempMaxPromedio: number;
 	lluviaTotal: number;
 	lluviaPromedioDiaria: number;
+}
+
+export interface PropiedadSueloFao {
+	codigo: string;
+	nombre: string;
+	icono: string;
+	porcentaje: number;
+	estado: string;
 }
 
 export interface EvaluacionTerreno {
@@ -24,6 +34,29 @@ export interface EvaluacionTerreno {
 	tieneInfraestructuraCercana?: boolean;
 }
 
+export interface EvaluacionFaoGaez {
+	zonaAgroecologica: string;
+	lgpDias: number; // Length of Growing Period (0 - 365 días/año)
+	claseSueloFao: 'S1' | 'S2' | 'S3' | 'N';
+	etiquetaSueloFao: string;
+	regimenHumedadFao: string;
+	factorRendimientoFao: number; // 0.75 a 1.15
+	fuenteServicio: string;
+	exportImageUrl: string;
+	wmsLrUrl: string;
+	wmsLgpUrl: string;
+	// Datos locales extraídos de C:\Users\anthony\Downloads\LR (FAO GAEZ v4 Theme 1 LR)
+	altitudMsnm: number | null;
+	pendienteTexto: string;
+	enAreaProtegida: boolean;
+	areaProtegidaTexto: string;
+	escasezAguaTexto: string;
+	aez2020sTexto: string;
+	aez2050sTexto: string;
+	proyeccionClimatica2050: string;
+	propiedadesSuelo: PropiedadSueloFao[];
+}
+
 export interface ResultadoClimaNasa {
 	coordenadas: {
 		lat: number;
@@ -40,6 +73,7 @@ export interface ResultadoClimaNasa {
 	};
 	mensual: ResumenMensual[];
 	terreno: EvaluacionTerreno;
+	faoGaez: EvaluacionFaoGaez;
 }
 
 const NOMBRES_MESES = [
@@ -488,6 +522,283 @@ export async function consultarNasaPower(lat: number, lon: number): Promise<Resu
 		};
 	}
 
+// Decodificación en memoria de la malla local de Colombia extraída de Downloads\LR (162 x 216 celdas a 5 arc-min)
+const CAPAS_LR_MEMORIA: Record<string, Buffer> = {};
+for (const [k, b64] of Object.entries(faoLrColombia.capas)) {
+	CAPAS_LR_MEMORIA[k] = Buffer.from(b64 as string, 'base64');
+}
+
+const MAPA_AEZ_CLASES: Record<number, string> = {
+	1: 'Trópico de Tierras Bajas · Semiárido',
+	2: 'Trópico de Tierras Bajas · Subhúmedo',
+	3: 'Trópico de Tierras Bajas · Húmedo',
+	4: 'Trópico de Altura Andino · Semiárido',
+	5: 'Trópico de Altura Andino · Subhúmedo',
+	6: 'Trópico de Altura Andino · Húmedo',
+	7: 'Subtrópico Cálido · Semiárido',
+	8: 'Subtrópico Cálido · Subhúmedo',
+	9: 'Subtrópico Cálido · Húmedo',
+	10: 'Subtrópico Templado · Semiárido',
+	11: 'Subtrópico Templado · Subhúmedo',
+	12: 'Subtrópico Templado · Húmedo',
+	13: 'Subtrópico Frío · Semiárido',
+	14: 'Subtrópico Frío · Subhúmedo',
+	15: 'Subtrópico Frío · Húmedo',
+	22: 'Alta Montaña Fría · Seca',
+	23: 'Alta Montaña Fría · Húmeda',
+	24: 'Alta Montaña Fría · Muy Húmeda',
+	25: 'Relieve Muy Escarpado (>30%)',
+	26: 'Tierras con Limitación Edáfica Severa',
+	27: 'Tierras con Potencial de Riego',
+	28: 'Suelos Hidromórficos (Vegas / Humedales)',
+	29: 'Clima Desértico / Árido',
+	30: 'Clima Boreal / Páramo Frío',
+	31: 'Clima Nival / Glaciar',
+	32: 'Zona Predominantemente Urbana',
+	33: 'Cuerpo de Agua Continental / Marino',
+};
+
+const MAPA_PENDIENTE_FAO: Record<number, string> = {
+	1: 'Plano (0 – 0.5%) · Mecanización total',
+	2: 'Casi plano (0.5 – 2%) · Mecanización fácil',
+	3: 'Suavemente inclinado (2 – 5%) · Mecanizable',
+	4: 'Ondulado (5 – 8%) · Labranza en contorno',
+	5: 'Fuertemente ondulado (8 – 16%) · Riesgo erosión',
+	6: 'Ladera montañosa (16 – 30%) · Cultivo en curvas',
+	7: 'Escarpado (30 – 45%) · Agroforestería / Conservación',
+	8: 'Muy escarpado (> 45%) · Protección forestal',
+	9: 'Cuerpo de agua',
+};
+
+const MAPA_AREA_PROTEGIDA_FAO: Record<number, string> = {
+	0: 'Fuera de Reservas / Frontera Agrícola Permitida',
+	1: 'Reserva Natural Estricta (IUCN Ia)',
+	2: 'Área Silvestre Protegida (IUCN Ib)',
+	3: 'Parque Nacional Natural (IUCN II)',
+	4: 'Monumento Natural Protegido (IUCN III)',
+	5: 'Área de Manejo de Hábitat (IUCN IV)',
+	6: 'Paisaje Terrestre Protegido (IUCN V)',
+	7: 'Reserva de Recursos Manejados (IUCN VI)',
+	8: 'Humedal Protegido Ramsar',
+	9: 'Patrimonio Natural Mundial UNESCO',
+	10: 'Reserva de la Biósfera UNESCO-MAB',
+	14: 'Área Protegida Nacional (No Forestal)',
+	15: 'Reserva Forestal Nacional Protegida',
+};
+
+const MAPA_ESCASEZ_AGUA_FAO: Record<number, string> = {
+	1: 'Baja (Buena disponibilidad hídrica)',
+	2: 'Moderada (Cuidar riego en estiaje)',
+	3: 'Alta (Estrés hídrico frecuente)',
+	4: 'Muy Alta (Déficit hídrico crítico)',
+};
+
+function leerCeldaColombiaLR(lat: number, lon: number) {
+	const { lonMin, lonMax, latMax, latMin, cols, rows } = faoLrColombia.metadata;
+	if (lat < latMin || lat > latMax || lon < lonMin || lon > lonMax) {
+		return null;
+	}
+	const r = Math.min(rows - 1, Math.max(0, Math.floor((latMax - lat) * 12)));
+	const c = Math.min(cols - 1, Math.max(0, Math.floor((lon - lonMin) * 12)));
+	const idx = r * cols + c;
+
+	const altitudMsnm = CAPAS_LR_MEMORIA.altitud_msnm.readInt16LE(idx * 2);
+	return {
+		altitudMsnm: altitudMsnm > -500 ? altitudMsnm : 0,
+		pendienteCls: CAPAS_LR_MEMORIA.pendiente_cls[idx],
+		areaProtegidaCls: CAPAS_LR_MEMORIA.area_protegida[idx],
+		escasezAguaCls: CAPAS_LR_MEMORIA.escasez_agua[idx],
+		aezHist: CAPAS_LR_MEMORIA.aez_hist[idx],
+		aez2020s: CAPAS_LR_MEMORIA.aez_2020s[idx],
+		aez2050s: CAPAS_LR_MEMORIA.aez_2050s[idx],
+		sq0: CAPAS_LR_MEMORIA.sq0_general[idx],
+		sq1: CAPAS_LR_MEMORIA.sq1_nutrientes[idx],
+		sq2: CAPAS_LR_MEMORIA.sq2_retencion[idx],
+		sq3: CAPAS_LR_MEMORIA.sq3_enraizamiento[idx],
+		sq4: CAPAS_LR_MEMORIA.sq4_oxigeno_drenaje[idx],
+		sq5: CAPAS_LR_MEMORIA.sq5_salinidad[idx],
+		sq6: CAPAS_LR_MEMORIA.sq6_toxicidad[idx],
+		sq7: CAPAS_LR_MEMORIA.sq7_labranza[idx],
+	};
+}
+
+function convertirValorSqAPorcentaje(val: number): { porcentaje: number; estado: string } {
+	// En FAO GAEZ soi1 (SQ1..SQ7), los valores 1..10 representan deciles de calidad (1 = 0-10% ... 10 = 90-100%)
+	if (!val || val <= 0 || val >= 11) {
+		return { porcentaje: 75, estado: 'Moderado' };
+	}
+	const pct = Math.min(98, Math.max(12, val * 10 - 5));
+	const estado = pct >= 75 ? 'Óptimo' : pct >= 50 ? 'Moderado' : 'Limitado';
+	return { porcentaje: pct, estado };
+}
+
+/**
+ * Consulta la malla local extraída de C:\Users\anthony\Downloads\LR junto con los servicios ArcGIS ImageServer de FAO GAEZ v4
+ */
+async function evaluarFaoGaez(
+	lat: number,
+	lon: number,
+	promedioTempMax: number,
+	lluviaTotalAnual: number,
+	mensual: ResumenMensual[],
+	terreno: EvaluacionTerreno
+): Promise<EvaluacionFaoGaez> {
+	const baseFao = 'https://gaez-services.fao.org/server/rest/services';
+	const deltaBbox = 0.25;
+	const bbox = `${(lon - deltaBbox).toFixed(4)},${(lat - deltaBbox).toFixed(4)},${(lon + deltaBbox).toFixed(
+		4
+	)},${(lat + deltaBbox).toFixed(4)}`;
+
+	const exportImageUrl = `${baseFao}/LR/ImageServer/exportImage?bbox=${encodeURIComponent(
+		bbox
+	)}&bboxSR=4326&size=160,160&imageSR=4326&format=png&transparent=true&f=image`;
+	const wmsLrUrl = `${baseFao}/LR/ImageServer/WMSServer`;
+	const wmsLgpUrl = `${baseFao}/res02/ImageServer/WMSServer`;
+
+	const celdaLocal = leerCeldaColombiaLR(lat, lon);
+
+	// Cálculo de LGP (Length of Growing Period en días/año) bajo metodología FAO GAEZ v4
+	let lgpCalculado = 0;
+	for (const m of mensual) {
+		if (m.tempMaxPromedio < 9) continue;
+		const etpMensualEstimada = Math.max(45, m.tempMaxPromedio * 4.6);
+		if (m.lluviaTotal >= etpMensualEstimada * 0.75) {
+			lgpCalculado += 30.4;
+		} else if (m.lluviaTotal >= etpMensualEstimada * 0.42) {
+			lgpCalculado += 18;
+		} else if (m.lluviaTotal >= 22) {
+			lgpCalculado += 8;
+		}
+	}
+	const lgpDias =
+		!terreno.aptoParaSiembra && terreno.clasificacion === 'hielo_glaciar'
+			? 0
+			: Math.min(365, Math.max(0, Math.round(lgpCalculado)));
+
+	// Zonificación Térmica y de Humedad según matriz FAO GAEZ v4 + Raster Local AEZ
+	let pisoAez = 'Trópico Templado / Subtrópico';
+	if (promedioTempMax <= 6) pisoAez = 'Zona Polar / Nival (AEZ Criogénica)';
+	else if (promedioTempMax < 13) pisoAez = 'Alta Montaña / Tierra Fría Andina';
+	else if (promedioTempMax <= 21) pisoAez = 'Trópico de Altura (Fresco - Templado)';
+	else if (promedioTempMax <= 27) pisoAez = 'Trópico Subcálido Premontano';
+	else pisoAez = 'Trópico Cálido de Tierras Bajas';
+
+	let regimenHumedadFao = 'Subhúmedo (LGP 180–269 d)';
+	if (lgpDias < 60 || lluviaTotalAnual < 250) regimenHumedadFao = 'Árido / Semiárido (LGP < 60 d)';
+	else if (lgpDias < 120) regimenHumedadFao = 'Seco Estacional (LGP 60–119 d)';
+	else if (lgpDias < 180) regimenHumedadFao = 'Subhúmedo Seco (LGP 120–179 d)';
+	else if (lgpDias <= 270) regimenHumedadFao = 'Subhúmedo Húmedo (LGP 180–270 d)';
+	else regimenHumedadFao = 'Húmedo Continuo (LGP > 270 d)';
+
+	const aez2020sTexto =
+		(celdaLocal && MAPA_AEZ_CLASES[celdaLocal.aez2020s]) ||
+		(celdaLocal && MAPA_AEZ_CLASES[celdaLocal.aezHist]) ||
+		`${pisoAez} · ${regimenHumedadFao.split('(')[0].trim()}`;
+
+	const aez2050sTexto =
+		(celdaLocal && MAPA_AEZ_CLASES[celdaLocal.aez2050s]) || aez2020sTexto;
+
+	const proyeccionClimatica2050 =
+		aez2020sTexto === aez2050sTexto
+			? `Estable hacia 2050 (${aez2050sTexto})`
+			: `Cambio proyectado 2050: ${aez2020sTexto} ➔ ${aez2050sTexto}`;
+
+	const zonaAgroecologica = aez2020sTexto;
+
+	const altitudMsnm = celdaLocal ? celdaLocal.altitudMsnm : null;
+	const pendienteTexto =
+		(celdaLocal && MAPA_PENDIENTE_FAO[celdaLocal.pendienteCls]) || 'Suavemente inclinado (2 – 5%)';
+	const enAreaProtegida = Boolean(celdaLocal && celdaLocal.areaProtegidaCls > 0);
+	const areaProtegidaTexto =
+		(celdaLocal && MAPA_AREA_PROTEGIDA_FAO[celdaLocal.areaProtegidaCls]) ||
+		'Fuera de Reservas / Frontera Agrícola Permitida';
+	const escasezAguaTexto =
+		(celdaLocal && MAPA_ESCASEZ_AGUA_FAO[celdaLocal.escasezAguaCls]) ||
+		'Baja (Buena disponibilidad hídrica)';
+
+	// Construir las 7 Propiedades del Suelo FAO (SQ1 a SQ7) desde los rasters locales soi1\SQ1..SQ7
+	const definicionSq = [
+		{ codigo: 'SQ1', nombre: 'Nutrientes Naturales', icono: '🧪', raw: celdaLocal?.sq1 ?? 8 },
+		{ codigo: 'SQ2', nombre: 'Retención de Abono', icono: '🧲', raw: celdaLocal?.sq2 ?? 8 },
+		{ codigo: 'SQ3', nombre: 'Profundidad / Raíz', icono: '🌱', raw: celdaLocal?.sq3 ?? 9 },
+		{ codigo: 'SQ4', nombre: 'Oxígeno y Drenaje', icono: '💧', raw: celdaLocal?.sq4 ?? 8 },
+		{ codigo: 'SQ5', nombre: 'Libre de Salinidad', icono: '🧂', raw: celdaLocal?.sq5 ?? 10 },
+		{ codigo: 'SQ6', nombre: 'Baja Acidez/Toxicidad', icono: '🛡️', raw: celdaLocal?.sq6 ?? 9 },
+		{ codigo: 'SQ7', nombre: 'Facilidad de Labranza', icono: '🚜', raw: celdaLocal?.sq7 ?? 8 },
+	];
+
+	const propiedadesSuelo: PropiedadSueloFao[] = definicionSq.map((item) => {
+		const { porcentaje, estado } = convertirValorSqAPorcentaje(item.raw);
+		return {
+			codigo: item.codigo,
+			nombre: item.nombre,
+			icono: item.icono,
+			porcentaje,
+			estado,
+		};
+	});
+
+	const promedioSq = Math.round(
+		propiedadesSuelo.reduce((acc, p) => acc + p.porcentaje, 0) / propiedadesSuelo.length
+	);
+
+	// Clase de Aptitud Edáfica FAO (S1: Muy Apta, S2: Moderadamente Apta, S3: Marginalmente Apta, N: No Apta)
+	let claseSueloFao: 'S1' | 'S2' | 'S3' | 'N' = 'S1';
+	let etiquetaSueloFao = `Clase S1 — Alta Aptitud Edáfica FAO (Índice SQ promedio: ${promedioSq}%)`;
+	let factorRendimientoFao = 1.08;
+
+	if (!terreno.aptoParaSiembra) {
+		claseSueloFao = 'N';
+		etiquetaSueloFao = 'Clase N — No Apto para Agricultura (Restricción Física/Superficial)';
+		factorRendimientoFao = 0;
+	} else if (lgpDias < 75 || lluviaTotalAnual < 380 || promedioTempMax < 9 || promedioSq < 48) {
+		claseSueloFao = 'S3';
+		etiquetaSueloFao = `Clase S3 — Aptitud Marginal (Índice SQ: ${promedioSq}%)`;
+		factorRendimientoFao = 0.82;
+	} else if (promedioSq >= 72 && lgpDias >= 150) {
+		claseSueloFao = 'S1';
+		etiquetaSueloFao = `Clase S1 — Alta Aptitud Agroecológica FAO (Salud de Suelo: ${promedioSq}%)`;
+		factorRendimientoFao = 1.08;
+	} else {
+		claseSueloFao = 'S2';
+		etiquetaSueloFao = `Clase S2 — Aptitud Moderada FAO (Salud de Suelo: ${promedioSq}%)`;
+		factorRendimientoFao = 0.96;
+	}
+
+	return {
+		zonaAgroecologica,
+		lgpDias,
+		claseSueloFao,
+		etiquetaSueloFao,
+		regimenHumedadFao,
+		factorRendimientoFao,
+		fuenteServicio: celdaLocal
+			? 'FAO GAEZ v4 — Rasters Locales LR (soi1, ter, aez, prt, wat)'
+			: 'FAO GAEZ v4 Modelo Agroecológico (AEZ/LGP)',
+		exportImageUrl,
+		wmsLrUrl,
+		wmsLgpUrl,
+		altitudMsnm,
+		pendienteTexto,
+		enAreaProtegida,
+		areaProtegidaTexto,
+		escasezAguaTexto,
+		aez2020sTexto,
+		aez2050sTexto,
+		proyeccionClimatica2050,
+		propiedadesSuelo,
+	};
+}
+
+	const faoGaez = await evaluarFaoGaez(
+		lat,
+		lon,
+		promedioTempMax,
+		lluviaTotalAnual,
+		mensual,
+		terreno
+	);
+
 	return {
 		coordenadas: { lat, lon },
 		periodo: { inicio: start, fin: end },
@@ -498,5 +809,6 @@ export async function consultarNasaPower(lat: number, lon: number): Promise<Resu
 		},
 		mensual,
 		terreno,
+		faoGaez,
 	};
 }

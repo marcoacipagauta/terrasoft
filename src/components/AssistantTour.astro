@@ -301,8 +301,8 @@
 	title="Abrir asistente interactivo Don Terra"
 >
 	<span class="ts-assistant-avatar">🧑‍🌾</span>
-	<span>Guía Interactiva</span>
-	<span class="badge bg-warning text-dark rounded-pill" id="badge-fab-paso">Aprende fácil</span>
+	<span data-i18n="fabGuideLabel">Guía Interactiva</span>
+	<span class="badge bg-warning text-dark rounded-pill" id="badge-fab-paso" data-i18n="fabBadgeDefault">Aprende fácil</span>
 </button>
 
 <!-- Ventana Flotante / Mini-Dock del Asistente "Don Terra" -->
@@ -312,10 +312,10 @@
 		<div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1 1 0%; overflow: hidden;">
 			<span class="ts-assistant-avatar flex-shrink-0">🧑‍🌾</span>
 			<div style="min-width: 0; flex: 1 1 0%; overflow: hidden;">
-				<div class="fw-bold text-truncate" style="font-size: 0.88rem; line-height: 1.15;" id="asistente-titulo-header">
+				<div class="fw-bold text-truncate" style="font-size: 0.88rem; line-height: 1.15;" id="asistente-titulo-header" data-i18n="assistantHeaderTitle">
 					Don Terra — Tu Agrónomo Guía
 				</div>
-				<small class="text-white-50 text-truncate d-block" style="font-size: 0.72rem;" id="asistente-subtitulo">
+				<small class="text-white-50 text-truncate d-block" style="font-size: 0.72rem;" id="asistente-subtitulo" data-i18n="assistantHeaderSub">
 					Aprende a planificar tu siembra paso a paso
 				</small>
 			</div>
@@ -329,6 +329,7 @@
 				id="btn-minimizar-asistente"
 				class="ts-header-ctrl-btn"
 				title="Plegar o expandir panel para ver mejor el mapa"
+				data-i18n="btnFold"
 			>
 				🔽 Plegar
 			</button>
@@ -345,10 +346,10 @@
 	<!-- Pestañas internas del Asistente: [1] Tour Paso a Paso | [2] Cápsulas Didácticas -->
 	<div id="asistente-subbarra" class="bg-light border-bottom px-3 py-1 d-flex justify-content-between align-items-center gap-2">
 		<div class="btn-group btn-group-sm" role="group">
-			<button type="button" id="btn-modo-tour" class="btn ts-btn-space btn-sm fw-semibold py-1">
+			<button type="button" id="btn-modo-tour" class="btn ts-btn-space btn-sm fw-semibold py-1" data-i18n="tabTourBtn">
 				🎯 Tour Paso a Paso (6)
 			</button>
-			<button type="button" id="btn-modo-capsulas" class="btn btn-outline-secondary btn-sm fw-semibold py-1">
+			<button type="button" id="btn-modo-capsulas" class="btn btn-outline-secondary btn-sm fw-semibold py-1" data-i18n="tabCapsulesBtn">
 				💡 Cápsulas Agronómicas
 			</button>
 		</div>
@@ -363,7 +364,7 @@
 			<h3 class="h6 fw-bold mb-0" style="color: #0d2647;" id="tour-step-title">
 				📍 Paso 1: Elige tu Lote en el Mapa Satelital
 			</h3>
-			<button type="button" id="btn-toggle-explicacion" class="ts-why-toggle-btn">
+			<button type="button" id="btn-toggle-explicacion" class="ts-why-toggle-btn" data-i18n="btnWhy">
 				ℹ️ ¿Por qué?
 			</button>
 		</div>
@@ -382,40 +383,40 @@
 
 		<!-- Indicador de progreso y controles de navegación (avance automático por misión) -->
 		<div class="d-flex flex-wrap justify-content-between align-items-center gap-1 pt-2 border-top">
-			<button type="button" id="btn-tour-prev" class="btn btn-outline-secondary btn-sm fw-semibold py-0 px-2" style="font-size: 0.74rem;" disabled>
+			<button type="button" id="btn-tour-prev" class="btn btn-outline-secondary btn-sm fw-semibold py-0 px-2" style="font-size: 0.74rem;" data-i18n="btnPrevStep" disabled>
 				⬅ Anterior
 			</button>
 
 			<div class="d-flex gap-1 align-items-center" id="tour-dots-container"></div>
 
 			<span class="badge bg-light text-secondary border" style="font-size: 0.68rem;">
-				⚡ <span class="d-none d-sm-inline">Avance automático</span><span class="d-inline d-sm-none">Auto</span>
+				⚡ <span class="d-none d-sm-inline" data-i18n="badgeAutoAdvance">Avance automático</span><span class="d-inline d-sm-none" data-i18n="badgeAutoShort">Auto</span>
 			</span>
 		</div>
 	</div>
 
 	<!-- CONTENIDO MODO 2: CÁPSULAS DIDÁCTICAS ("PREGÚNTALE A DON TERRA") -->
 	<div id="vista-capsulas" class="p-3 d-none">
-		<p class="small text-muted mb-2">
+		<p class="small text-muted mb-2" data-i18n="capsulesIntro">
 			Selecciona una pregunta para entender cómo la ciencia agronómica y los satélites te ayudan a tomar mejores decisiones:
 		</p>
 
 		<div class="d-grid gap-2 mb-3">
-			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="nitrogeno">
+			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="nitrogeno" data-i18n="capsuleQ1">
 				🌱 ¿Cómo me ahorra dinero sembrar Frijol, Arveja o Soya?
 			</button>
-			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="monocultivo">
+			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="monocultivo" data-i18n="capsuleQ2">
 				🧬 ¿Por qué es peligroso repetir el mismo cultivo (Monocultivo)?
 			</button>
-			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="satelite">
+			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="satelite" data-i18n="capsuleQ3">
 				🛰️ ¿Cómo detecta TerraSoft carreteras, glaciares y clima NASA?
 			</button>
-			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="calendario">
+			<button type="button" class="btn btn-outline-primary ts-faq-btn p-2" style="color: #0d2647; border-color: #93c5fd;" data-capsule="calendario" data-i18n="capsuleQ4">
 				📅 ¿Cómo leer el semáforo de fecha actual y el calendario?
 			</button>
 		</div>
 
-		<div id="caja-respuesta-capsula" class="p-2 px-3 rounded border small text-dark" style="background: #eef4fb; border-color: #93c5fd !important;">
+		<div id="caja-respuesta-capsula" class="p-2 px-3 rounded border small text-dark" style="background: #eef4fb; border-color: #93c5fd !important;" data-i18n-html="capsuleDefaultTip">
 			<strong>💡 Consejo de Don Terra:</strong> Haz clic en cualquiera de las preguntas de arriba para ver una explicación clara y aplicada a tu parcela.
 		</div>
 	</div>
@@ -559,11 +560,100 @@
 			},
 		};
 
+		const ESTACIONES_TOUR_EN = {
+			mapa: {
+				titulo: '📍 Station 1: Select your Lot on the Satellite Map',
+				descripcion:
+					'In the left column of the Dashboard you see your land from space along with NASA POWER and FAO GAEZ data. Clicking a point verifies whether it is arable land or a road, building, or glacier.',
+				mision:
+					'👉 Click on any green or plowed lot on the map (or click on a road to test the obstacle detector).',
+				completadoTexto:
+					'✅ You did it! The satellite analyzed the soil at that coordinate and downloaded NASA & FAO data.',
+			},
+			cultivo: {
+				titulo: '🌾 Station 2: What did you plant last time?',
+				descripcion:
+					'In the top bar of the Dashboard you select your current crop. In agriculture we should never repeat the same botanical family twice in a row because pests remain in the soil.',
+				mision:
+					'👉 Open the "🌾 Current Crop" selector (grouped by the 6 macro-regions of Colombia) and choose a crop.',
+				completadoTexto:
+					'✅ Great! Now TerraSoft will penalize crops from the same family and find rotations that break pest cycles.',
+			},
+			area: {
+				titulo: '📐 Station 3: Enter your Lot Size',
+				descripcion:
+					'Type how many square meters (m²), fanegadas, or hectares your parcel has. TerraSoft will automatically calculate seed, fertilizer, and labor costs in Colombian Pesos ($ COP).',
+				mision:
+					'👉 Type a different area in "📐 Lot" or switch the unit between m², Fanegadas, or Hectares.',
+				completadoTexto:
+					'✅ Perfect! All seed, labor, and fertilizer costs were just recalculated for your lot size.',
+			},
+			prioridad: {
+				titulo: '🎯 Station 4: Choose your Priority for this Cycle',
+				descripcion:
+					'Is your soil tired and needs nitrogen (🌱 Soil)? Are dry months coming (💧 Water)? Or are you looking for the highest commercial return (💰 Profitability)?',
+				mision:
+					'👉 Click any of the 3 buttons (🌱 Soil, 💧 Water, or 💰 Profitability) and watch the recommendations reorder.',
+				completadoTexto:
+					'✅ Excellent! You saw how the ranking and affinity percentages updated instantly.',
+			},
+			recomendaciones: {
+				titulo: '🏆 Station 5: Explore the Top 3, Calendar & Cost Breakdown',
+				descripcion:
+					'Each recommended card shows the 12-month bar (🟦 = optimal month, 📍 = current month) and the estimated budget with a button to expand the 4 cost items.',
+				mision:
+					'👉 Click the "📋 View cost breakdown ▾" button inside any of the 3 recommended cards.',
+				completadoTexto:
+					'✅ Awesome! There you have the exact breakdown for Seed, Labor, Fertilizers, and Crop Protection.',
+			},
+			exportar: {
+				titulo: '📄 Station 6: Download your Technical Report (PDF or Excel)',
+				descripcion:
+					'Exclusively inside the Control Dashboard you have the "📄 PDF Report" and "📥 Excel (.CSV)" buttons to export your entire study, calendar, and budget.',
+				mision:
+					'👉 Click "📄 PDF Report" or "📥 Excel (.CSV)" in the results header to complete your tour.',
+				completadoTexto:
+					'🎉 Congratulations! You now master the TerraSoft Control Dashboard like an expert.',
+			},
+		};
+
+		const CAPSULAS_INFO_EN = {
+			nitrogeno: {
+				titulo: '🌱 The Power of Biological Nitrogen (18% Savings)',
+				texto:
+					'Legumes such as <strong>Beans, Peas, Fava Beans, Soybeans, and Cowpeas</strong> host beneficial bacteria (<em>Rhizobium</em>) in their roots that capture nitrogen from the air and leave it in the soil. Planting Corn, Potato, or Onion after a legume saves <strong>around 18% on nitrogen fertilizers</strong>.',
+			},
+			monocultivo: {
+				titulo: '🧬 Why Avoid Monoculture and Alternate Families?',
+				texto:
+					'Crops from the same botanical family (such as <strong>Potato and Tomato</strong>, both <em>Solanaceae</em>) share the same pests and fungi (like late blight). Switching to a <em>Legume</em> (Pea/Bean) or a <em>Grass</em> (Oats/Corn) starves the previous pests and breaks their cycle naturally.',
+			},
+			satelite: {
+				titulo: '🛰️ Triple Verification: Optical Satellite + NASA POWER + FAO GAEZ',
+				texto:
+					'TerraSoft combines three spatial technologies: <strong>1)</strong> Reads the real pixels of the satellite photo to measure vegetation, plowed soil, or pavement under the marker, <strong>2)</strong> Queries <strong>NASA POWER</strong> agroclimatic satellites for monthly rain and temperature, and <strong>3)</strong> Evaluates the <strong>FAO GAEZ v4</strong> 7 soil properties (SQ1–SQ7) and growing period (LGP).',
+			},
+			calendario: {
+				titulo: '📅 How to Read the Traffic Light and the 12 Months',
+				texto:
+					'Each crop has an optimal planting window based on Colombia’s rainy seasons (March–May and September–November). The system compares <strong>today’s date</strong> with that window: <strong>🟢 Green</strong> means you can plant this month; <strong>🟡 Yellow</strong> means the window opens next month (time to prepare soil); and <strong>⏳ Gray</strong> tells you the next safe month.',
+			},
+		};
+
+		function obtenerEstacionTraducida(est) {
+			if (!est) return null;
+			const en = window.getTerraSoftLang?.() === 'en';
+			if (en && ESTACIONES_TOUR_EN[est.id]) {
+				return { ...est, ...ESTACIONES_TOUR_EN[est.id] };
+			}
+			return est;
+		}
 		let pasoActual = 0;
 		const pasosCompletados = new Set();
 		let elementoIluminado = null;
 		let timerAutoAvance = null;
 		let timerDebounceArea = null;
+		let capsulaActivaKey = null;
 
 		function cancelarAutoAvance() {
 			if (timerAutoAvance) {
@@ -597,46 +687,64 @@
 		}
 
 		function expandirAsistente() {
+			const en = window.getTerraSoftLang?.() === 'en';
 			panelAsistente?.classList.remove('ts-minimized');
 			if (minimizarBtn) {
-				minimizarBtn.textContent = '🔽 Plegar';
+				minimizarBtn.textContent = en ? '🔽 Fold' : '🔽 Plegar';
 			}
 			if (tituloHeader) {
-				tituloHeader.textContent = 'Don Terra — Tu Agrónomo Guía';
+				tituloHeader.textContent = en
+					? 'Don Terra — Your Agronomist Guide'
+					: 'Don Terra — Tu Agrónomo Guía';
 			}
 		}
 
 		function alternarMinimizadoAsistente() {
 			if (!panelAsistente) return;
+			const en = window.getTerraSoftLang?.() === 'en';
 			const minimizado = panelAsistente.classList.toggle('ts-minimized');
 			if (minimizarBtn) {
-				minimizarBtn.textContent = minimizado ? '🔼 Expandir' : '🔽 Plegar';
+				minimizarBtn.textContent = minimizado
+					? en
+						? '🔼 Expand'
+						: '🔼 Expandir'
+					: en
+					? '🔽 Fold'
+					: '🔽 Plegar';
 			}
 			if (tituloHeader) {
-				const est = ESTACIONES_TOUR[pasoActual];
-				tituloHeader.textContent = minimizado && est ? est.titulo : 'Don Terra — Tu Agrónomo Guía';
+				const est = obtenerEstacionTraducida(ESTACIONES_TOUR[pasoActual]);
+				tituloHeader.textContent =
+					minimizado && est
+						? est.titulo
+						: en
+						? 'Don Terra — Your Agronomist Guide'
+						: 'Don Terra — Tu Agrónomo Guía';
 			}
 		}
 
-		function renderizarPasoTour() {
+		function renderizarPasoTour(ejecutarOnEnter = true) {
 			cancelarAutoAvance();
-			const est = ESTACIONES_TOUR[pasoActual];
+			const estBase = ESTACIONES_TOUR[pasoActual];
+			const est = obtenerEstacionTraducida(estBase);
 			if (!est) return;
+			const en = window.getTerraSoftLang?.() === 'en';
 
-			if (typeof est.onEnter === 'function') {
+			if (ejecutarOnEnter && typeof est.onEnter === 'function') {
 				est.onEnter();
 			}
 
-			if (badgeProgreso) badgeProgreso.textContent = `Paso ${pasoActual + 1} / ${ESTACIONES_TOUR.length}`;
+			const lblPaso = en ? 'Step' : 'Paso';
+			if (badgeProgreso) badgeProgreso.textContent = `${lblPaso} ${pasoActual + 1} / ${ESTACIONES_TOUR.length}`;
 			if (badgeProgresoMovil) badgeProgresoMovil.textContent = `${pasoActual + 1}/${ESTACIONES_TOUR.length}`;
-			if (badgeFabPaso) badgeFabPaso.textContent = `Paso ${pasoActual + 1}/${ESTACIONES_TOUR.length}`;
+			if (badgeFabPaso) badgeFabPaso.textContent = `${lblPaso} ${pasoActual + 1}/${ESTACIONES_TOUR.length}`;
 			if (stepTitle) stepTitle.textContent = est.titulo;
 			if (stepDesc) {
 				stepDesc.textContent = est.descripcion;
 				stepDesc.classList.remove('ts-desc-expanded');
 			}
 			if (toggleExplicacionBtn) {
-				toggleExplicacionBtn.textContent = 'ℹ️ ¿Por qué?';
+				toggleExplicacionBtn.textContent = en ? 'ℹ️ Why?' : 'ℹ️ ¿Por qué?';
 			}
 			if (panelAsistente?.classList.contains('ts-minimized') && tituloHeader) {
 				tituloHeader.textContent = est.titulo;
@@ -646,11 +754,11 @@
 			if (missionBox && missionTitle && missionText) {
 				if (yaCompletado) {
 					missionBox.classList.add('completed');
-					missionTitle.textContent = '🌟 ¡Misión Completada!';
+					missionTitle.textContent = en ? '🌟 Mission Completed!' : '🌟 ¡Misión Completada!';
 					missionText.textContent = est.completadoTexto;
 				} else {
 					missionBox.classList.remove('completed');
-					missionTitle.textContent = '🎯 Tu Misión Interactiva:';
+					missionTitle.textContent = en ? '🎯 Your Interactive Mission:' : '🎯 Tu Misión Interactiva:';
 					missionText.textContent = est.mision;
 				}
 			}
@@ -676,9 +784,10 @@
 
 		function marcarMisionCompletada(idEstacion, mensajeExtra) {
 			pasosCompletados.add(idEstacion);
-			const estActual = ESTACIONES_TOUR[pasoActual];
+			const estActual = obtenerEstacionTraducida(ESTACIONES_TOUR[pasoActual]);
 			const tourVisible =
 				!panelAsistente?.classList.contains('d-none') && !vistaTour?.classList.contains('d-none');
+			const en = window.getTerraSoftLang?.() === 'en';
 
 			if (estActual && estActual.id === idEstacion && missionBox && missionTitle && missionText) {
 				cancelarAutoAvance();
@@ -689,11 +798,19 @@
 				const textoExito = mensajeExtra || estActual.completadoTexto;
 
 				missionBox.classList.add('completed');
-				missionTitle.textContent = '🌟 ¡Misión Completada con Éxito!';
+				missionTitle.textContent = en ? '🌟 Mission Successfully Completed!' : '🌟 ¡Misión Completada con Éxito!';
 				missionText.innerHTML = `
 					<div>${textoExito}</div>
 					<div class="fw-semibold mt-1" style="font-size: 0.75rem; color: #0b213f;">
-						${esUltimoPaso ? '🎉 ¡Recorrido finalizado! Cerrando guía...' : '⏭️ Avanzando automáticamente al siguiente paso...'}
+						${
+							esUltimoPaso
+								? en
+									? '🎉 Tour finished! Closing guide...'
+									: '🎉 ¡Recorrido finalizado! Cerrando guía...'
+								: en
+								? '⏭️ Automatically advancing to the next step...'
+								: '⏭️ Avanzando automáticamente al siguiente paso...'
+						}
 					</div>
 					<div class="ts-auto-advance-progress">
 						<div class="ts-auto-advance-fill"></div>
@@ -708,7 +825,7 @@
 							renderizarPasoTour();
 						} else {
 							cerrarAsistente();
-							if (badgeFabPaso) badgeFabPaso.textContent = '✅ Tour completado';
+							if (badgeFabPaso) badgeFabPaso.textContent = en ? '✅ Tour completed' : '✅ Tour completado';
 						}
 					}, 2200);
 				}
@@ -780,14 +897,28 @@
 		});
 
 		// Cápsulas didácticas
+		function renderizarCapsulaActiva() {
+			if (!capsulaActivaKey || !cajaCapsula) return;
+			const en = window.getTerraSoftLang?.() === 'en';
+			const dictCap = en ? CAPSULAS_INFO_EN : CAPSULAS_INFO;
+			const info = dictCap[capsulaActivaKey];
+			if (info) {
+				cajaCapsula.innerHTML = `<div class="fw-bold text-success mb-1">${info.titulo}</div><div>${info.texto}</div>`;
+			}
+		}
+
 		document.querySelectorAll('[data-capsule]').forEach((btn) => {
 			btn.addEventListener('click', () => {
-				const key = btn.getAttribute('data-capsule');
-				const info = CAPSULAS_INFO[key];
-				if (info && cajaCapsula) {
-					cajaCapsula.innerHTML = `<div class="fw-bold text-success mb-1">${info.titulo}</div><div>${info.texto}</div>`;
-				}
+				capsulaActivaKey = btn.getAttribute('data-capsule');
+				renderizarCapsulaActiva();
 			});
+		});
+
+		window.addEventListener('terrasoft:lang-change', () => {
+			renderizarPasoTour(false);
+			if (capsulaActivaKey) {
+				renderizarCapsulaActiva();
+			}
 		});
 
 		// ESCUCHA ACTIVA DE INTERACCIONES DEL USUARIO ("APRENDE HACIENDO")

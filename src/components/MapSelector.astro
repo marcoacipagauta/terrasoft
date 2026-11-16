@@ -82,8 +82,8 @@ const {
 <div class="card ts-card shadow-sm border-0 mb-3 overflow-hidden">
 	<div class="card-header ts-card-header-space d-flex justify-content-between align-items-center py-2 px-3">
 		<div class="d-flex align-items-center gap-2">
-			<span class="fw-bold text-info small">🛰️ Mapa Satelital de Parcela</span>
-			<span class="text-white-50" style="font-size: 0.76rem;">(Haz clic o arrastra el marcador)</span>
+			<span class="fw-bold text-info small" data-i18n="mapHeaderTitle">🛰️ Mapa Satelital de Parcela</span>
+			<span class="text-white-50" style="font-size: 0.76rem;" data-i18n="mapHeaderHint">(Haz clic o arrastra el marcador)</span>
 		</div>
 		<button
 			type="button"
@@ -91,6 +91,7 @@ const {
 			class="btn ts-btn-amber btn-sm py-0 px-2"
 			style="font-size: 0.76rem;"
 			title="Usar mi ubicación GPS actual"
+			data-i18n="mapBtnGeo"
 		>
 			📍 Mi ubicación
 		</button>
@@ -177,18 +178,44 @@ const {
 			attribution: '&copy; OpenStreetMap',
 		});
 
+		// Capas Temáticas Oficiales WMS de FAO GAEZ v4 (https://gaez.fao.org/pages/data-access-download)
+		const capaFaoLr = L.tileLayer.wms(
+			'https://gaez-services.fao.org/server/rest/services/LR/ImageServer/WMSServer',
+			{
+				layers: '0',
+				format: 'image/png',
+				transparent: true,
+				opacity: 0.62,
+				attribution: '&copy; FAO GAEZ v4 (LR)',
+			}
+		);
+
+		const capaFaoLgp = L.tileLayer.wms(
+			'https://gaez-services.fao.org/server/rest/services/res02/ImageServer/WMSServer',
+			{
+				layers: '0',
+				format: 'image/png',
+				transparent: true,
+				opacity: 0.62,
+				attribution: '&copy; FAO GAEZ v4 (LGP res02)',
+			}
+		);
+
 		const map = L.map('terrasync-map', {
 			center: [initialLat, initialLon],
 			zoom: initialZoom,
 			layers: [capaSatelite],
 		});
 
+		let ultimoDetalleMapa = null;
+
 		function crearHtmlPopupCargando(lat, lon) {
+			const en = window.getTerraSoftLang?.() === 'en';
 			return `
 				<div class="ts-map-popup-box">
 					<span class="ts-map-popup-icon" style="background: #eef4fb; color: #0d2647;">⏳</span>
 					<div class="ts-map-popup-body">
-						<div class="ts-map-popup-title" style="color: #0d2647;">Analizando punto satelital...</div>
+						<div class="ts-map-popup-title" style="color: #0d2647;">${en ? 'Analyzing satellite point...' : 'Analizando punto satelital...'}</div>
 						<div class="ts-map-popup-coords">
 							<span>📍 Lat: <strong>${lat}</strong></span>
 							<span>•</span>
@@ -199,7 +226,25 @@ const {
 			`;
 		}
 
-		function crearHtmlPopupEvaluado(terreno, coordenadas, promedios) {
+		function traducirEtiquetaTerrenoMapa(terreno) {
+			if (!terreno) return '';
+			if (window.getTerraSoftLang?.() !== 'en') return terreno.etiqueta;
+			if (terreno.aptoParaSiembra) {
+				const match = String(terreno.etiqueta || '').match(/\(([^)]+)\)/);
+				return `Suitable Farmland / Lot${match ? ` (${match[1]})` : ''}`;
+			}
+			const mapaNoAptoEn = {
+				asfalto_via: 'Road / Paved Surface (Not Cultivable)',
+				urbano_edificado: 'Urban Infrastructure / Building',
+				cuerpo_agua: 'Water Body / River or Ocean',
+				hielo_glaciar: 'Glacier / Permafrost or Snow',
+				desierto_arido: 'Hyper-Arid Desert',
+				no_cultivable: 'Rocky / Barren Surface',
+			};
+			return mapaNoAptoEn[terreno.clasificacion] || terreno.etiqueta;
+		}
+
+		function crearHtmlPopupEvaluado(terreno, coordenadas, promedios, faoGaez) {
 			const esApto = Boolean(terreno?.aptoParaSiembra);
 			const icono = esApto ? '✅' : '🚫';
 			const bgIcono = esApto ? '#dcfce7' : '#fee2e2';
@@ -208,17 +253,22 @@ const {
 				promedios && typeof promedios.tempMax === 'number'
 					? `<span>• 🌡️ ${promedios.tempMax}°C</span><span>• 🌧️ ${promedios.lluviaTotalAnual} mm</span>`
 					: '';
+			const infoFao =
+				faoGaez && typeof faoGaez.lgpDias === 'number'
+					? `<span>• 🌍 FAO ${faoGaez.claseSueloFao} (${faoGaez.lgpDias}d LGP)</span>`
+					: '';
 
 			return `
 				<div class="ts-map-popup-box">
 					<span class="ts-map-popup-icon" style="background: ${bgIcono};">${icono}</span>
 					<div class="ts-map-popup-body">
 						<div class="ts-map-popup-title" style="color: ${colorTitulo};">
-							${terreno.etiqueta}
+							${traducirEtiquetaTerrenoMapa(terreno)}
 						</div>
 						<div class="ts-map-popup-coords">
 							<span>📍 ${coordenadas.lat}, ${coordenadas.lon}</span>
 							${infoClima}
+							${infoFao}
 						</div>
 					</div>
 				</div>
@@ -228,11 +278,14 @@ const {
 		L.control
 			.layers(
 				{
-					'🛰️ Satélite': capaSatelite,
+					'🛰️ Satélite (Esri)': capaSatelite,
 					'🗺️ Calles (OSM)': capaCalles,
 				},
-				null,
-				{ position: 'topright', collapsed: false }
+				{
+					'🌍 FAO: Zonas y Suelos (LR)': capaFaoLr,
+					'🌱 FAO: Días Crecimiento (LGP)': capaFaoLgp,
+				},
+				{ position: 'topright', collapsed: true }
 			)
 			.addTo(map);
 
@@ -282,8 +335,9 @@ const {
 		}
 
 		window.addEventListener('terrasync:terreno-evaluado', (e) => {
-			const { terreno, coordenadas, promedios } = e.detail || {};
+			const { terreno, coordenadas, promedios, faoGaez } = e.detail || {};
 			if (!terreno || !coordenadas) return;
+			ultimoDetalleMapa = { terreno, coordenadas, promedios, faoGaez };
 
 			if (capaObstaculo) {
 				map.removeLayer(capaObstaculo);
@@ -299,9 +353,17 @@ const {
 				}).addTo(map);
 			}
 
-			marker.setPopupContent(crearHtmlPopupEvaluado(terreno, coordenadas, promedios));
+			marker.setPopupContent(crearHtmlPopupEvaluado(terreno, coordenadas, promedios, faoGaez));
 			marker.getPopup()?.update();
 			marker.openPopup();
+		});
+
+		window.addEventListener('terrasoft:lang-change', () => {
+			if (ultimoDetalleMapa) {
+				const { terreno, coordenadas, promedios, faoGaez } = ultimoDetalleMapa;
+				marker.setPopupContent(crearHtmlPopupEvaluado(terreno, coordenadas, promedios, faoGaez));
+				marker.getPopup()?.update();
+			}
 		});
 
 		window.addEventListener('terrasync:terreno-error', (e) => {

@@ -1,4 +1,6 @@
 ---
+import { TERRASOFT_I18N } from '../i18n/translations';
+
 interface Props {
 	title?: string;
 }
@@ -437,9 +439,34 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 				border-radius: 0.6rem;
 				padding: 0.6rem 0.8rem;
 			}
+
+			/* Conmutador de Idioma (ES | EN) en Navbar */
+			.ts-lang-switch {
+				display: inline-flex;
+				align-items: center;
+				background: rgba(255, 255, 255, 0.08);
+				border: 1px solid rgba(56, 189, 248, 0.45);
+				border-radius: 999px;
+				padding: 2px;
+				cursor: pointer;
+				user-select: none;
+			}
+			.ts-lang-opt {
+				padding: 2px 9px;
+				border-radius: 999px;
+				font-size: 0.74rem;
+				font-weight: 700;
+				color: rgba(255, 255, 255, 0.72);
+				transition: all 0.16s ease;
+			}
+			.ts-lang-opt.active {
+				background: linear-gradient(135deg, #f5b041 0%, #ea9c1b 100%);
+				color: #071428;
+				box-shadow: 0 2px 8px rgba(245, 176, 65, 0.4);
+			}
 		</style>
 	</head>
-	<body class="min-vh-100 d-flex flex-column">
+	<body class="min-vh-100 d-flex flex-column" data-i18n-dict={JSON.stringify(TERRASOFT_I18N)}>
 		<nav class="navbar navbar-dark ts-navbar-space py-2 shadow-sm">
 			<div class="container-fluid px-lg-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
 				<a
@@ -451,16 +478,29 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 					<span class="fs-4">🌱</span>
 					<span>TerraSoft</span>
 					<span class="badge rounded-pill bg-info bg-opacity-25 text-info border border-info border-opacity-50 fw-semibold d-none d-sm-inline" style="font-size: 0.68rem;">
-						NASA POWER
+						NASA POWER + FAO
 					</span>
 				</a>
 
 				<div class="d-flex align-items-center gap-2 flex-wrap">
+					<!-- Conmutador Instantáneo Español (ES) ⇄ Inglés (EN) -->
+					<button
+						type="button"
+						id="btn-toggle-lang"
+						class="ts-lang-switch border-0"
+						title="Cambiar idioma / Switch language (Español ⇄ English)"
+						aria-label="Cambiar idioma"
+					>
+						<span class="ts-lang-opt active" id="lang-opt-es">🇨🇴 ES</span>
+						<span class="ts-lang-opt" id="lang-opt-en">🇺🇸 EN</span>
+					</button>
+
 					<button
 						type="button"
 						id="btn-volver-portada-nav"
 						class="btn btn-outline-light btn-sm rounded-pill fw-semibold px-3 d-none"
 						style="font-size: 0.8rem;"
+						data-i18n="navBackHome"
 					>
 						🏠 Volver a Portada
 					</button>
@@ -469,6 +509,7 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 						id="btn-abrir-tutorial-nav"
 						class="btn btn-outline-info btn-sm rounded-pill fw-semibold px-3"
 						style="font-size: 0.8rem;"
+						data-i18n="navGuide"
 					>
 						🧑‍🌾 Guía Don Terra
 					</button>
@@ -482,10 +523,66 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 
 		<footer class="text-white-50 border-top border-info border-opacity-25 py-3 mt-4" style="background: linear-gradient(90deg, #061121 0%, #0b213f 100%);">
 			<div class="container-fluid px-lg-4 d-flex flex-wrap justify-content-between align-items-center gap-2 small">
-				<span>🌱 <strong class="text-white">TerraSoft</strong> &mdash; Observación Satelital NASA POWER &amp; Suelos de Colombia</span>
-				<span class="text-info">Catálogo Regional (24 Cultivos · Calendario y Presupuesto COP)</span>
+				<span>🌱 <strong class="text-white">TerraSoft</strong> &mdash; <span data-i18n="footerSub">Observación Satelital NASA POWER, FAO GAEZ v4 &amp; Suelos de Colombia</span></span>
+				<span class="text-info" data-i18n="footerRight">Catálogo Regional (24 Cultivos · Calendario y Presupuesto COP)</span>
 			</div>
 		</footer>
+
+		<!-- Controlador Global Bilingüe (ES ⇄ EN) -->
+		<script is:inline>
+			(function () {
+				const dictRaw = document.body?.dataset?.i18nDict;
+				window.TERRASOFT_I18N = dictRaw ? JSON.parse(dictRaw) : { es: { ui: {} }, en: { ui: {} } };
+				window.terrasoftLang = localStorage.getItem('terrasoft_lang') === 'en' ? 'en' : 'es';
+
+				window.getTerraSoftLang = function () {
+					return window.terrasoftLang || 'es';
+				};
+
+				window.aplicarTraduccionDOM = function (lang) {
+					const idioma = lang === 'en' ? 'en' : 'es';
+					window.terrasoftLang = idioma;
+					localStorage.setItem('terrasoft_lang', idioma);
+					document.documentElement.lang = idioma;
+
+					const t = window.TERRASOFT_I18N[idioma]?.ui || {};
+					document.querySelectorAll('[data-i18n]').forEach((el) => {
+						const key = el.getAttribute('data-i18n');
+						if (key && t[key] !== undefined) {
+							el.textContent = t[key];
+						}
+					});
+					document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+						const key = el.getAttribute('data-i18n-html');
+						if (key && t[key] !== undefined) {
+							el.innerHTML = t[key];
+						}
+					});
+
+					const optEs = document.getElementById('lang-opt-es');
+					const optEn = document.getElementById('lang-opt-en');
+					optEs?.classList.toggle('active', idioma === 'es');
+					optEn?.classList.toggle('active', idioma === 'en');
+
+					window.dispatchEvent(
+						new CustomEvent('terrasoft:lang-change', {
+							detail: { lang: idioma },
+						})
+					);
+				};
+
+				document.addEventListener('DOMContentLoaded', () => {
+					const btnLang = document.getElementById('btn-toggle-lang');
+					btnLang?.addEventListener('click', () => {
+						const nuevo = window.getTerraSoftLang() === 'es' ? 'en' : 'es';
+						window.aplicarTraduccionDOM(nuevo);
+					});
+					if (window.terrasoftLang === 'en') {
+						window.aplicarTraduccionDOM('en');
+					}
+				});
+			})();
+		</script>
 
 		<!-- Bootstrap 5.3 JS Bundle CDN -->
 		<script
