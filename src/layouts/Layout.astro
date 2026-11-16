@@ -337,9 +337,28 @@ const { title = 'TerraSoft - Datos Espaciales para Decisiones en tu Campo' } = A
 				padding: 0.42rem 0.75rem;
 				transition: all 0.15s ease;
 			}
-			.ts-priority-btn:hover {
-				background: rgba(255, 255, 255, 0.18);
+			.ts-priority-btn,
+			.ts-priority-btn:focus,
+			.ts-priority-btn:focus-visible,
+			.ts-priority-btn:active {
+				--bs-btn-color: #ffffff;
+				--bs-btn-hover-color: #ffffff;
+				--bs-btn-active-color: #071428;
 				color: #ffffff;
+			}
+			.ts-priority-btn:not(.active) {
+				background: #163a66 !important;
+				color: #ffffff !important;
+				border-color: rgba(56, 189, 248, 0.55) !important;
+			}
+			.ts-priority-btn:not(.active):hover {
+				background: #1e4d85 !important;
+			}
+			/* Texto legible en las listas desplegables del selector de cultivos */
+			.ts-topbar select option,
+			.ts-topbar select optgroup {
+				background: #ffffff;
+				color: #071428;
 			}
 			.ts-priority-btn.active {
 				background: linear-gradient(135deg, #f5b041 0%, #ea9c1b 100%);

@@ -26,7 +26,8 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 							<button
 								type="button"
 								id="btn-volver-portada-top"
-								class="btn btn-outline-light btn-sm rounded-pill fw-semibold px-2 flex-shrink-0"
+								class="btn btn-sm rounded-pill fw-semibold px-2 flex-shrink-0"
+								style="background: #0d2647; color: #ffffff; border: 1px solid #38bdf8;"
 								title="Regresar a la página principal"
 							>
 								<span data-i18n="navBackShort">🏠 Portada</span>
@@ -2067,6 +2068,7 @@ const macroregiones = Array.from(new Set(cultivos.map((c) => c.macroregion || 'G
 					rentabilidad: 'Maximizar Rentabilidad Comercial',
 				};
 				const { etiquetaArea } = obtenerAreaEnHectareas();
+				const nombreMesActual = NOMBRES_MESES_LARGO[mesActualNum - 1];
 				const fechaEmision = new Date().toLocaleDateString('es-CO', {
 					year: 'numeric',
 					month: 'long',
